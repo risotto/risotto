@@ -1,0 +1,68 @@
+//
+// Created by rvigee on 10/1/19.
+//
+
+#ifndef RISOTTOV2_TOKENIZER_H
+#define RISOTTOV2_TOKENIZER_H
+
+#include <vector>
+#include <map>
+#include "Token.h"
+
+class Tokenizer {
+private:
+    std::string src;
+
+    int start;
+    int current;
+
+    int line;
+    int column;
+
+    std::vector<Token> tokens;
+
+    static std::map<std::string, TokenType> keywords;
+
+private:
+    char advance();
+
+
+    void scan();
+
+    bool isAtEnd();
+
+    void nextLine();
+
+    void addToken(TokenType type);
+
+    template<typename T>
+    void addToken(TokenType type, T literal);
+
+    bool match(char expected);
+
+    void lexString();
+
+    bool isDigit(char c);
+
+    void number();
+
+    char peekNext();
+
+    char peek();
+
+    char peekN(int n);
+
+    bool isAlpha(char c);
+
+    void identifier();
+
+    bool isAlphaNumeric(char c);
+
+public:
+    explicit Tokenizer(std::string src);
+
+    std::vector<Token> tokenize();
+};
+
+
+#endif //RISOTTOV2_TOKENIZER_H
