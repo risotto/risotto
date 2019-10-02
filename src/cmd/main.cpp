@@ -2,6 +2,8 @@
 #include <lib/tokenizer/Tokenizer.h>
 #include <fstream>
 #include <vector>
+#include <lib/parser/Parser.h>
+#include <lib/tokenizer/TokensPrinter.h>
 
 int main(int argc, char** argv) {
     auto path = argv[1];
@@ -19,6 +21,12 @@ int main(int argc, char** argv) {
     auto tokenizer = new Tokenizer(str);
 
     auto tokens = tokenizer->tokenize();
+
+    TokensPrinter(tokens).print();
+
+    auto parser = new Parser(tokens);
+
+    auto stmts = parser->program();
 
     return 0;
 }

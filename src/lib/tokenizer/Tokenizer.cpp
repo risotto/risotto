@@ -11,12 +11,12 @@
 
 Tokenizer::Tokenizer(std::string src) : src(std::move(src)) {}
 
-std::vector<Token> Tokenizer::tokenize() {
+std::vector<Token *> Tokenizer::tokenize() {
     while (!isAtEnd()) {
         scan();
     }
 
-    addToken(TOKEN_EOF);
+    addToken(Token::Type::TOKEN_EOF);
 
     return tokens;
 }
@@ -42,81 +42,81 @@ void Tokenizer::scan() {
             lexString();
             break;
         case '(':
-            addToken(TokenType::LEFT_PAREN);
+            addToken(Token::Type::LEFT_PAREN);
             break;
         case ')':
-            addToken(TokenType::RIGHT_PAREN);
+            addToken(Token::Type::RIGHT_PAREN);
             break;
         case '{':
-            addToken(TokenType::LEFT_CURLY);
+            addToken(Token::Type::LEFT_CURLY);
             break;
         case '}':
-            addToken(TokenType::RIGHT_CURLY);
+            addToken(Token::Type::RIGHT_CURLY);
             break;
         case '[':
-            addToken(TokenType::LEFT_SQUARED);
+            addToken(Token::Type::LEFT_SQUARED);
             break;
         case ']':
-            addToken(TokenType::RIGHT_SQUARED);
+            addToken(Token::Type::RIGHT_SQUARED);
             break;
         case ',':
-            addToken(TokenType::COMMA);
+            addToken(Token::Type::COMMA);
             break;
         case '.':
-            addToken(TokenType::DOT);
+            addToken(Token::Type::DOT);
             break;
         case '-':
             if (match('=')) {
-                addToken(TokenType::MINUS_EQUAL);
+                addToken(Token::Type::MINUS_EQUAL);
             } else if (match('-')) {
-                addToken(TokenType::MINUS_MINUS);
+                addToken(Token::Type::MINUS_MINUS);
             } else {
-                addToken(TokenType::MINUS);
+                addToken(Token::Type::MINUS);
             }
             break;
         case '+':
             if (match('=')) {
-                addToken(TokenType::PLUS_EQUAL);
+                addToken(Token::Type::PLUS_EQUAL);
             } else if (match('+')) {
-                addToken(TokenType::PLUS_PLUS);
+                addToken(Token::Type::PLUS_PLUS);
             } else {
-                addToken(TokenType::PLUS);
+                addToken(Token::Type::PLUS);
             }
             break;
         case '%':
-            addToken(TokenType::PERCENT);
+            addToken(Token::Type::PERCENT);
             break;
         case '&':
-            addToken(match('&') ? TokenType::AND : TokenType::AMPERSAND);
+            addToken(match('&') ? Token::Type::AND : Token::Type::AMPERSAND);
             break;
         case '|':
             if (match('|')) {
-                addToken(TokenType::OR);
+                addToken(Token::Type::OR);
             }
             break;
         case ';':
-            addToken(TokenType::SEMICOLON);
+            addToken(Token::Type::SEMICOLON);
             break;
         case ':':
-            addToken(TokenType::COLON);
+            addToken(Token::Type::COLON);
             break;
         case '*':
-            addToken(match('=') ? TokenType::STAR_EQUAL : TokenType::STAR);
+            addToken(match('=') ? Token::Type::STAR_EQUAL : Token::Type::STAR);
             break;
         case '?':
-            addToken(TokenType::QUESTION_MARK);
+            addToken(Token::Type::QUESTION_MARK);
             break;
         case '!':
-            addToken(match('=') ? TokenType::BANG_EQUAL : TokenType::BANG);
+            addToken(match('=') ? Token::Type::BANG_EQUAL : Token::Type::BANG);
             break;
         case '=':
-            addToken(match('=') ? TokenType::EQUAL_EQUAL : TokenType::EQUAL);
+            addToken(match('=') ? Token::Type::EQUAL_EQUAL : Token::Type::EQUAL);
             break;
         case '<':
-            addToken(match('=') ? TokenType::LESS_EQUAL : TokenType::LESS);
+            addToken(match('=') ? Token::Type::LESS_EQUAL : Token::Type::LESS);
             break;
         case '>':
-            addToken(match('=') ? TokenType::GREATER_EQUAL : TokenType::GREATER);
+            addToken(match('=') ? Token::Type::GREATER_EQUAL : Token::Type::GREATER);
             break;
         case '/':
             if (match('/')) {
@@ -136,9 +136,9 @@ void Tokenizer::scan() {
                     }
                 }
             } else if (match('=')) {
-                addToken(TokenType::SLASH_EQUAL);
+                addToken(Token::Type::SLASH_EQUAL);
             } else {
-                addToken(TokenType::SLASH);
+                addToken(Token::Type::SLASH);
             }
             break;
 
@@ -156,7 +156,7 @@ void Tokenizer::scan() {
     }
 }
 
-void Tokenizer::addToken(TokenType type) {
+void Tokenizer::addToken(Token::Type type) {
     addToken(type, "");
 }
 
@@ -181,9 +181,11 @@ TokenValue literalToTokenValue<const char *>(const char *literal) {
 }
 
 template<typename T>
-void Tokenizer::addToken(TokenType type, T literal) {
+void Tokenizer::addToken(Token::Type type, T literal) {
     std::string lexeme = src.substr(start, current - start);
-    tokens.emplace_back(type, literalToTokenValue(literal), lexeme, Position(line, column));
+    tokens.push_back(
+            new Token(type, literalToTokenValue(literal), lexeme, Position(line + 1, column - lexeme.size() + 1))
+    );
 }
 
 bool Tokenizer::match(char expected) {
@@ -212,7 +214,7 @@ void Tokenizer::lexString() {
 
     // Trim the surrounding quotes.
     auto value = src.substr(start + 1, current - 1 - (start + 1));
-    addToken(TokenType::STRING, value);
+    addToken(Token::Type::STRING, value);
 }
 
 bool Tokenizer::isDigit(char c) {
@@ -236,9 +238,9 @@ void Tokenizer::number() {
     auto s = src.substr(start, current - start);
 
     if (isDecimal) {
-        addToken(TokenType::DOUBLE, std::stod(s));
+        addToken(Token::Type::DOUBLE, std::stod(s));
     } else {
-        addToken(TokenType::INT, std::stoi(s));
+        addToken(Token::Type::INT, std::stoi(s));
     }
 }
 
@@ -264,19 +266,19 @@ bool Tokenizer::isAlpha(char c) {
            c == '_';
 }
 
-std::map<std::string, TokenType> Tokenizer::keywords = {
-        {"else",   TokenType::ELSE},
-        {"false",  TokenType::FALSE},
-        {"for",    TokenType::FOR},
-        {"func",   TokenType::FUNC},
-        {"if",     TokenType::IF},
-        {"nil",    TokenType::NIL},
-        {"print",  TokenType::PRINT},
-        {"return", TokenType::RETURN},
-        {"this",   TokenType::THIS},
-        {"new",    TokenType::NEW},
-        {"true",   TokenType::TRUE},
-        {"while",  TokenType::WHILE},
+std::map<std::string, Token::Type> Tokenizer::keywords = {
+        {"else",   Token::Type::ELSE},
+        {"false",  Token::Type::FALSE},
+        {"for",    Token::Type::FOR},
+        {"func",   Token::Type::FUNC},
+        {"if",     Token::Type::IF},
+        {"nil",    Token::Type::NIL},
+        {"print",  Token::Type::PRINT},
+        {"return", Token::Type::RETURN},
+        {"this",   Token::Type::THIS},
+        {"new",    Token::Type::NEW},
+        {"true",   Token::Type::TRUE},
+        {"while",  Token::Type::WHILE},
 };
 
 void Tokenizer::identifier() {
@@ -284,9 +286,10 @@ void Tokenizer::identifier() {
 
     auto text = src.substr(start, current - start);
 
-    TokenType type;
+    Token::Type type = Token::Type::_from_index(0); // Just has to be something, will be replaced immediately...
+
     if (keywords.find(text) == keywords.end()) {
-        type = TokenType::IDENTIFIER;
+        type = Token::Type::IDENTIFIER;
     } else {
         type = keywords.at(text);
     }
