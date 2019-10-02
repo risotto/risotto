@@ -19,9 +19,9 @@ private:
     int line;
     int column;
 
-    std::vector<Token> tokens;
+    std::vector<Token *> tokens;
 
-    static std::map<std::string, TokenType> keywords;
+    static std::map<std::string, Token::Type> keywords;
 
 private:
     char advance();
@@ -33,10 +33,10 @@ private:
 
     void nextLine();
 
-    void addToken(TokenType type);
+    void addToken(Token::Type type);
 
     template<typename T>
-    void addToken(TokenType type, T literal);
+    void addToken(Token::Type type, T literal);
 
     bool match(char expected);
 
@@ -61,7 +61,7 @@ private:
 public:
     explicit Tokenizer(std::string src);
 
-    std::vector<Token> tokenize();
+    std::vector<Token *> tokenize();
 };
 
 
