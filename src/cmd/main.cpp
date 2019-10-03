@@ -4,6 +4,7 @@
 #include <vector>
 #include <lib/parser/Parser.h>
 #include <lib/tokenizer/TokensPrinter.h>
+#include <lib/parser/ASTPrinter.h>
 
 int main(int argc, char** argv) {
     auto path = argv[1];
@@ -27,6 +28,8 @@ int main(int argc, char** argv) {
     auto parser = new Parser(tokens);
 
     auto stmts = parser->program();
+
+    std::cout << ASTPrinter::print(stmts);
 
     return 0;
 }

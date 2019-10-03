@@ -7,7 +7,8 @@
 
 
 class Node {
-
+public:
+    virtual ~Node() = default;
 };
 
 
