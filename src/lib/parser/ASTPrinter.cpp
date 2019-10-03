@@ -221,7 +221,7 @@ std::string ASTPrinter::print<CallExpr *>(CallExpr *stmt) {
     ss << "CallExpr" << std::endl;
     ss << indent("+Name: " + stmt->identifier->lexeme, 1) << std::endl;
     ss << indent("+Args:", 1) << std::endl;
-    ss << indent(print(stmt->args), 1);
+    ss << indent(print(stmt->args), 2);
 
     return ss.str();
 }
