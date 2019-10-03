@@ -23,7 +23,7 @@ int main(int argc, char** argv) {
 
     auto tokens = tokenizer->tokenize();
 
-    TokensPrinter(tokens).print();
+    TokensPrinter::print(tokens);
 
     auto parser = new Parser(tokens);
 
