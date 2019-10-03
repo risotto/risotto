@@ -13,11 +13,11 @@ class Tokenizer {
 private:
     std::string src;
 
-    int start;
-    int current;
+    int start = 0;
+    int current = start;
 
-    int line;
-    int column;
+    int line = 0;
+    int column = 0;
 
     std::vector<Token *> tokens;
 
@@ -25,7 +25,6 @@ private:
 
 private:
     char advance();
-
 
     void scan();
 

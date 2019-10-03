@@ -9,6 +9,26 @@
 #include "Tokenizer.h"
 #include "SyntaxError.h"
 
+template<typename T>
+TokenValue literalToTokenValue(T literal) {
+    throw SyntaxError("Unhandled literal", new Position(0, 0));
+}
+
+template<>
+TokenValue literalToTokenValue<int>(int literal) {
+    return TokenValue{._int = literal};
+}
+
+template<>
+TokenValue literalToTokenValue<std::string>(std::string literal) {
+    return TokenValue{._str = literal.c_str()};
+}
+
+template<>
+TokenValue literalToTokenValue<const char *>(const char *literal) {
+    return TokenValue{._str = literal};
+}
+
 Tokenizer::Tokenizer(std::string src) : src(std::move(src)) {}
 
 std::vector<Token *> Tokenizer::tokenize() {
@@ -158,26 +178,6 @@ void Tokenizer::scan() {
 
 void Tokenizer::addToken(Token::Type type) {
     addToken(type, "");
-}
-
-template<typename T>
-TokenValue literalToTokenValue(T literal) {
-    throw SyntaxError("Unhandled literal", new Position(0, 0));
-}
-
-template<>
-TokenValue literalToTokenValue<int>(int literal) {
-    return TokenValue{._int = literal};
-}
-
-template<>
-TokenValue literalToTokenValue<std::string>(std::string literal) {
-    return TokenValue{._str = literal.c_str()};
-}
-
-template<>
-TokenValue literalToTokenValue<const char *>(const char *literal) {
-    return TokenValue{._str = literal};
 }
 
 template<typename T>

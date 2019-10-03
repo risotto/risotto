@@ -24,8 +24,7 @@ std::vector<std::string> split(std::string s, char delimiter) {
 
 #include <utility>
 
-std::string repeat(const std::string& input, size_t num)
-{
+std::string repeat(const std::string &input, size_t num) {
     std::ostringstream os;
     std::fill_n(std::ostream_iterator<std::string>(os), num, input);
     return os.str();
@@ -121,8 +120,9 @@ std::string ASTPrinter::print<FunctionStmt *>(FunctionStmt *stmt) {
     std::stringstream ss;
 
     ss << "FunctionStmt" << std::endl;
-
-    ss << indent(print(stmt->body), 1);
+    ss << indent("+Name: " + stmt->name->lexeme, 1) << std::endl;
+    ss << indent("+Body: ", 1) << std::endl;
+    ss << indent(print(stmt->body), 2);
 
     return ss.str();
 }
