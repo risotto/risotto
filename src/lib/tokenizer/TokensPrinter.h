@@ -9,16 +9,8 @@
 #include "Token.h"
 
 class TokensPrinter {
-private:
-    std::vector<Token *> tokens;
-
-    int previousLine = -1;
-    int previousColumn = -1;
-
 public:
-    TokensPrinter(std::vector<Token *> tokens);
-
-    void print();
+    static void print(std::vector<Token *> tokens);
 };
 
 

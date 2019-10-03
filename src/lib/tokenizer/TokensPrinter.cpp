@@ -8,10 +8,7 @@
 #include <iomanip>
 #include "TokensPrinter.h"
 
-TokensPrinter::TokensPrinter(std::vector<Token *> tokens) : tokens(std::move(tokens)) {
-}
-
-void TokensPrinter::print() {
+void TokensPrinter::print(std::vector<Token *> tokens) {
     auto n = 3;
 
     // Header
@@ -33,6 +30,9 @@ void TokensPrinter::print() {
 
     std::cout << "| " << "Lexeme" << "\n";
     std::cout << "===================================\n";
+
+    int previousLine = -1;
+    int previousColumn = -1;
 
     // Content
     auto i = 0;
