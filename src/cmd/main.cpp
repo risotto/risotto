@@ -1,12 +1,19 @@
 #include <iostream>
-#include <lib/tokenizer/Tokenizer.h>
 #include <fstream>
 #include <vector>
+#include <lib/tokenizer/Tokenizer.h>
 #include <lib/parser/Parser.h>
 #include <lib/tokenizer/TokensPrinter.h>
 #include <lib/parser/ASTPrinter.h>
+#include <lib/compiler/Compiler.h>
 
-int main(int argc, char** argv) {
+extern "C" {
+#include <lib/vm/vm.h>
+#include <lib/vm/chunk.h>
+#include <lib/vm/debug.h>
+}
+
+int main(int argc, char *argv[]) {
     auto path = argv[1];
 
     std::ifstream ifs(path, std::ios::in | std::ios::binary | std::ios::ate);
@@ -30,6 +37,16 @@ int main(int argc, char** argv) {
     auto stmts = parser->program();
 
     std::cout << ASTPrinter::print(stmts);
+
+    auto chunk = Compiler(stmts).compile();
+
+    initVM();
+
+    disassembleChunk(&chunk, "chunk");
+    interpret(&chunk, 0);
+
+    freeVM();
+    freeChunk(&chunk);
 
     return 0;
 }

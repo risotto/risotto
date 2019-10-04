@@ -8,14 +8,19 @@
 
 #include <lib/parser/nodes/Expr.h>
 #include <lib/tokenizer/Token.h>
+#include "CallExpr.h"
 
-class BinaryExpr : public Expr {
+class BinaryExpr : public CallExpr {
 public:
-    Expr *left;
-    Token *op;
-    Expr *right;
-
     BinaryExpr(Expr *left, Token *op, Expr *right);
+
+    FunctionEntry *getFunctionEntry(Compiler *compiler) override;
+
+    Expr *left();
+
+    Expr *right();
+
+    Token *op();
 };
 
 

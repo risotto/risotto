@@ -6,11 +6,20 @@
 #define RISOTTOV2_EXPR_H
 
 
+#include <lib/compiler/TypesTable.h>
 #include "Node.h"
 
-class Expr: public Node {
+class Expr : public Node {
+private:
+    TypeEntry *_returnType = nullptr;
+
+protected:
+    virtual TypeEntry *computeReturnType(Compiler *compiler);
+
 public:
     virtual ~Expr() = default;
+
+    TypeEntry *getReturnType(Compiler *compiler);
 };
 
 

@@ -19,7 +19,6 @@
 #include "lib/parser/nodes/Stmt.h"
 #include "lib/parser/nodes/Stmt/IfStmt.h"
 #include "lib/parser/nodes/Stmt/ReturnStmt.h"
-#include "lib/parser/nodes/Stmt/PrintStmt.h"
 #include "lib/parser/nodes/ParameterDefinition.h"
 #include "lib/parser/nodes/Stmt/FunctionStmt.h"
 #include "lib/parser/nodes/Stmt/BlockStmt.h"
@@ -140,7 +139,6 @@ Stmt *Parser::statement() {
 //    if (match(FOR)) return forStatement();
     if (match(Token::Type::IF)) return ifStatement();
     if (match(Token::Type::RETURN)) return returnStatement();
-    if (match(Token::Type::PRINT)) return printStatement();
     if (match(Token::Type::LEFT_CURLY)) return new BlockStmt(block());
 //    if (match(WHILE)) return whileStatement();
 
@@ -161,12 +159,6 @@ Stmt *Parser::returnStatement() {
     Expr *value = expression();
 
     return new ReturnStmt(keyword, value);
-}
-
-Stmt *Parser::printStatement() {
-    Expr *value = expression();
-
-    return new PrintStmt(value);
 }
 
 Stmt *Parser::expressionStatement() {

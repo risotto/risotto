@@ -4,11 +4,11 @@
 
 #include "ASTPrinter.h"
 
-#include <lib/parser/nodes/Stmt/FunctionStmt.h>
 #include <iostream>
 #include <sstream>
-#include <lib/parser/nodes/Stmt/PrintStmt.h>
+#include <lib/parser/nodes/Stmt/FunctionStmt.h>
 #include <lib/parser/nodes/Expr/LiteralExpr.h>
+#include <lib/parser/nodes/Expr/BinaryExpr.h>
 
 std::vector<std::string> split(std::string s, char delimiter) {
     std::vector<std::string> lines;
@@ -23,6 +23,7 @@ std::vector<std::string> split(std::string s, char delimiter) {
 }
 
 #include <utility>
+#include <lib/parser/nodes/Stmt/ExpressionStmt.h>
 
 std::string repeat(const std::string &input, size_t num) {
     std::ostringstream os;
@@ -66,10 +67,10 @@ if (auto V = dynamic_cast<T *>(stmt)) { \
 template<>
 std::string ASTPrinter::print<Stmt *>(Stmt *stmt) {
     DC(FunctionStmt)
-    DC(PrintStmt)
     DC(IfStmt)
     DC(BlockStmt)
     DC(ReturnStmt)
+    DC(ExpressionStmt)
 
     return print(dynamic_cast<Node *>(stmt));
 }
@@ -128,16 +129,6 @@ std::string ASTPrinter::print<FunctionStmt *>(FunctionStmt *stmt) {
 }
 
 template<>
-std::string ASTPrinter::print<PrintStmt *>(PrintStmt *stmt) {
-    std::stringstream ss;
-
-    ss << "PrintStmt" << std::endl;
-    ss << indent(print(stmt->value), 1);
-
-    return ss.str();
-}
-
-template<>
 std::string ASTPrinter::print<ReturnStmt *>(ReturnStmt *stmt) {
     std::stringstream ss;
 
@@ -166,10 +157,10 @@ std::string ASTPrinter::print<BinaryExpr *>(BinaryExpr *stmt) {
 
     ss << "BinaryExpr" << std::endl;
     ss << indent("+Left:", 1) << std::endl;
-    ss << indent(print(stmt->left), 2);
-    ss << indent("+Op: " + stmt->op->lexeme, 1) << std::endl;
+    ss << indent(print(stmt->left()), 2);
+    ss << indent("+Op: " + stmt->op()->lexeme, 1) << std::endl;
     ss << indent("+Right:", 1) << std::endl;
-    ss << indent(print(stmt->right), 2);
+    ss << indent(print(stmt->right()), 2);
 
     return ss.str();
 }
@@ -222,6 +213,16 @@ std::string ASTPrinter::print<CallExpr *>(CallExpr *stmt) {
     ss << indent("+Name: " + stmt->identifier->lexeme, 1) << std::endl;
     ss << indent("+Args:", 1) << std::endl;
     ss << indent(print(stmt->args), 2);
+
+    return ss.str();
+}
+
+template<>
+std::string ASTPrinter::print<ExpressionStmt *>(ExpressionStmt *stmt) {
+    std::stringstream ss;
+
+    ss << "ExpressionStmt" << std::endl;
+    ss << indent(print(stmt->expr), 1) << std::endl;
 
     return ss.str();
 }

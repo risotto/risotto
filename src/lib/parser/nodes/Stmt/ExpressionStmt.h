@@ -14,6 +14,8 @@ public:
     Expr *expr;
 
     explicit ExpressionStmt(Expr *expr);
+
+    std::vector<ByteResolver *> compile(Compiler *compiler);
 };
 
 

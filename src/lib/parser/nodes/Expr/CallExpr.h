@@ -17,6 +17,14 @@ public:
     std::vector<Expr *> args;
 
     CallExpr(Token *identifier, Token *rParen, std::vector<Expr *> args);
+
+    virtual std::vector<Expr *> getArguments(Compiler *compiler);
+    virtual FunctionEntry *getFunctionEntry(Compiler *compiler);
+
+    std::vector<ByteResolver *> compile(Compiler *compiler) override;
+
+protected:
+    TypeEntry *computeReturnType(Compiler *compiler) override;
 };
 
 

@@ -3,3 +3,7 @@
 //
 
 #include "Node.h"
+
+std::vector<ByteResolver *> Node::compile(Compiler *compiler) {
+    throw std::logic_error("compile not implemented");
+}

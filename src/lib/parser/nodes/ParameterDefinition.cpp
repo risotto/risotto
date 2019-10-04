@@ -4,6 +4,6 @@
 
 #include "ParameterDefinition.h"
 
-ParameterDefinition::ParameterDefinition(Token *type, Token *name): type(type), name(name) {
+ParameterDefinition::ParameterDefinition(Token *type, Token *name) : type(type), name(name) {
 
 }

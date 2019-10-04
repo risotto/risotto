@@ -14,6 +14,11 @@ public:
     Token *value;
 
     LiteralExpr(Token *value);
+
+    std::vector<ByteResolver *> compile(Compiler *compiler) override;
+
+protected:
+    TypeEntry *computeReturnType(Compiler *compiler) override;
 };
 
 

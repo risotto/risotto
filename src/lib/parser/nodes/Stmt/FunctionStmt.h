@@ -21,6 +21,8 @@ public:
 
     FunctionStmt(Token *name, Token *returnType, std::vector<ParameterDefinition> parameters, std::vector<Stmt *> body,
                  Token *closeBlock);
+
+    std::vector<ByteResolver *> compile(Compiler *compiler) override;
 };
 
 

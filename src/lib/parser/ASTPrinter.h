@@ -9,7 +9,6 @@
 #include <lib/parser/nodes/Stmt.h>
 #include <vector>
 #include <lib/parser/nodes/Stmt/FunctionStmt.h>
-#include <lib/parser/nodes/Stmt/PrintStmt.h>
 #include <lib/parser/nodes/Stmt/IfStmt.h>
 #include <lib/parser/nodes/Stmt/ReturnStmt.h>
 #include <lib/parser/nodes/Expr/BinaryExpr.h>
@@ -18,6 +17,7 @@
 #include <lib/parser/nodes/Expr/GroupingExpr.h>
 #include <lib/parser/nodes/Stmt/BlockStmt.h>
 #include <lib/parser/nodes/Expr/CallExpr.h>
+#include <lib/parser/nodes/Stmt/ExpressionStmt.h>
 
 class ASTPrinter {
 public:
@@ -42,9 +42,6 @@ public:
     std::string print<FunctionStmt *>(FunctionStmt *stmt);
 
     template<>
-    std::string print<PrintStmt *>(PrintStmt *stmt);
-
-    template<>
     std::string print<IfStmt *>(IfStmt *stmt);
 
     template<>
@@ -67,6 +64,9 @@ public:
 
     template<>
     std::string print<CallExpr *>(CallExpr *stmt);
+
+    template<>
+    std::string print<ExpressionStmt *>(ExpressionStmt *stmt);
 };
 
 

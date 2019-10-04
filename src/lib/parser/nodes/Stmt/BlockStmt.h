@@ -13,6 +13,8 @@ public:
     std::vector<Stmt *> stmts;
 
     explicit BlockStmt(std::vector<Stmt *> stmts);
+
+    std::vector<ByteResolver *> compile(Compiler *compiler) override;
 };
 
 

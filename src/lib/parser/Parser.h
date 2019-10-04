@@ -45,8 +45,6 @@ private:
 
     Stmt *returnStatement();
 
-    Stmt *printStatement();
-
     Stmt *expressionStatement();
 
     Expr *expression();

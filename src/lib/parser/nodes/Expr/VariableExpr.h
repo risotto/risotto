@@ -13,7 +13,12 @@ class VariableExpr: public Expr {
 public:
     Token *name;
 
-    VariableExpr(Token *name);
+    explicit VariableExpr(Token *name);
+
+    std::vector<ByteResolver *> compile(Compiler *compiler) override;
+
+protected:
+    TypeEntry *computeReturnType(Compiler *compiler) override;
 };
 
 

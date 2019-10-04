@@ -16,6 +16,8 @@ public:
     Expr *value;
 
     ReturnStmt(Token *keyword, Expr *value);
+
+    std::vector<ByteResolver *> compile(Compiler *compiler) override;
 };
 
 

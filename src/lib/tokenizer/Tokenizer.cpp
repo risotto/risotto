@@ -273,7 +273,6 @@ std::map<std::string, Token::Type> Tokenizer::keywords = {
         {"func",   Token::Type::FUNC},
         {"if",     Token::Type::IF},
         {"nil",    Token::Type::NIL},
-        {"print",  Token::Type::PRINT},
         {"return", Token::Type::RETURN},
         {"this",   Token::Type::THIS},
         {"new",    Token::Type::NEW},
