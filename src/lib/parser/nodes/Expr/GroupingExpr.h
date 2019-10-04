@@ -16,6 +16,11 @@ public:
     Token *rParen;
 
     GroupingExpr(Expr *expr, Token *lParen, Token *rParen);
+
+    std::vector<ByteResolver *> compile(Compiler *compiler) override;
+
+protected:
+    TypeEntry *computeReturnType(Compiler *compiler) override;
 };
 
 
