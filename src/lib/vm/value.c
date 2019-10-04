@@ -102,7 +102,7 @@ Value d2v(double v) {
     return value;
 }
 
-Value s2v(char *v) {
+Value s2v(const char *v) {
     NEW_VALUE(value);
     DGET(value, str) = v;
     TGET(value) = T_STR;
@@ -150,7 +150,7 @@ double v2d(Value v) {
     return DGET(v, double);
 }
 
-char *v2s(Value v) {
+const char *v2s(Value v) {
     V2_ACCESS_REF(v, v2s);
 
     switch (TGET(v)) {

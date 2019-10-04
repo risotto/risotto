@@ -25,6 +25,8 @@ public:
 
 protected:
     TypeEntry *computeReturnType(Compiler *compiler) override;
+
+    std::vector<TypeEntry *> getArgumentsTypes(Compiler *compiler);
 };
 
 

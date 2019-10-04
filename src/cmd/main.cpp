@@ -20,15 +20,8 @@ void printTime(const std::string &name, clock_t &start, clock_t &end) {
 int main(int argc, char *argv[]) {
     auto path = argv[1];
 
-    std::ifstream ifs(path, std::ios::in | std::ios::binary | std::ios::ate);
-
-    std::ifstream::pos_type fileSize = ifs.tellg();
-    ifs.seekg(0, std::ios::beg);
-
-    std::vector<char> bytes(fileSize);
-    ifs.read(bytes.data(), fileSize);
-
-    auto str = std::string(bytes.data(), fileSize);
+    std::ifstream ifs(path);
+    std::string str((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
 
     clock_t totalStart = clock();
 

@@ -10,23 +10,31 @@
 #include "SyntaxError.h"
 
 template<typename T>
-TokenValue literalToTokenValue(T literal) {
+ValueData literalToValueData(T literal) {
     throw SyntaxError("Unhandled literal", new Position(0, 0));
 }
 
 template<>
-TokenValue literalToTokenValue<int>(int literal) {
-    return TokenValue{._int = literal};
+ValueData literalToValueData<int>(int literal) {
+    return ValueData{._int = literal};
 }
 
 template<>
-TokenValue literalToTokenValue<std::string>(std::string literal) {
-    return TokenValue{._str = literal.c_str()};
+ValueData literalToValueData<double>(double literal) {
+    return ValueData{._double = literal};
 }
 
 template<>
-TokenValue literalToTokenValue<const char *>(const char *literal) {
-    return TokenValue{._str = literal};
+ValueData literalToValueData<const char *>(const char *literal) {
+    return ValueData{._str = literal};
+}
+
+template<>
+ValueData literalToValueData<std::string>(std::string str) {
+    char * cstr = new char [str.length()+1];
+    std::strcpy (cstr, str.c_str());
+
+    return ValueData{._str = cstr};
 }
 
 Tokenizer::Tokenizer(std::string src) : src(std::move(src)) {}
@@ -184,7 +192,7 @@ template<typename T>
 void Tokenizer::addToken(Token::Type type, T literal) {
     std::string lexeme = src.substr(start, current - start);
     tokens.push_back(
-            new Token(type, literalToTokenValue(literal), lexeme, Position(line + 1, column - lexeme.size() + 1))
+            new Token(type, literalToValueData(literal), lexeme, Position(line + 1, column - lexeme.size() + 1))
     );
 }
 
@@ -213,7 +221,7 @@ void Tokenizer::lexString() {
     advance();
 
     // Trim the surrounding quotes.
-    auto value = src.substr(start + 1, current - 1 - (start + 1));
+    std::string value = src.substr(start + 1, current - 1 - (start + 1));
     addToken(Token::Type::STRING, value);
 }
 

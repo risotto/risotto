@@ -3,6 +3,7 @@
 //
 
 #include "FunctionsTable.h"
+#include "TypesTable.h"
 
 #include <utility>
 
@@ -22,10 +23,25 @@ NativeFunctionEntry::NativeFunctionEntry(
 
 }
 
-FunctionEntry *FunctionsTable::find(const std::string &name) {
+FunctionEntry *FunctionsTable::find(const std::string &name, std::vector<TypeEntry *> argsTypes) {
     for (auto entry : functions) {
         if (entry->name == name) {
-            return entry;
+            if (entry->params.size() == argsTypes.size()) {
+                auto compatible = true;
+                for (int i = 0; i < entry->params.size(); ++i) {
+                    auto paramType = entry->params[i].type;
+                    auto argType = argsTypes[i];
+
+                    if (!paramType->canReceiveType(argType)) {
+                        compatible = false;
+                        break;
+                    }
+                }
+
+                if (compatible) {
+                    return entry;
+                }
+            }
         }
     }
 

@@ -50,15 +50,15 @@ VariableFindResponse *Frame::findVariable(const std::string &name) {
     return nullptr;
 }
 
-FunctionEntry *Frame::findFunction(const std::string &name) {
-    auto entry = functions.find(name);
+FunctionEntry *Frame::findFunction(const std::string &name, const std::vector<TypeEntry *>& argsTypes) {
+    auto entry = functions.find(name, argsTypes);
 
     if (entry != nullptr) {
         return entry;
     }
 
     if (parent != nullptr) {
-        return parent->findFunction(name);
+        return parent->findFunction(name, argsTypes);
     }
 
     return nullptr;

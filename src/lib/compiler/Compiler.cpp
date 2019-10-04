@@ -10,6 +10,43 @@ extern "C" {
 #include <lib/vm/native_functions.h>
 }
 
+#define NATIVE_BINARY_DECLARATION_NAMED(target, op, param, return, functionName, define) \
+    target##Entry->addOperator( \
+        "self", \
+        new NativeFunctionEntry( \
+            #op, \
+            {FunctionEntryParameter("right", param##Entry)}, \
+            return##Entry, \
+            functionName \
+        ) \
+);
+
+#define NATIVE_BINARY_OPERATOR_DECLARATION(target, op, param, return, opName) \
+NATIVE_BINARY_DECLARATION_NAMED(target, op, param, return, binary_##target##_##opName##_##param, defineNativeOperator)
+
+#define NATIVE_BINARY_OPERATOR_MATH_DECLARATIONS(target, param, return) \
+NATIVE_BINARY_OPERATOR_DECLARATION(target, +, param, return, add) \
+NATIVE_BINARY_OPERATOR_DECLARATION(target, -, param, return, sub) \
+NATIVE_BINARY_OPERATOR_DECLARATION(target, *, param, return, mul) \
+NATIVE_BINARY_OPERATOR_DECLARATION(target, /, param, return, div) \
+NATIVE_BINARY_OPERATOR_DECLARATION(target, <, param, bool, lower) \
+NATIVE_BINARY_OPERATOR_DECLARATION(target, >, param, bool, greater) \
+NATIVE_BINARY_OPERATOR_DECLARATION(target, <=, param, bool, lower_equal) \
+NATIVE_BINARY_OPERATOR_DECLARATION(target, >=, param, bool, greater_equal) \
+NATIVE_BINARY_OPERATOR_DECLARATION(target, ==, param, bool, eq) \
+NATIVE_BINARY_OPERATOR_DECLARATION(target, !=, param, bool, neq) \
+NATIVE_BINARY_OPERATOR_DECLARATION(target, +=, param, return, add_equal) \
+NATIVE_BINARY_OPERATOR_DECLARATION(target, -=, param, return, sub_equal) \
+NATIVE_BINARY_OPERATOR_DECLARATION(target, *=, param, return, mul_equal) \
+NATIVE_BINARY_OPERATOR_DECLARATION(target, /=, param, return, div_equal)
+
+#define NATIVE_BINARY_OPERATOR_STRING_DECLARATIONS(type) \
+NATIVE_BINARY_OPERATOR_DECLARATION(string, +, type, string, add) \
+NATIVE_BINARY_OPERATOR_DECLARATION(type, +, string, string, add) \
+NATIVE_BINARY_OPERATOR_DECLARATION(string, +=, type, string, add_equal)
+
+
+
 Compiler::Compiler(std::vector<Stmt *> stmts) : stmts(std::move(stmts)) {
     frame = new Frame();
 
@@ -17,40 +54,62 @@ Compiler::Compiler(std::vector<Stmt *> stmts) : stmts(std::move(stmts)) {
 
     auto voidEntry = frame->types.add("void");
     auto intEntry = frame->types.add("int");
+    auto doubleEntry = frame->types.add("double");
+    auto boolEntry = frame->types.add("bool");
+    auto stringEntry = frame->types.add("string");
 
-    intEntry->operators.add(
-            new NativeFunctionEntry(
-                    "+",
-                    {FunctionEntryParameter("right", intEntry)},
-                    intEntry,
-                    binary_int_add_int
-            )
-    );
+    NATIVE_BINARY_OPERATOR_MATH_DECLARATIONS(int, int, int)
+    NATIVE_BINARY_OPERATOR_MATH_DECLARATIONS(int, double, int)
+    NATIVE_BINARY_OPERATOR_STRING_DECLARATIONS(int)
+    NATIVE_BINARY_OPERATOR_DECLARATION(int, %, int, int, mod)
 
-    intEntry->operators.add(
-            new NativeFunctionEntry(
-                    "-",
-                    {FunctionEntryParameter("right", intEntry)},
-                    intEntry,
-                    binary_int_sub_int
-            )
-    );
+    // prefix + postfix
 
-    intEntry->operators.add(
+    NATIVE_BINARY_OPERATOR_MATH_DECLARATIONS(double, double, double)
+    NATIVE_BINARY_OPERATOR_MATH_DECLARATIONS(double, int, double)
+    NATIVE_BINARY_OPERATOR_STRING_DECLARATIONS(double)
+
+    // prefix + postfix
+
+    NATIVE_BINARY_OPERATOR_STRING_DECLARATIONS(bool)
+
+    NATIVE_BINARY_OPERATOR_DECLARATION(string, +, string, string, add)
+    NATIVE_BINARY_OPERATOR_DECLARATION(string, +=, string, string, add_equal)
+
+
+    frame->functions.add(
             new NativeFunctionEntry(
-                    "==",
-                    {FunctionEntryParameter("right", intEntry)},
-                    intEntry,
-                    binary_int_eq_int
+                    "println",
+                    {FunctionEntryParameter("e", intEntry)},
+                    voidEntry,
+                    println_int
             )
     );
 
     frame->functions.add(
             new NativeFunctionEntry(
                     "println",
-                    {FunctionEntryParameter("i", intEntry)},
+                    {FunctionEntryParameter("e", doubleEntry)},
                     voidEntry,
-                    println_int
+                    println_double
+            )
+    );
+
+    frame->functions.add(
+            new NativeFunctionEntry(
+                    "println",
+                    {FunctionEntryParameter("e", boolEntry)},
+                    voidEntry,
+                    println_bool
+            )
+    );
+
+    frame->functions.add(
+            new NativeFunctionEntry(
+                    "println",
+                    {FunctionEntryParameter("e", stringEntry)},
+                    voidEntry,
+                    println_string
             )
     );
 }

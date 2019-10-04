@@ -17,17 +17,16 @@ LiteralExpr::LiteralExpr(Token *value) : value(value) {
 Value literalToValue(Token *value) {
     switch (value->type) {
         case Token::Type::FALSE:
-            return b2v(false);
         case Token::Type::TRUE:
-            return b2v(true);
+            return b2v(value->value._bool);
         case Token::Type::NIL:
             return n2v();
         case Token::Type::INT:
-            return i2v(std::stoi(value->lexeme));
+            return i2v(value->value._int);
         case Token::Type::DOUBLE:
-            return d2v(std::stod(value->lexeme));
+            return d2v(value->value._double);
         case Token::Type::STRING:
-            return s2v(const_cast<char *>(value->lexeme.c_str()));
+            return s2v(value->value._str);
         default:
             throw CompilerError("Unhandled type " + std::string(value->type._to_string()));
     }

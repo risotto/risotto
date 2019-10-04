@@ -43,7 +43,7 @@ public:
 
     VariableFindResponse *findVariable(const std::string &name);
 
-    FunctionEntry *findFunction(const std::string &name);
+    FunctionEntry *findFunction(const std::string &name, const std::vector<TypeEntry *>& argsTypes);
 
     int findFrame(FrameType type);
 };

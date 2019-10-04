@@ -6,13 +6,8 @@
 #define RISOTTOV2_TOKEN_H
 
 #include <string>
+#include <lib/vm/value.h>
 #include "../../../lib/enum.h"
-
-union TokenValue {
-    int _int;
-    const char *_str;
-    bool _bool;
-};
 
 class Position {
 public:
@@ -58,14 +53,14 @@ public:
     using Type = _token_type;
 
     Type type;
-    TokenValue value;
+    ValueData value;
     std::string lexeme;
     Position position;
 
     Token(Type
           type,
-          TokenValue value, std::string
-          lexeme,
+          ValueData value,
+          std::string lexeme,
           Position position
     );
 };

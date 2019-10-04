@@ -45,7 +45,7 @@ class FunctionsTable {
 private:
     std::vector<FunctionEntry *> functions;
 public:
-    FunctionEntry *find(const std::string &name);
+    FunctionEntry *find(const std::string &name, std::vector<TypeEntry *> argsTypes);
 
     FunctionEntry * add(FunctionEntry *entry);
 };

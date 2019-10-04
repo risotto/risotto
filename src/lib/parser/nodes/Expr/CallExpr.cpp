@@ -12,7 +12,8 @@ extern "C" {
 #include <lib/compiler/Compiler.h>
 #include <lib/compiler/CompilerError.h>
 
-CallExpr::CallExpr(Token *identifier, Token *rParen, std::vector<Expr *> args): identifier(identifier), rParen(rParen), args(std::move(args)) {
+CallExpr::CallExpr(Token *identifier, Token *rParen, std::vector<Expr *> args) : identifier(identifier), rParen(rParen),
+                                                                                 args(std::move(args)) {
 
 }
 
@@ -20,15 +21,25 @@ std::vector<Expr *> CallExpr::getArguments(Compiler *compiler) {
     return args;
 }
 
+std::vector<TypeEntry *> CallExpr::getArgumentsTypes(Compiler *compiler) {
+    auto argsTypes = std::vector<TypeEntry *>();
+
+    for (auto arg : getArguments(compiler)) {
+        argsTypes.push_back(arg->getReturnType(compiler));
+    }
+
+    return argsTypes;
+}
+
 FunctionEntry *CallExpr::getFunctionEntry(Compiler *compiler) {
-    return compiler->frame->findFunction(identifier->lexeme);
+    return compiler->frame->findFunction(identifier->lexeme, getArgumentsTypes(compiler));
 }
 
 std::vector<ByteResolver *> CallExpr::compile(Compiler *compiler) {
     auto functionEntry = getFunctionEntry(compiler);
 
     if (functionEntry == nullptr) {
-        throw CompilerError("Cannot find type for " + identifier->lexeme);
+        throw FunctionNotFoundError(identifier->lexeme, getArgumentsTypes(compiler));
     }
 
     auto bytes = std::vector<ByteResolver *>();
@@ -50,7 +61,8 @@ std::vector<ByteResolver *> CallExpr::compile(Compiler *compiler) {
     }
 
     bytes.push_back(new ByteResolver(OpCode::OP_CALL, &identifier->position));
-    bytes.push_back(new ByteResolver([functionEntry](Compiler *c) { return c->getAddr(functionEntry->firstByte); }, nullptr));
+    bytes.push_back(
+            new ByteResolver([functionEntry](Compiler *c) { return c->getAddr(functionEntry->firstByte); }, nullptr));
     bytes.push_back(new ByteResolver(static_cast<int>(arguments.size()), nullptr));
 
     for (const auto &parameter: functionEntry->params) {
@@ -64,7 +76,7 @@ TypeEntry *CallExpr::computeReturnType(Compiler *compiler) {
     auto functionEntry = getFunctionEntry(compiler);
 
     if (functionEntry == nullptr) {
-        throw CompilerError("Cannot find type for " + identifier->lexeme);
+        throw FunctionNotFoundError(identifier->lexeme, getArgumentsTypes(compiler));
     }
 
     return functionEntry->returnType;

@@ -16,6 +16,11 @@ public:
     std::string name;
     FunctionsTable functions;
     FunctionsTable operators;
+
+    bool canReceiveType(TypeEntry *type);
+
+    FunctionEntry *addFunction(const std::string& selfName, FunctionEntry *entry);
+    FunctionEntry *addOperator(const std::string& selfName, FunctionEntry *entry);
 };
 
 class TypesTable {
