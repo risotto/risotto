@@ -192,10 +192,10 @@ Value binary_string_add_equal_string(Value args[], int argc) {
     return v;
 }
 
-Value print_int(Value args[], int argc) {
+Value println_int(Value args[], int argc) {
     int v = v2i(args[0]);
 
-    printf("%i", v);
+    printf("%i\n", v);
 
     return n2v();
 }

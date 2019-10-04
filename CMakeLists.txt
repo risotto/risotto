@@ -3,6 +3,9 @@ project(risottov2)
 
 set(CMAKE_CXX_STANDARD 17)
 
+SET(CMAKE_CXX_FLAGS_DEBUG "-g -Wall -O0")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+
 file(GLOB_RECURSE LIB_SRC RELATIVE ${CMAKE_SOURCE_DIR} "lib/*.c" "lib/*.cpp" "lib/*.h")
 file(GLOB_RECURSE RISOTTO_LIB_SRC RELATIVE ${CMAKE_SOURCE_DIR} "src/lib/*.c" "src/lib/*.cpp" "src/lib/*.h")
 file(GLOB_RECURSE CMD_SRC RELATIVE ${CMAKE_SOURCE_DIR} "src/cmd/*.c" "src/cmd/*.cpp" "src/cmd/*.h")

@@ -47,10 +47,10 @@ Compiler::Compiler(std::vector<Stmt *> stmts) : stmts(std::move(stmts)) {
 
     frame->functions.add(
             new NativeFunctionEntry(
-                    "print",
-                    {FunctionEntryParameter("right", intEntry)},
+                    "println",
+                    {FunctionEntryParameter("i", intEntry)},
                     voidEntry,
-                    print_int
+                    println_int
             )
     );
 }

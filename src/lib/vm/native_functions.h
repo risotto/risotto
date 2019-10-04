@@ -131,6 +131,6 @@ Value binary_bool_add_string(Value args[], int argc);
 
 Value unary_prefix_bool_invert(Value args[], int argc);
 
-Value print_int(Value args[], int argc);
+Value println_int(Value args[], int argc);
 
 #endif //RISOTTOPROJECT_NATIVE_FUNCTIONS_H
