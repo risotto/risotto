@@ -4,11 +4,8 @@ on: [push]
 
 jobs:
   test:
-    name: Test on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macOS-latest]
+    name: Test
+    runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v1
@@ -16,20 +13,29 @@ jobs:
       run: |
         git submodule init
         git submodule update --remote
-    - run: apt install lcov
-      if: contains(matrix.os, 'ubuntu')
-    - run: brew install lcov
-      if: contains(matrix.os, 'macOS')
+    - run: sudo apt-get install -y lcov
     - run: cmake -DCMAKE_BUILD_TYPE=Coverage -H. -Bbuild
     - run: cmake --build build -- -j2
     - run: cmake --build build --target gtest_coverage
-      
-      
     - uses: codecov/codecov-action@v1.0.2
-      if: success() && contains(matrix.os, 'ubuntu')
+      if: success()
       with:
         token: ${{secrets.CODECOV_TOKEN}}
-      
+        
+  build:
+    name: Build for ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macOS-latest]
+    steps:
+    - uses: actions/checkout@v1
+    - name: Pull submodules
+      run: |
+        git submodule init
+        git submodule update --remote
+    - run: cmake -DCMAKE_BUILD_TYPE=Release -H. -Bbuild
+    - run: cmake --build build
     - uses: actions/upload-artifact@master
       if: success()
       with:
