@@ -1,0 +1,26 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    name: Test on node ${{ matrix.node_version }} and ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+
+    steps:
+    - uses: actions/checkout@v1
+    - uses: docker://risotto/test-ubuntu:1.1
+    - run: cmake -DCMAKE_BUILD_TYPE=Coverage -H. -Bbuild
+    - run: cmake --build build -- -j2
+    - run: cmake --build build --target gtest_coverage
+    - run: cd build/coverage && bash <(curl -s https://codecov.io/bash) || echo "Codecov did not collect coverage reports"
+      if: success()
+      
+    - uses: actions/upload-artifact@master
+      if: success()
+      with:
+        name: cmd-${{ matrix.os }}
+        path: build/cmd
