@@ -4,7 +4,7 @@ on: [push]
 
 jobs:
   test:
-    name: Test on node ${{ matrix.node_version }} and ${{ matrix.os }}
+    name: Test on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -26,9 +26,9 @@ jobs:
       
       
     - uses: codecov/codecov-action@v1.0.2
-      if: success()
+      if: success() && contains(matrix.os, 'ubuntu')
       with:
-        token: ${{secrets.CODECOV_TOKEN}} #required
+        token: ${{secrets.CODECOV_TOKEN}}
       
     - uses: actions/upload-artifact@master
       if: success()
