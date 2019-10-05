@@ -4,6 +4,7 @@
 
 #include <utility>
 #include <iostream>
+#include <lib/compiler/CompilerError.h>
 #include "Parser.h"
 #include "ParseError.h"
 #include "lib/parser/nodes/Stmt/ExpressionStmt.h"
@@ -23,7 +24,7 @@
 #include "lib/parser/nodes/Stmt/FunctionStmt.h"
 #include "lib/parser/nodes/Stmt/BlockStmt.h"
 
-Parser::Parser(std::vector<Token*> tokens) : tokens(std::move(tokens)) {
+Parser::Parser(std::vector<Token *> tokens) : tokens(std::move(tokens)) {
 
 }
 
@@ -66,13 +67,13 @@ Token *Parser::previous() {
     return tokens.at(current - 1);
 }
 
-Token *Parser::consume(Token::Type type, const std::string& message) {
+Token *Parser::consume(Token::Type type, const std::string &message) {
     if (check(type)) return advance();
 
     throw error(peek(), message);
 }
 
-ParseError Parser::error(Token *token, const std::string& message) {
+ParseError Parser::error(Token *token, const std::string &message) {
     return ParseError(message, token);
 }
 
@@ -80,7 +81,14 @@ std::vector<Stmt *> Parser::program() {
     std::vector<Stmt *> nodes;
 
     while (!isAtEnd()) {
-        nodes.push_back(declaration());
+        auto s = declaration();
+
+        if (s == nullptr) {
+            auto token = peek();
+            throw CompilerError("Unexpected token " + token->lexeme + " at " + token->position.toString());
+        }
+
+        nodes.push_back(s);
     }
 
     return nodes;
@@ -163,6 +171,10 @@ Stmt *Parser::returnStatement() {
 
 Stmt *Parser::expressionStatement() {
     Expr *expr = expression();
+
+    if (expr == nullptr) {
+        return nullptr;
+    }
 
     return new ExpressionStmt(expr);
 }
@@ -293,12 +305,12 @@ Expr *Parser::call() {
 
 Expr *Parser::primary() {
     if (match(
-        Token::Type::FALSE,
-        Token::Type::TRUE,
-        Token::Type::NIL,
-        Token::Type::INT,
-        Token::Type::DOUBLE,
-        Token::Type::STRING
+            Token::Type::FALSE,
+            Token::Type::TRUE,
+            Token::Type::NIL,
+            Token::Type::INT,
+            Token::Type::DOUBLE,
+            Token::Type::STRING
     )) {
         return new LiteralExpr(previous());
     }

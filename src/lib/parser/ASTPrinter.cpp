@@ -10,52 +10,53 @@
 #include <lib/parser/nodes/Expr/LiteralExpr.h>
 #include <lib/parser/nodes/Expr/BinaryExpr.h>
 
-std::vector<std::string> split(std::string s, char delimiter) {
-    std::vector<std::string> lines;
+namespace ASTPrinter {
+    std::vector<std::string> split(std::string s, char delimiter) {
+        std::vector<std::string> lines;
 
-    std::stringstream ss(s);
-    std::string token;
-    while (std::getline(ss, token, delimiter)) {
-        lines.push_back(token);
+        std::stringstream ss(s);
+        std::string token;
+        while (std::getline(ss, token, delimiter)) {
+            lines.push_back(token);
+        }
+
+        return lines;
     }
-
-    return lines;
-}
 
 #include <utility>
 #include <lib/parser/nodes/Stmt/ExpressionStmt.h>
 
-std::string repeat(const std::string &input, size_t num) {
-    std::ostringstream os;
-    std::fill_n(std::ostream_iterator<std::string>(os), num, input);
-    return os.str();
-}
+    std::string repeat(const std::string &input, size_t num) {
+        std::ostringstream os;
+        std::fill_n(std::ostream_iterator<std::string>(os), num, input);
+        return os.str();
+    }
 
-std::string ASTPrinter::indent(std::string str, int n) {
-    std::vector<std::string> lines = split(str, '\n');
+    std::string indent(std::string str, int n) {
+        std::vector<std::string> lines = split(str, '\n');
 
-    std::stringstream ss;
+        std::stringstream ss;
 
-    for (const auto &line : lines) {
-        if (ss.str().length() > 0) {
+        for (const auto &line : lines) {
+            if (ss.str().length() > 0) {
+                ss << std::endl;
+            }
+
+            ss << repeat("  ", n) << line;
+        }
+
+        if (str.at(str.length() - 1) == '\n') {
             ss << std::endl;
         }
 
-        ss << repeat("  ", n) << line;
+        return ss.str();
     }
 
-    if (str.at(str.length() - 1) == '\n') {
-        ss << std::endl;
+    template<typename T>
+    std::string print(T t) {
+        return "???\n";
+        throw std::logic_error("Unhandled stmt");
     }
-
-    return ss.str();
-}
-
-template<typename T>
-std::string ASTPrinter::print(T t) {
-    return "???\n";
-    throw std::logic_error("Unhandled stmt");
-}
 
 #define _DC(T, V) \
 if (auto V = dynamic_cast<T *>(stmt)) { \
@@ -64,165 +65,166 @@ if (auto V = dynamic_cast<T *>(stmt)) { \
 
 #define DC(T) _DC(T, __##T)
 
-template<>
-std::string ASTPrinter::print<Stmt *>(Stmt *stmt) {
-    DC(FunctionStmt)
-    DC(IfStmt)
-    DC(BlockStmt)
-    DC(ReturnStmt)
-    DC(ExpressionStmt)
+    template<>
+    std::string print<Stmt *>(Stmt *stmt) {
+        DC(FunctionStmt)
+        DC(IfStmt)
+        DC(BlockStmt)
+        DC(ReturnStmt)
+        DC(ExpressionStmt)
 
-    return print(dynamic_cast<Node *>(stmt));
-}
-
-template<>
-std::string ASTPrinter::print<Expr *>(Expr *stmt) {
-    DC(BinaryExpr)
-    DC(VariableExpr)
-    DC(LiteralExpr)
-    DC(CallExpr)
-    DC(GroupingExpr)
-
-    return print(dynamic_cast<Node *>(stmt));
-}
-
-template<>
-std::string ASTPrinter::print<std::vector<Stmt *>>(std::vector<Stmt *> stmts) {
-    if (stmts.empty()) {
-        return "<empty>\n";
+        return print(dynamic_cast<Node *>(stmt));
     }
 
-    std::stringstream ss;
+    template<>
+    std::string print<Expr *>(Expr *stmt) {
+        DC(BinaryExpr)
+        DC(VariableExpr)
+        DC(LiteralExpr)
+        DC(CallExpr)
+        DC(GroupingExpr)
 
-    for (auto stmt : stmts) {
-        ss << print(stmt);
+        return print(dynamic_cast<Node *>(stmt));
     }
 
-    return ss.str();
-}
+    template<>
+    std::string print<std::vector<Stmt *>>(std::vector<Stmt *> stmts) {
+        if (stmts.empty()) {
+            return "<empty>\n";
+        }
 
-template<>
-std::string ASTPrinter::print<std::vector<Expr *>>(std::vector<Expr *> stmts) {
-    if (stmts.empty()) {
-        return "<empty>\n";
+        std::stringstream ss;
+
+        for (auto stmt : stmts) {
+            ss << print(stmt);
+        }
+
+        return ss.str();
     }
 
-    std::stringstream ss;
+    template<>
+    std::string print<std::vector<Expr *>>(std::vector<Expr *> stmts) {
+        if (stmts.empty()) {
+            return "<empty>\n";
+        }
 
-    for (auto stmt : stmts) {
-        ss << print(stmt);
+        std::stringstream ss;
+
+        for (auto stmt : stmts) {
+            ss << print(stmt);
+        }
+
+        return ss.str();
     }
 
-    return ss.str();
-}
+    template<>
+    std::string print<FunctionStmt *>(FunctionStmt *stmt) {
+        std::stringstream ss;
 
-template<>
-std::string ASTPrinter::print<FunctionStmt *>(FunctionStmt *stmt) {
-    std::stringstream ss;
+        ss << "FunctionStmt" << std::endl;
+        ss << indent("+Name: " + stmt->name->lexeme, 1) << std::endl;
+        ss << indent("+Body: ", 1) << std::endl;
+        ss << indent(print(stmt->body), 2);
 
-    ss << "FunctionStmt" << std::endl;
-    ss << indent("+Name: " + stmt->name->lexeme, 1) << std::endl;
-    ss << indent("+Body: ", 1) << std::endl;
-    ss << indent(print(stmt->body), 2);
+        return ss.str();
+    }
 
-    return ss.str();
-}
+    template<>
+    std::string print<ReturnStmt *>(ReturnStmt *stmt) {
+        std::stringstream ss;
 
-template<>
-std::string ASTPrinter::print<ReturnStmt *>(ReturnStmt *stmt) {
-    std::stringstream ss;
+        ss << "ReturnStmt" << std::endl;
+        ss << indent(print(stmt->value), 1);
 
-    ss << "ReturnStmt" << std::endl;
-    ss << indent(print(stmt->value), 1);
+        return ss.str();
+    }
 
-    return ss.str();
-}
+    template<>
+    std::string print<IfStmt *>(IfStmt *stmt) {
+        std::stringstream ss;
 
-template<>
-std::string ASTPrinter::print<IfStmt *>(IfStmt *stmt) {
-    std::stringstream ss;
+        ss << "IfStmt" << std::endl;
+        ss << indent("+If:", 1) << std::endl;
+        ss << indent(print(stmt->condition), 2);
+        ss << indent("+Then:", 1) << std::endl;
+        ss << indent(print(stmt->thenBranch), 2);
 
-    ss << "IfStmt" << std::endl;
-    ss << indent("+If:", 1) << std::endl;
-    ss << indent(print(stmt->condition), 2);
-    ss << indent("+Then:", 1) << std::endl;
-    ss << indent(print(stmt->thenBranch), 2);
+        return ss.str();
+    }
 
-    return ss.str();
-}
+    template<>
+    std::string print<BinaryExpr *>(BinaryExpr *stmt) {
+        std::stringstream ss;
 
-template<>
-std::string ASTPrinter::print<BinaryExpr *>(BinaryExpr *stmt) {
-    std::stringstream ss;
+        ss << "BinaryExpr" << std::endl;
+        ss << indent("+Left:", 1) << std::endl;
+        ss << indent(print(stmt->left()), 2);
+        ss << indent("+Op: " + stmt->op()->lexeme, 1) << std::endl;
+        ss << indent("+Right:", 1) << std::endl;
+        ss << indent(print(stmt->right()), 2);
 
-    ss << "BinaryExpr" << std::endl;
-    ss << indent("+Left:", 1) << std::endl;
-    ss << indent(print(stmt->left()), 2);
-    ss << indent("+Op: " + stmt->op()->lexeme, 1) << std::endl;
-    ss << indent("+Right:", 1) << std::endl;
-    ss << indent(print(stmt->right()), 2);
+        return ss.str();
+    }
 
-    return ss.str();
-}
+    template<>
+    std::string print<VariableExpr *>(VariableExpr *stmt) {
+        std::stringstream ss;
 
-template<>
-std::string ASTPrinter::print<VariableExpr *>(VariableExpr *stmt) {
-    std::stringstream ss;
+        ss << "VariableExpr" << std::endl;
+        ss << indent("+Name: " + stmt->name->lexeme, 1) << std::endl;
 
-    ss << "VariableExpr" << std::endl;
-    ss << indent("+Name: " + stmt->name->lexeme, 1) << std::endl;
+        return ss.str();
+    }
 
-    return ss.str();
-}
+    template<>
+    std::string print<LiteralExpr *>(LiteralExpr *stmt) {
+        std::stringstream ss;
 
-template<>
-std::string ASTPrinter::print<LiteralExpr *>(LiteralExpr *stmt) {
-    std::stringstream ss;
+        ss << "LiteralExpr" << std::endl;
+        ss << indent("+Value: " + stmt->value->lexeme, 1) << std::endl;
 
-    ss << "LiteralExpr" << std::endl;
-    ss << indent("+Value: " + stmt->value->lexeme, 1) << std::endl;
+        return ss.str();
+    }
 
-    return ss.str();
-}
+    template<>
+    std::string print<GroupingExpr *>(GroupingExpr *stmt) {
+        std::stringstream ss;
 
-template<>
-std::string ASTPrinter::print<GroupingExpr *>(GroupingExpr *stmt) {
-    std::stringstream ss;
+        ss << "GroupingExpr" << std::endl;
+        ss << indent(print(stmt->expr), 1);
 
-    ss << "GroupingExpr" << std::endl;
-    ss << indent(print(stmt->expr), 1);
+        return ss.str();
+    }
 
-    return ss.str();
-}
+    template<>
+    std::string print<BlockStmt *>(BlockStmt *stmt) {
+        std::stringstream ss;
 
-template<>
-std::string ASTPrinter::print<BlockStmt *>(BlockStmt *stmt) {
-    std::stringstream ss;
+        ss << "BlockStmt" << std::endl;
+        ss << indent(print(stmt->stmts), 1);
 
-    ss << "BlockStmt" << std::endl;
-    ss << indent(print(stmt->stmts), 1);
+        return ss.str();
+    }
 
-    return ss.str();
-}
+    template<>
+    std::string print<CallExpr *>(CallExpr *stmt) {
+        std::stringstream ss;
 
-template<>
-std::string ASTPrinter::print<CallExpr *>(CallExpr *stmt) {
-    std::stringstream ss;
+        ss << "CallExpr" << std::endl;
+        ss << indent("+Name: " + stmt->identifier->lexeme, 1) << std::endl;
+        ss << indent("+Args:", 1) << std::endl;
+        ss << indent(print(stmt->args), 2);
 
-    ss << "CallExpr" << std::endl;
-    ss << indent("+Name: " + stmt->identifier->lexeme, 1) << std::endl;
-    ss << indent("+Args:", 1) << std::endl;
-    ss << indent(print(stmt->args), 2);
+        return ss.str();
+    }
 
-    return ss.str();
-}
+    template<>
+    std::string print<ExpressionStmt *>(ExpressionStmt *stmt) {
+        std::stringstream ss;
 
-template<>
-std::string ASTPrinter::print<ExpressionStmt *>(ExpressionStmt *stmt) {
-    std::stringstream ss;
+        ss << "ExpressionStmt" << std::endl;
+        ss << indent(print(stmt->expr), 1) << std::endl;
 
-    ss << "ExpressionStmt" << std::endl;
-    ss << indent(print(stmt->expr), 1) << std::endl;
-
-    return ss.str();
+        return ss.str();
+    }
 }

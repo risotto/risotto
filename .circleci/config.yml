@@ -1,0 +1,41 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: risotto/test-ubuntu:1.1
+    steps:
+      - restore_cache:
+          keys:
+            - build-linux-debug-{{ arch }}-{{ .Branch }}-
+            - build-linux-debug-{{ arch }}-
+            - build-linux-debug-
+          paths:
+            - ~/.ccache
+      - run:
+          name: ccache setup
+          command: |
+            ccache --version
+            ccache --show-stats
+            ccache --zero-stats
+            # debug/coverage builds produce 2G cache
+            ccache --max-size=2G
+      - checkout
+      - run:
+          name: Creating Build Files
+          command: 'cmake -DCMAKE_BUILD_TYPE=Coverage -H. -Bbuild'
+      - run:
+          name: Creating Binary Files
+          command: 'cmake --build build -- -j2'
+      - run: ccache --show-stats
+      - run:
+          name: Run tests
+          command: 'cmake --build build --target gtest_coverage'
+      - run:
+          name: codecov.io
+          when: on_success
+          command: 'cd build/coverage && bash <(curl -s https://codecov.io/bash) || echo "Codecov did not collect coverage reports"'
+      - save_cache:
+          key: build-linux-debug-{{ arch }}-{{ .Branch }}-{{ epoch }}
+          paths:
+            - ~/.ccache
+          when: always

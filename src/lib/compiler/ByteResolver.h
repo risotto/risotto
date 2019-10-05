@@ -6,9 +6,11 @@
 #define RISOTTOV2_BYTERESOLVER_H
 
 
-#include <cstdint>
+#include <functional>
 #include <lib/tokenizer/Token.h>
+extern "C" {
 #include <lib/vm/common.h>
+};
 
 class Compiler;
 

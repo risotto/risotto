@@ -39,7 +39,7 @@ std::vector<ByteResolver *> CallExpr::compile(Compiler *compiler) {
     auto functionEntry = getFunctionEntry(compiler);
 
     if (functionEntry == nullptr) {
-        throw FunctionNotFoundError(identifier->lexeme, getArgumentsTypes(compiler));
+        throw FunctionNotFoundError(identifier, getArgumentsTypes(compiler));
     }
 
     auto bytes = std::vector<ByteResolver *>();
@@ -65,7 +65,8 @@ std::vector<ByteResolver *> CallExpr::compile(Compiler *compiler) {
             new ByteResolver([functionEntry](Compiler *c) { return c->getAddr(functionEntry->firstByte); }, nullptr));
     bytes.push_back(new ByteResolver(static_cast<int>(arguments.size()), nullptr));
 
-    for (const auto &parameter: functionEntry->params) {
+    for (int i = 0; i < functionEntry->params.size(); ++i) {
+        // isReference
         bytes.push_back(new ByteResolver(false, nullptr)); // TODO: remove
     }
 
@@ -76,7 +77,7 @@ TypeEntry *CallExpr::computeReturnType(Compiler *compiler) {
     auto functionEntry = getFunctionEntry(compiler);
 
     if (functionEntry == nullptr) {
-        throw FunctionNotFoundError(identifier->lexeme, getArgumentsTypes(compiler));
+        throw FunctionNotFoundError(identifier, getArgumentsTypes(compiler));
     }
 
     return functionEntry->returnType;

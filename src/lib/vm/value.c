@@ -186,20 +186,6 @@ const char *v2s(Value v) {
             return DGET(v, str);
         case T_BOOL:
             return v2b(v) ? "true" : "false";
-        case T_ARRAY: {
-            char *o = calloc(1000, sizeof(char));
-            ValueArray *array = v2a(v);
-            sprintf(o, "[");
-            for (int i = 0; i < array->object.size; ++i) {
-                sprintf(o + strlen(o), v2s(*(array->object.values + i)));
-
-                if (i != array->object.size - 1) {
-                    sprintf(o + strlen(o), ", ");
-                }
-            }
-            sprintf(o + strlen(o), "]");
-            return o;
-        }
     }
 
     ERROR("Unhandled value for v2s");

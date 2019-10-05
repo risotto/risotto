@@ -15,11 +15,9 @@ const char *CompilerError::what() const noexcept {
     return message.c_str();
 }
 
-std::string format(const std::string& name, std::vector<TypeEntry *> argsTypes) {
+std::string format(Token *name, std::vector<TypeEntry *> argsTypes) {
     std::stringstream ss;
-    ss << "Cannot find function matching ";
-    ss << name;
-    ss << "(";
+    ss << "Cannot find function matching " << name->lexeme << "(";
 
     for (size_t i = 0; i < argsTypes.size(); ++i) {
         if (i != 0) {
@@ -29,12 +27,12 @@ std::string format(const std::string& name, std::vector<TypeEntry *> argsTypes) 
         ss << argsTypes[i]->name;
     }
 
-    ss << ")";
+    ss << ") at " << name->position.toString();
 
     return ss.str();
 }
 
-FunctionNotFoundError::FunctionNotFoundError(const std::string& name, std::vector<TypeEntry *> argsTypes) :
+FunctionNotFoundError::FunctionNotFoundError(Token *name, std::vector<TypeEntry *> argsTypes) :
         CompilerError(format(name, std::move(argsTypes))) {
 
 }

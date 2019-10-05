@@ -371,8 +371,7 @@ static InterpretResult run() {
 #ifdef PRINT_CARET
                 printf(RED "> " RESET);
 #endif
-                char *s = v2s(pop());
-                vm.printf("%s", s);
+                vm.printf("%s", v2s(pop()));
                 vm.printf("\n");
                 break;
             }

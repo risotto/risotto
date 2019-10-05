@@ -20,7 +20,7 @@ public:
 
 class FunctionNotFoundError : public CompilerError {
 public:
-    FunctionNotFoundError(const std::string& name, std::vector<TypeEntry *> argsTypes);
+    FunctionNotFoundError(Token *name, std::vector<TypeEntry *> argsTypes);
 };
 
 #endif //RISOTTOV2_COMPILERERROR_H

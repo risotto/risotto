@@ -8,6 +8,7 @@
 
 #include <lib/parser/nodes/Stmt.h>
 #include <vector>
+#include <iterator>
 #include <lib/parser/nodes/Stmt/FunctionStmt.h>
 #include <lib/parser/nodes/Stmt/IfStmt.h>
 #include <lib/parser/nodes/Stmt/ReturnStmt.h>
@@ -19,12 +20,11 @@
 #include <lib/parser/nodes/Expr/CallExpr.h>
 #include <lib/parser/nodes/Stmt/ExpressionStmt.h>
 
-class ASTPrinter {
-public:
-    static std::string indent(std::string str, int n);
+namespace ASTPrinter {
+    std::string indent(std::string str, int n);
 
     template<typename T>
-    static std::string print(T stmt);
+    std::string print(T stmt);
 
     template<>
     std::string print<Stmt *>(Stmt * stmt);
