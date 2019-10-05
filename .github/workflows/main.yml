@@ -16,12 +16,19 @@ jobs:
       run: |
         git submodule init
         git submodule update --remote
-
+    - run: apt install lcov
+      if: contains(${{ matrix.os }}, "ubuntu")
+    - run: brew install lcov
+      if: contains(${{ matrix.os }}, "macOS")
     - run: cmake -DCMAKE_BUILD_TYPE=Coverage -H. -Bbuild
     - run: cmake --build build -- -j2
     - run: cmake --build build --target gtest_coverage
-    - run: cd build/coverage && bash <(curl -s https://codecov.io/bash) || echo "Codecov did not collect coverage reports"
+      
+      
+    - uses: codecov/codecov-action@v1.0.2
       if: success()
+      with:
+        token: ${{secrets.CODECOV_TOKEN}} #required
       
     - uses: actions/upload-artifact@master
       if: success()
