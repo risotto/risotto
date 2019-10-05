@@ -7,7 +7,7 @@
 
 #include <string>
 #include <lib/vm/value.h>
-#include "../../../lib/enum.h"
+#include "../../../lib/better-enums/enum.h"
 
 class Position {
 public:
