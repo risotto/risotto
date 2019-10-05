@@ -12,8 +12,10 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
-    - name: Checkout submodules
-      uses: textbook/git-checkout-submodule-action@2.0.0
+    - name: Pull submodules
+      run: |
+        git submodule init
+        git submodule update --remote
 
     - uses: docker://risotto/test-ubuntu:1.1
     - run: cmake -DCMAKE_BUILD_TYPE=Coverage -H. -Bbuild
