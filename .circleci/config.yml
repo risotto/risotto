@@ -44,3 +44,5 @@ jobs:
           paths:
             - ~/.ccache
           when: always
+      - store_artifacts:
+          path: build/cmd
