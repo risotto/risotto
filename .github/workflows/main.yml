@@ -1,0 +1,50 @@
+name: CI
+
+on: [push]
+
+jobs:
+  test:
+    name: Run tests with coverage
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Pull submodules
+      run: |
+        git submodule init
+        git submodule update --remote
+    - name: Install lcov
+      run: sudo apt-get install -y lcov
+    - name: CMake for Coverage
+      run: cmake -DCMAKE_BUILD_TYPE=Coverage -H. -Bbuild
+    - name: Build
+      run: cmake --build build -- -j2
+    - name: Run tests
+      run: cmake --build build --target gtest_coverage
+    - name: Send report to Codecov
+      run: cd build/coverage && bash <(curl -s https://codecov.io/bash) || echo "Codecov did not collect coverage reports"
+      if: success()
+      env:
+        CODECOV_TOKEN: ${{secrets.CODECOV_TOKEN}}
+
+  build:
+    name: Build for ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macOS-latest]
+    steps:
+    - uses: actions/checkout@v1
+    - name: Pull submodules
+      run: |
+        git submodule init
+        git submodule update --remote
+    - name: CMake for Release
+      run: cmake -DCMAKE_BUILD_TYPE=Release -H. -Bbuild
+    - name: Build
+      run: cmake --build build
+    - name: Upload binary
+      uses: actions/upload-artifact@master
+      if: success()
+      with:
+        name: cmd-${{ matrix.os }}
+        path: build/cmd
