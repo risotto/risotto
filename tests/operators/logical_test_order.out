@@ -1,0 +1,16 @@
+false_fun
+true_fun
+or > test1
+true_fun
+or > test2
+true_fun
+or > test3
+false_fun
+false_fun
+false_fun
+true_fun
+false_fun
+true_fun
+true_fun
+and > test3
+false_fun

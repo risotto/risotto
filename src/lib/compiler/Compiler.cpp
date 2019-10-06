@@ -58,7 +58,7 @@ Compiler::Compiler(std::vector<Stmt *> stmts) : stmts(std::move(stmts)) {
     auto stringEntry = frame->types.add("string");
 
     NATIVE_BINARY_OPERATOR_MATH_DECLARATIONS(int, int, int)
-    NATIVE_BINARY_OPERATOR_MATH_DECLARATIONS(int, double, int)
+    NATIVE_BINARY_OPERATOR_MATH_DECLARATIONS(int, double, double)
     NATIVE_BINARY_OPERATOR_STRING_DECLARATIONS(int)
     NATIVE_BINARY_OPERATOR_DECLARATION(int, %, int, int, mod)
 

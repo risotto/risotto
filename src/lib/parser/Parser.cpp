@@ -281,7 +281,7 @@ Expr *Parser::equality() {
 Expr *Parser::comparison() {
     Expr *expr = addition();
 
-    while (match(Token::Type::EQUAL_EQUAL, Token::Type::BANG_EQUAL)) {
+    while (match(Token::Type::GREATER, Token::Type::GREATER_EQUAL, Token::Type::LESS, Token::Type::LESS_EQUAL)) {
         Token *op = previous();
         Expr *right = addition();
         expr = new BinaryExpr(expr, op, right);
@@ -293,7 +293,7 @@ Expr *Parser::comparison() {
 Expr *Parser::addition() {
     Expr *expr = multiplication();
 
-    while (match(Token::Type::PLUS, Token::Type::SLASH)) {
+    while (match(Token::Type::MINUS, Token::Type::PLUS)) {
         Token *op = previous();
         Expr *right = multiplication();
         expr = new BinaryExpr(expr, op, right);
@@ -305,7 +305,7 @@ Expr *Parser::addition() {
 Expr *Parser::multiplication() {
     Expr *expr = unary();
 
-    while (match(Token::Type::MINUS, Token::Type::PLUS)) {
+    while (match(Token::Type::SLASH, Token::Type::STAR, Token::Type::PERCENT)) {
         Token *op = previous();
         Expr *right = unary();
         expr = new BinaryExpr(expr, op, right);

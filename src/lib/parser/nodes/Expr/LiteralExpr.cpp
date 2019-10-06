@@ -17,8 +17,9 @@ LiteralExpr::LiteralExpr(Token *value) : value(value) {
 Value literalToValue(Token *value) {
     switch (value->type) {
         case Token::Type::FALSE:
+            return b2v(false);
         case Token::Type::TRUE:
-            return b2v(value->value._bool);
+            return b2v(true);
         case Token::Type::NIL:
             return n2v();
         case Token::Type::INT:

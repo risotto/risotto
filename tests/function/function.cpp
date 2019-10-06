@@ -14,6 +14,14 @@ TEST(Functions, Fib) {
     EXPECT_STDOUT("75025\n");
 }
 
+TEST(Functions, Arguments) {
+    INIT_TEST;
+
+    risotto.runFile(INPUT("arguments"));
+
+    EXPECT_STDOUT(OUTPUT("arguments"));
+}
+
 TEST(Functions, Bound) {
     INIT_TEST;
 
