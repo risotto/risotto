@@ -12,7 +12,19 @@ bool TypesEntries::single() {
     return size() == 1;
 }
 
-TypesEntries::TypesEntries(TypeEntry *entry): std::vector<TypeEntry *>({entry}) {
+TypesEntries::TypesEntries(TypeEntry *entry) : std::vector<TypeEntry *>({entry}) {
+}
+
+TypesEntries TypesEntries::onlyFunctions() {
+    auto onlyFunctions = TypesEntries();
+
+    for (auto entry : *this) {
+        if (entry->isFunction()) {
+            onlyFunctions.push_back(entry);
+        }
+    }
+
+    return onlyFunctions;
 }
 
 FunctionEntryParameter::FunctionEntryParameter(std::string name, TypeEntry *type) : name(std::move(name)), type(type) {}

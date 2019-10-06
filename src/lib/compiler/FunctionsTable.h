@@ -20,6 +20,8 @@ public:
     bool single();
 
     using std::vector<TypeEntry *>::vector;
+
+    TypesEntries onlyFunctions();
 };
 
 class FunctionEntryParameter {

@@ -25,7 +25,7 @@ CallExpr::CallExpr(Expr *callee, Token *rParen, std::vector<Expr *> args, bool c
                                                                                                 args(std::move(args)) {
     if (auto withCandidates = dynamic_cast<ReturnsCandidatesFunctions *>(callee)) {
         if (!calleeIsValue) {
-            withCandidates->shouldReturnFunctionReference = true;
+            withCandidates->forceReturnFunctionReference = true;
         }
     }
 }

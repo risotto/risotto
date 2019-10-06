@@ -14,12 +14,23 @@ IdentifierExpr::IdentifierExpr(Token *name) : name(name) {
 std::vector<ByteResolver *> IdentifierExpr::compile(Compiler *compiler) {
     auto bytes = std::vector<ByteResolver *>();
 
-    if (shouldReturnFunctionReference) {
-        auto functionEntry = getReturnType(compiler)[0]->asFunctionTypeEntry()->function;
+    auto returnType = getReturnType(compiler);
+    auto functionsReturnType = returnType.onlyFunctions();
+
+    if (!functionsReturnType.empty()) {
+        if (!functionsReturnType.single()) {
+            throw CompilerError("Return type has to be single", name->position);
+        }
+
+        auto functionEntry = functionsReturnType[0]->asFunctionTypeEntry()->function;
 
         Utils::loadFunctionEntryAddr(compiler, functionEntry, bytes);
 
         return bytes;
+    }
+
+    if (forceReturnFunctionReference) {
+        throw CompilerError("A single function must be returned", name->position);
     }
 
     auto response = compiler->frame->findVariable(name->lexeme);
@@ -36,15 +47,15 @@ std::vector<ByteResolver *> IdentifierExpr::compile(Compiler *compiler) {
 }
 
 TypesEntries IdentifierExpr::computeReturnType(Compiler *compiler) {
-    if (shouldReturnFunctionReference) {
-        auto candidates = compiler->frame->findFunctionsCandidates(getCandidatesFunctionsFor());
+    auto candidates = compiler->frame->findFunctionsCandidates(getCandidatesFunctionsFor());
 
-        auto candidateTypes = TypesEntries();
+    auto candidateTypes = TypesEntries();
 
-        for (auto candidate : candidates) {
-            candidateTypes.push_back(candidate->typeEntry);
-        }
+    for (auto candidate : candidates) {
+        candidateTypes.push_back(candidate->typeEntry);
+    }
 
+    if (forceReturnFunctionReference) {
         return candidateTypes;
     }
 
@@ -54,7 +65,9 @@ TypesEntries IdentifierExpr::computeReturnType(Compiler *compiler) {
         throw CompilerError("Cannot find symbol " + name->lexeme);
     }
 
-    return response->variable->type;
+    candidateTypes.push_back(response->variable->type);
+
+    return candidateTypes;
 }
 
 std::string IdentifierExpr::getCandidatesFunctionsFor() {
