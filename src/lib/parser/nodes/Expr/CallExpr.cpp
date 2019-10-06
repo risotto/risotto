@@ -15,9 +15,19 @@ extern "C" {
 #include <lib/compiler/CompilerError.h>
 #include <lib/compiler/utils/Utils.h>
 
-CallExpr::CallExpr(Expr *callee, Token *rParen, std::vector<Expr *> args) : callee(callee), rParen(rParen),
-                                                                            args(std::move(args)) {
+CallExpr::CallExpr(Expr *callee, Token *rParen, std::vector<Expr *> args) :
+        CallExpr(callee, rParen, std::move(args), false) {
 
+}
+
+CallExpr::CallExpr(Expr *callee, Token *rParen, std::vector<Expr *> args, bool calleeIsValue) : callee(callee),
+                                                                                                rParen(rParen),
+                                                                                                args(std::move(args)) {
+    if (auto withCandidates = dynamic_cast<ReturnsCandidatesFunctions *>(callee)) {
+        if (!calleeIsValue) {
+            withCandidates->shouldReturnFunctionReference = true;
+        }
+    }
 }
 
 std::vector<Expr *> CallExpr::getArguments(Compiler *compiler) {
@@ -65,7 +75,7 @@ std::vector<TypeEntry *> CallExpr::getArgumentsTypes(Compiler *compiler) {
             if (types.empty()) {
                 throw CompilerError("This parameter doesnt return any value");
             } else if (types.size() > 1) {
-                throw CompilerError("This parameter returns more than one value, try expanding it");
+                throw CompilerError("This parameter returns more than one value");
             }
         }
     }
@@ -77,7 +87,19 @@ FunctionEntry *CallExpr::getFunctionEntry(Compiler *compiler) {
     auto argumentsTypes = getArgumentsTypes(compiler);
 
     if (auto withCandidates = dynamic_cast<ReturnsCandidatesFunctions *>(callee)) {
-        auto functions = withCandidates->getCandidatesFunctions(compiler);
+        auto returnTypes = callee->getReturnType(compiler);
+
+        auto functions = std::vector<FunctionEntry *>();
+
+        for (auto typeEntry : returnTypes) {
+            if (typeEntry->isFunction()) {
+                auto typeEntryFunction = typeEntry->asFunctionTypeEntry();
+
+                functions.push_back(typeEntryFunction->function);
+            } else {
+                throw CompilerError("Returned types is not a function");
+            }
+        }
 
         auto entry = Utils::findMatchingFunctions(functions, argumentsTypes);
 
@@ -85,9 +107,12 @@ FunctionEntry *CallExpr::getFunctionEntry(Compiler *compiler) {
             auto actualArgumentsTypes = Utils::getTypes(args, compiler);
 
             if (auto getExpr = dynamic_cast<GetExpr *>(callee)) {
-                throw FunctionNotFoundError(getExpr->identifier->lexeme,
-                                            getExpr->callee->getReturnType(compiler)[0]->name, actualArgumentsTypes,
-                                            rParen);
+                throw FunctionNotFoundError(
+                        getExpr->identifier->lexeme,
+                        getExpr->callee->getReturnType(compiler)[0]->name,
+                        actualArgumentsTypes,
+                        rParen
+                );
             }
 
             throw FunctionNotFoundError(withCandidates->getCandidatesFunctionsFor(), "", actualArgumentsTypes, rParen);

@@ -6,7 +6,7 @@
 #include "BinaryExpr.h"
 #include "lib/compiler/Compiler.h"
 
-BinaryExpr::BinaryExpr(Expr *left, Token *op, Expr *right) : CallExpr(left, op, {right}) {
+BinaryExpr::BinaryExpr(Expr *left, Token *op, Expr *right) : CallExpr(left, op, {right}, true) {
 }
 
 Expr *BinaryExpr::left() {
@@ -27,6 +27,10 @@ std::vector<Expr *> BinaryExpr::getArguments(Compiler *compiler) {
 
 FunctionEntry *BinaryExpr::getFunctionEntry(Compiler *compiler) {
     auto leftTypeEntry = left()->getReturnType(compiler);
+
+    if (!leftTypeEntry.single()) {
+        throw CompilerError("LHS of binary operation must be a single value", op()->position);
+    }
 
     return leftTypeEntry[0]->operators.find(op()->lexeme, getArgumentsTypes(compiler));
 }

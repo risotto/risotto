@@ -14,7 +14,7 @@ IdentifierExpr::IdentifierExpr(Token *name) : name(name) {
 std::vector<ByteResolver *> IdentifierExpr::compile(Compiler *compiler) {
     auto bytes = std::vector<ByteResolver *>();
 
-    if (getReturnType(compiler)[0]->isFunction()) {
+    if (shouldReturnFunctionReference) {
         auto functionEntry = getReturnType(compiler)[0]->asFunctionTypeEntry()->function;
 
         Utils::loadFunctionEntryAddr(compiler, functionEntry, bytes);
@@ -36,16 +36,16 @@ std::vector<ByteResolver *> IdentifierExpr::compile(Compiler *compiler) {
 }
 
 TypesEntries IdentifierExpr::computeReturnType(Compiler *compiler) {
-    auto candidates = getCandidatesFunctions(compiler);
+    if (shouldReturnFunctionReference) {
+        auto candidates = compiler->frame->findFunctionsCandidates(getCandidatesFunctionsFor());
 
-    if (!candidates.empty()) {
-        if (candidates.size() > 1) {
-            throw CompilerError("Multiple functions found for " + name->lexeme);
+        auto candidateTypes = TypesEntries();
+
+        for (auto candidate : candidates) {
+            candidateTypes.push_back(candidate->typeEntry);
         }
 
-        if (candidates.size() == 1) {
-            return candidates[0]->typeEntry;
-        }
+        return candidateTypes;
     }
 
     auto response = compiler->frame->findVariable(name->lexeme);
@@ -55,10 +55,6 @@ TypesEntries IdentifierExpr::computeReturnType(Compiler *compiler) {
     }
 
     return response->variable->type;
-}
-
-std::vector<FunctionEntry *> IdentifierExpr::getCandidatesFunctions(Compiler *compiler) {
-    return compiler->frame->findFunctionsCandidates(getCandidatesFunctionsFor());
 }
 
 std::string IdentifierExpr::getCandidatesFunctionsFor() {

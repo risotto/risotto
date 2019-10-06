@@ -18,6 +18,7 @@ public:
     std::vector<Expr *> args;
 
     CallExpr(Expr *callee, Token *rParen, std::vector<Expr *> args);
+    CallExpr(Expr *callee, Token *rParen, std::vector<Expr *> args, bool calleeIsValue);
 
     virtual std::vector<Expr *> getArguments(Compiler *compiler);
     virtual FunctionEntry *getFunctionEntry(Compiler *compiler);

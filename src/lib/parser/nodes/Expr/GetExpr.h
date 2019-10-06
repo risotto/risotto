@@ -18,8 +18,6 @@ public:
 
     std::vector<ByteResolver *> compile(Compiler *compiler) override;
 
-    std::vector<FunctionEntry *> getCandidatesFunctions(Compiler *compiler) override;
-
     std::string getCandidatesFunctionsFor() override;
 
 protected:

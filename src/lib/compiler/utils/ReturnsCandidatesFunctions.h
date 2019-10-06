@@ -10,7 +10,8 @@
 
 class ReturnsCandidatesFunctions {
 public:
-    virtual std::vector<FunctionEntry *> getCandidatesFunctions(Compiler *compiler);
+    bool shouldReturnFunctionReference = false;
+
     virtual std::string getCandidatesFunctionsFor();
 };
 
