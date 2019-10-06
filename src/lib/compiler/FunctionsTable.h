@@ -18,8 +18,10 @@ public:
     std::string name;
     TypeEntry *type;
 
-    FunctionEntryParameter(const std::string &name, TypeEntry *type);
+    FunctionEntryParameter(std::string name, TypeEntry *type);
 };
+
+class FunctionTypeEntry;
 
 class FunctionEntry {
 public:
@@ -28,6 +30,7 @@ public:
     std::string name;
     std::vector<FunctionEntryParameter> params;
     TypeEntry *returnType = nullptr;
+    FunctionTypeEntry *typeEntry = nullptr;
 
     ByteResolver *firstByte = nullptr;
 
@@ -45,7 +48,8 @@ class FunctionsTable {
 private:
     std::vector<FunctionEntry *> functions;
 public:
-    FunctionEntry *find(const std::string &name, std::vector<TypeEntry *> argsTypes);
+    FunctionEntry *find(const std::string &name, const std::vector<TypeEntry *>& argsTypes);
+    std::vector<FunctionEntry *> findCandidates(const std::string &name);
 
     FunctionEntry * add(FunctionEntry *entry);
 };

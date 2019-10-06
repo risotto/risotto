@@ -21,6 +21,8 @@ public:
     Expr *right();
 
     Token *op();
+
+    std::vector<Expr *> getArguments(Compiler *compiler) override;
 };
 
 

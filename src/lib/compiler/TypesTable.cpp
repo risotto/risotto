@@ -26,6 +26,21 @@ FunctionEntry *TypeEntry::addOperator(const std::string &selfName, FunctionEntry
     return operators.add(entry);
 }
 
+FunctionEntry *TypeEntry::findFunction(const std::string &functionName, std::vector<TypeEntry *> argsTypes) {
+    auto newArgsTypes = std::vector<TypeEntry *>(std::move(argsTypes));
+    newArgsTypes.insert(newArgsTypes.begin(), this);
+
+    return functions.find(functionName, newArgsTypes);
+}
+
+bool TypeEntry::isFunction() {
+    return false;
+}
+
+FunctionTypeEntry *TypeEntry::asFunctionTypeEntry() {
+    throw std::logic_error("TypeEntry isn't FunctionTypeEntry");
+}
+
 TypeEntry *TypesTable::find(const std::string &name) {
     for (auto entry : types) {
         if (entry->name == name) {
@@ -44,3 +59,14 @@ TypeEntry *TypesTable::add(std::string name) {
     return entry;
 }
 
+FunctionTypeEntry::FunctionTypeEntry(std::string name, FunctionEntry *function): TypeEntry(std::move(name)), function(function) {
+
+}
+
+bool FunctionTypeEntry::isFunction() {
+    return true;
+}
+
+FunctionTypeEntry *FunctionTypeEntry::asFunctionTypeEntry() {
+    return this;
+}

@@ -79,10 +79,11 @@ if (auto V = dynamic_cast<T *>(stmt)) { \
     template<>
     std::string print<Expr *>(Expr *stmt) {
         DC(BinaryExpr)
-        DC(VariableExpr)
+        DC(IdentifierExpr)
         DC(LiteralExpr)
         DC(CallExpr)
         DC(GroupingExpr)
+        DC(GetExpr)
 
         return print(dynamic_cast<Node *>(stmt));
     }
@@ -122,6 +123,9 @@ if (auto V = dynamic_cast<T *>(stmt)) { \
         std::stringstream ss;
 
         ss << "FunctionStmt" << std::endl;
+        if (stmt->receiver) {
+            ss << indent("+Receiver: " + stmt->receiver->type->lexeme, 1) << std::endl;
+        }
         ss << indent("+Name: " + stmt->name->lexeme, 1) << std::endl;
         ss << indent("+Body: ", 1) << std::endl;
         ss << indent(print(stmt->body), 2);
@@ -167,10 +171,10 @@ if (auto V = dynamic_cast<T *>(stmt)) { \
     }
 
     template<>
-    std::string print<VariableExpr *>(VariableExpr *stmt) {
+    std::string print<IdentifierExpr *>(IdentifierExpr *stmt) {
         std::stringstream ss;
 
-        ss << "VariableExpr" << std::endl;
+        ss << "IdentifierExpr" << std::endl;
         ss << indent("+Name: " + stmt->name->lexeme, 1) << std::endl;
 
         return ss.str();
@@ -211,7 +215,8 @@ if (auto V = dynamic_cast<T *>(stmt)) { \
         std::stringstream ss;
 
         ss << "CallExpr" << std::endl;
-        ss << indent("+Name: " + stmt->identifier->lexeme, 1) << std::endl;
+        ss << indent("+Callee:", 1) << std::endl;
+        ss << indent(print(stmt->callee), 2);
         ss << indent("+Args:", 1) << std::endl;
         ss << indent(print(stmt->args), 2);
 
@@ -224,6 +229,18 @@ if (auto V = dynamic_cast<T *>(stmt)) { \
 
         ss << "ExpressionStmt" << std::endl;
         ss << indent(print(stmt->expr), 1) << std::endl;
+
+        return ss.str();
+    }
+
+    template<>
+    std::string print<GetExpr *>(GetExpr *stmt) {
+        std::stringstream ss;
+
+        ss << "GetExpr" << std::endl;
+        ss << indent("+Callee:", 1) << std::endl;
+        ss << indent(print(stmt->callee), 2);
+        ss << indent("+Identifier: " + stmt->identifier->lexeme, 1) << std::endl;
 
         return ss.str();
     }

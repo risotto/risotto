@@ -6,19 +6,23 @@
 #include "BinaryExpr.h"
 #include "lib/compiler/Compiler.h"
 
-BinaryExpr::BinaryExpr(Expr *left, Token *op, Expr *right) : CallExpr(op, op, {left, right}) {
+BinaryExpr::BinaryExpr(Expr *left, Token *op, Expr *right) : CallExpr(left, op, {right}) {
 }
 
 Expr *BinaryExpr::left() {
-    return args[0];
+    return callee;
 }
 
 Expr *BinaryExpr::right() {
-    return args[1];
+    return args[0];
 }
 
 Token *BinaryExpr::op() {
-    return identifier;
+    return rParen;
+}
+
+std::vector<Expr *> BinaryExpr::getArguments(Compiler *compiler) {
+    return {left(), right()};
 }
 
 FunctionEntry *BinaryExpr::getFunctionEntry(Compiler *compiler) {

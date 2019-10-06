@@ -36,6 +36,7 @@ private:
     bool isAtEnd();
 
     bool check(Token::Type tokenType);
+    bool check(Token::Type tokenType, int n);
 
     Stmt *declaration();
 
@@ -85,6 +86,8 @@ private:
     std::vector<Stmt *> block();
 
     Stmt *function();
+
+    ParameterDefinition * parameter();
 };
 
 

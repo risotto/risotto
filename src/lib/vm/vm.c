@@ -178,13 +178,8 @@ static InterpretResult run() {
             }
             case OP_CALL: {
                 // we expect all args to be on the stack
-                int addr = READ_BYTE(); // get next instruction as an address of procedure jump ...
+                int addr = v2i(pop()); // get next instruction as an address of procedure jump ...
                 int argc = READ_BYTE(); // ... and next one as number of arguments to load ...
-
-                bool refs[argc];
-                for (int i = 0; i < argc; ++i) {
-                    refs[i] = (bool) READ_BYTE();
-                }
 
                 push(i2v(argc));   // ... save num args ...
                 push(p2v(vm.ip)); // ... save instruction pointer ...
@@ -193,19 +188,13 @@ static InterpretResult run() {
 
                 for (int i = 0; i < argc; ++i) {
                     Value *a = vm.fp - 4 - i;
-
-                    if(refs[i] == true) {
-                        push(vp2v(a));
-                    } else {
-                        push(copy(*a));
-                    }
+                    push(copy(*a));
                 }
 
                 break;
             }
             case OP_NATIVE_CALL: {
-                Value v = READ_CONSTANT();
-                NativeFunction fun = v2p(v);
+                NativeFunction fun = v2p(pop());
                 int argc = READ_BYTE(); // ... and next one as number of arguments to load ...
 
                 Value args[argc];

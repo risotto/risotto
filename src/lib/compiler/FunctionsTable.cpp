@@ -4,14 +4,16 @@
 
 #include "FunctionsTable.h"
 #include "TypesTable.h"
+#include "lib/compiler/utils/Utils.h"
 
 #include <utility>
+#include <sstream>
 
-FunctionEntryParameter::FunctionEntryParameter(const std::string &name, TypeEntry *type) : name(name), type(type) {}
+FunctionEntryParameter::FunctionEntryParameter(std::string name, TypeEntry *type) : name(std::move(name)), type(type) {}
 
 FunctionEntry::FunctionEntry(std::string name, std::vector<FunctionEntryParameter> params, TypeEntry *returnType) :
         name(std::move(name)), params(std::move(params)), returnType(returnType) {
-
+    typeEntry = new FunctionTypeEntry(name, this);
 }
 
 NativeFunctionEntry::NativeFunctionEntry(
@@ -23,33 +25,18 @@ NativeFunctionEntry::NativeFunctionEntry(
 
 }
 
-FunctionEntry *FunctionsTable::find(const std::string &name, std::vector<TypeEntry *> argsTypes) {
-    for (auto entry : functions) {
-        if (entry->name == name) {
-            if (entry->params.size() == argsTypes.size()) {
-                auto compatible = true;
-                for (int i = 0; i < entry->params.size(); ++i) {
-                    auto paramType = entry->params[i].type;
-                    auto argType = argsTypes[i];
+FunctionEntry *FunctionsTable::find(const std::string &name, const std::vector<TypeEntry *> &argsTypes) {
+    auto functionsWithName = findCandidates(name);
 
-                    if (!paramType->canReceiveType(argType)) {
-                        compatible = false;
-                        break;
-                    }
-                }
-
-                if (compatible) {
-                    return entry;
-                }
-            }
-        }
-    }
-
-    return nullptr;
+    return Utils::findMatchingFunctions(functionsWithName, argsTypes);
 }
 
 FunctionEntry *FunctionsTable::add(FunctionEntry *entry) {
     functions.push_back(entry);
 
     return entry;
+}
+
+std::vector<FunctionEntry *> FunctionsTable::findCandidates(const std::string &name) {
+    return Utils::findCandidatesFunctions(functions, name);
 }

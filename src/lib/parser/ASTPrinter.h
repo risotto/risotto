@@ -13,12 +13,13 @@
 #include <lib/parser/nodes/Stmt/IfStmt.h>
 #include <lib/parser/nodes/Stmt/ReturnStmt.h>
 #include <lib/parser/nodes/Expr/BinaryExpr.h>
-#include <lib/parser/nodes/Expr/VariableExpr.h>
+#include <lib/parser/nodes/Expr/IdentifierExpr.h>
 #include <lib/parser/nodes/Expr/LiteralExpr.h>
 #include <lib/parser/nodes/Expr/GroupingExpr.h>
 #include <lib/parser/nodes/Stmt/BlockStmt.h>
 #include <lib/parser/nodes/Expr/CallExpr.h>
 #include <lib/parser/nodes/Stmt/ExpressionStmt.h>
+#include <lib/parser/nodes/Expr/GetExpr.h>
 
 namespace ASTPrinter {
     std::string indent(std::string str, int n);
@@ -51,7 +52,7 @@ namespace ASTPrinter {
     std::string print<BinaryExpr *>(BinaryExpr *stmt);
 
     template<>
-    std::string print<VariableExpr *>(VariableExpr *stmt);
+    std::string print<IdentifierExpr *>(IdentifierExpr *stmt);
 
     template<>
     std::string print<LiteralExpr *>(LiteralExpr *stmt);
@@ -67,6 +68,9 @@ namespace ASTPrinter {
 
     template<>
     std::string print<ExpressionStmt *>(ExpressionStmt *stmt);
+
+    template<>
+    std::string print<GetExpr *>(GetExpr *stmt);
 };
 
 

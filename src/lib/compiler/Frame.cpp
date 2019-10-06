@@ -78,3 +78,17 @@ int Frame::findFrame(FrameType type) {
 
     return -1;
 }
+
+std::vector<FunctionEntry *> Frame::findFunctionsCandidates(const std::string &name) {
+    auto allCandidates = std::vector<FunctionEntry *>();
+
+    Frame *current = this;
+    while (current != nullptr) {
+        auto candidates = current->functions.findCandidates(name);
+        allCandidates.insert(allCandidates.end(), candidates.begin(), candidates.end());
+
+        current = current->parent;
+    }
+
+    return allCandidates;
+}

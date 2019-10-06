@@ -20,7 +20,24 @@ public:
     bool canReceiveType(TypeEntry *type);
 
     FunctionEntry *addFunction(const std::string& selfName, FunctionEntry *entry);
+    FunctionEntry *findFunction(const std::string &name, std::vector<TypeEntry *> argsTypes);
     FunctionEntry *addOperator(const std::string& selfName, FunctionEntry *entry);
+
+    virtual bool isFunction();
+    virtual FunctionTypeEntry *asFunctionTypeEntry();
+
+    virtual ~TypeEntry() = default;
+};
+
+class FunctionTypeEntry: public TypeEntry {
+public:
+    FunctionEntry *function;
+
+    FunctionTypeEntry(std::string name, FunctionEntry *function);
+
+    bool isFunction() override;
+
+    FunctionTypeEntry *asFunctionTypeEntry() override;
 };
 
 class TypesTable {

@@ -25,7 +25,7 @@ void printValue(Value value) {
             printf("O: %p {", object->values);
             for (int i = 0; i < object->size; ++i) {
                 Value v = object->values[i];
-                if(TYPECHECK(v, T_OBJECT) && v2o(v) == object) {
+                if (TYPECHECK(v, T_OBJECT) && v2o(v) == object) {
                     printf("<self>");
                 } else {
                     printValue(v);
@@ -89,30 +89,10 @@ static int biIntInstruction(const char *name, const char *l1, const char *l2, Ch
 }
 
 static int callInstruction(const char *name, Chunk *chunk, int offset) {
-    int dist = chunk->code[offset + 1];
-    int addr = chunk->code[offset + 2];
-    printf("%-11s A:%-3d C:%-3d \n", name, dist, addr);
+    int c = chunk->code[offset + 1];
+    printf("%-11s C:%-3d \n", name, c);
 
-    return offset + 3 + addr;
-}
-
-static int nativeCallInstruction(Chunk *chunk, int offset) {
-    const char *name = "OP_NATIVE_CALL";
-
-    OP_T constant = chunk->code[offset + 1];
-
-    int argc = chunk->code[offset + 2];
-
-    printf("%-16s A:%-3d", name, argc);
-
-    if (constant <= chunk->constants.object.size) {
-        printValue(chunk->constants.object.values[constant]);
-    } else {
-        printf("# Constant '%d' not found #", constant);
-    }
-    printf("\n");
-
-    return offset + 3;
+    return offset + 2 + c;
 }
 
 static int intInstruction(const char *name, Chunk *chunk, int offset) {
@@ -219,7 +199,7 @@ int disassembleInstruction(Chunk *chunk, int offset) {
         case OP_CALL:
             return callInstruction(getName(instruction), chunk, offset);
         case OP_NATIVE_CALL:
-            return nativeCallInstruction(chunk, offset);
+            return callInstruction(getName(instruction), chunk, offset);
         case OP_POP:
             return simpleInstruction(getName(instruction), offset);
         case OP_COPY:

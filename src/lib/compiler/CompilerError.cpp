@@ -15,24 +15,49 @@ const char *CompilerError::what() const noexcept {
     return message.c_str();
 }
 
-std::string format(Token *name, std::vector<TypeEntry *> argsTypes) {
+std::string
+format(const std::string &name, const std::string &type, const std::vector<TypeEntry *> *argsTypes, Token *hook) {
     std::stringstream ss;
-    ss << "Cannot find function matching " << name->lexeme << "(";
+    ss << "Cannot find function matching ";
 
-    for (size_t i = 0; i < argsTypes.size(); ++i) {
-        if (i != 0) {
-            ss << ", ";
-        }
-
-        ss << argsTypes[i]->name;
+    if (!type.empty()) {
+        ss << type << ".";
     }
 
-    ss << ") at " << name->position.toString();
+    if (!name.empty()) {
+        ss << name;
+    }
+
+    if (argsTypes != nullptr) {
+        ss << "(";
+
+        for (size_t i = 0; i < argsTypes->size(); ++i) {
+            if (i != 0) {
+                ss << ", ";
+            }
+
+            ss << (*argsTypes)[i]->name;
+        }
+
+        ss << ")";
+
+    }
+
+    ss << " at " << hook->position.toString();
 
     return ss.str();
 }
 
-FunctionNotFoundError::FunctionNotFoundError(Token *name, std::vector<TypeEntry *> argsTypes) :
-        CompilerError(format(name, std::move(argsTypes))) {
+FunctionNotFoundError::FunctionNotFoundError(Token *name, const std::string &type) :
+        CompilerError(format(name->lexeme, type, nullptr, name)) {
+
+}
+
+FunctionNotFoundError::FunctionNotFoundError(
+        const std::string &name,
+        const std::string &type,
+        const std::vector<TypeEntry *> &argsTypes,
+        Token *hook
+) : CompilerError(format(name, type, &argsTypes, hook)) {
 
 }

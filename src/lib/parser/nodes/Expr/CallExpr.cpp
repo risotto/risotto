@@ -7,78 +7,89 @@ extern "C" {
 }
 
 #include "CallExpr.h"
+#include "IdentifierExpr.h"
+#include "GetExpr.h"
 
 #include <utility>
 #include <lib/compiler/Compiler.h>
 #include <lib/compiler/CompilerError.h>
+#include <lib/compiler/utils/Utils.h>
 
-CallExpr::CallExpr(Token *identifier, Token *rParen, std::vector<Expr *> args) : identifier(identifier), rParen(rParen),
-                                                                                 args(std::move(args)) {
+CallExpr::CallExpr(Expr *callee, Token *rParen, std::vector<Expr *> args) : callee(callee), rParen(rParen),
+                                                                            args(std::move(args)) {
 
 }
 
 std::vector<Expr *> CallExpr::getArguments(Compiler *compiler) {
-    return args;
-}
+    if (auto getExpr = dynamic_cast<GetExpr *>(callee)) {
+        auto allArgs = std::vector<Expr *>(args);
+        allArgs.insert(allArgs.begin(), getExpr->callee);
 
-std::vector<TypeEntry *> CallExpr::getArgumentsTypes(Compiler *compiler) {
-    auto argsTypes = std::vector<TypeEntry *>();
-
-    for (auto arg : getArguments(compiler)) {
-        argsTypes.push_back(arg->getReturnType(compiler));
+        return allArgs;
     }
 
-    return argsTypes;
-}
-
-FunctionEntry *CallExpr::getFunctionEntry(Compiler *compiler) {
-    return compiler->frame->findFunction(identifier->lexeme, getArgumentsTypes(compiler));
+    return args;
 }
 
 std::vector<ByteResolver *> CallExpr::compile(Compiler *compiler) {
     auto functionEntry = getFunctionEntry(compiler);
 
-    if (functionEntry == nullptr) {
-        throw FunctionNotFoundError(identifier, getArgumentsTypes(compiler));
-    }
-
     auto bytes = std::vector<ByteResolver *>();
 
     auto arguments = getArguments(compiler);
     for (auto it = arguments.rbegin(); it != arguments.rend(); ++it) {
-        auto a = (*it)->compile(compiler);
-        bytes.insert(bytes.end(), a.begin(), a.end());
+        auto argBytes = (*it)->compile(compiler);
+        bytes.insert(bytes.end(), argBytes.begin(), argBytes.end());
     }
 
-    if (auto nativeEntry = dynamic_cast<NativeFunctionEntry *>(functionEntry)) {
-        auto constAddr = compiler->registerConst(p2v((void *) nativeEntry->fun));
+    Utils::loadFunctionEntryAddr(compiler, functionEntry, bytes);
 
-        bytes.push_back(new ByteResolver(OpCode::OP_NATIVE_CALL, nullptr));
-        bytes.push_back(new ByteResolver([constAddr](Compiler *p) { return constAddr; }, nullptr));
-        bytes.push_back(new ByteResolver(static_cast<int>(arguments.size()), nullptr));
-
-        return bytes;
+    if (dynamic_cast<NativeFunctionEntry *>(functionEntry) != nullptr) {
+        bytes.push_back(new ByteResolver(OpCode::OP_NATIVE_CALL, &rParen->position));
+    } else {
+        bytes.push_back(new ByteResolver(OpCode::OP_CALL, &rParen->position));
     }
 
-    bytes.push_back(new ByteResolver(OpCode::OP_CALL, &identifier->position));
-    bytes.push_back(
-            new ByteResolver([functionEntry](Compiler *c) { return c->getAddr(functionEntry->firstByte); }, nullptr));
-    bytes.push_back(new ByteResolver(static_cast<int>(arguments.size()), nullptr));
-
-    for (int i = 0; i < functionEntry->params.size(); ++i) {
-        // isReference
-        bytes.push_back(new ByteResolver(false, nullptr)); // TODO: remove
-    }
+    bytes.push_back(new ByteResolver(static_cast<int>(functionEntry->params.size()), nullptr));
 
     return bytes;
 }
 
+std::vector<TypeEntry *> CallExpr::getArgumentsTypes(Compiler *compiler) {
+    return Utils::getTypes(getArguments(compiler), compiler);
+}
+
+FunctionEntry *CallExpr::getFunctionEntry(Compiler *compiler) {
+    auto argumentsTypes = getArgumentsTypes(compiler);
+
+    if (auto withCandidates = dynamic_cast<ReturnsCandidatesFunctions *>(callee)) {
+        auto functions = withCandidates->getCandidatesFunctions(compiler);
+
+        auto entry = Utils::findMatchingFunctions(functions, argumentsTypes);
+
+        if (entry == nullptr) {
+            auto actualArgumentsTypes = Utils::getTypes(args, compiler);
+
+            if (auto getExpr = dynamic_cast<GetExpr *>(callee)) {
+                throw FunctionNotFoundError(getExpr->identifier->lexeme, getExpr->callee->getReturnType(compiler)->name, actualArgumentsTypes, rParen);
+            }
+
+            throw FunctionNotFoundError(withCandidates->getCandidatesFunctionsFor(), "", actualArgumentsTypes, rParen);
+        }
+
+        return entry;
+    }
+
+    auto calleeReturnType = callee->getReturnType(compiler);
+    if (calleeReturnType->isFunction()) {
+        return calleeReturnType->asFunctionTypeEntry()->function;
+    }
+
+    throw FunctionNotFoundError("", "", argumentsTypes, rParen);
+}
+
 TypeEntry *CallExpr::computeReturnType(Compiler *compiler) {
     auto functionEntry = getFunctionEntry(compiler);
-
-    if (functionEntry == nullptr) {
-        throw FunctionNotFoundError(identifier, getArgumentsTypes(compiler));
-    }
 
     return functionEntry->returnType;
 }

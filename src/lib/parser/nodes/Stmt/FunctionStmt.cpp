@@ -10,12 +10,13 @@
 #include "BlockStmt.h"
 
 FunctionStmt::FunctionStmt(
+        ParameterDefinition *receiver,
         Token *name,
         Token *returnType,
         std::vector<ParameterDefinition> parameters,
         std::vector<Stmt *> body,
         Token *closeBlock
-) : name(name), returnType(returnType), parameters(std::move(parameters)), body(std::move(body)),
+) : receiver(receiver), name(name), returnType(returnType), parameters(std::move(parameters)), body(std::move(body)),
     closeBlock(closeBlock) {
 
 }
@@ -39,14 +40,27 @@ std::vector<ByteResolver *> FunctionStmt::compile(Compiler *compiler) {
         entryParameters.emplace_back(parameter.name->lexeme, paramType);
     }
 
-    // Register function in frame
-    auto functionEntry = compiler->frame->functions.add(
-            new FunctionEntry(
-                    name->lexeme,
-                    entryParameters,
-                    returnTypeEntry
-            )
+    // Register function
+    auto functionEntry = new FunctionEntry(
+            name->lexeme,
+            entryParameters,
+            returnTypeEntry
     );
+
+    if (receiver != nullptr) {
+        auto receiverType = compiler->frame->findType(receiver->type->lexeme);
+
+        if (receiverType == nullptr) {
+            throw CompilerError("Cannot find type for " + receiver->type->lexeme);
+        }
+
+        functionEntry = receiverType->addFunction(
+                receiver->name->lexeme,
+                functionEntry
+        );
+    } else {
+        functionEntry = compiler->frame->functions.add(functionEntry);
+    }
 
     // Keep reference previous frame
     auto previousFrame = compiler->frame;
@@ -55,7 +69,7 @@ std::vector<ByteResolver *> FunctionStmt::compile(Compiler *compiler) {
     compiler->frame = new Frame(previousFrame, FUNCTION);
 
     // Declare parameters
-    for (const auto &param : entryParameters) {
+    for (const auto &param : functionEntry->params) {
         compiler->frame->variables.add(param.name, param.type);
     }
 
@@ -64,6 +78,12 @@ std::vector<ByteResolver *> FunctionStmt::compile(Compiler *compiler) {
     for (auto stmt : body) {
         auto stmtBytes = stmt->compile(compiler);
         bytes.insert(bytes.end(), stmtBytes.begin(), stmtBytes.end());
+    }
+
+    if (functionEntry->returnType == compiler->voidTypeEntry) {
+        bytes.push_back(new ByteResolver(OP_RETURN, nullptr));
+        bytes.push_back(new ByteResolver(0, nullptr)); // no frame to drop
+        bytes.push_back(new ByteResolver(0, nullptr)); // no value to return
     }
 
     // Restore frame

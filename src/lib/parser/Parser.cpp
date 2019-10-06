@@ -3,8 +3,8 @@
 //
 
 #include <utility>
-#include <iostream>
 #include <lib/compiler/CompilerError.h>
+#include <lib/parser/nodes/Expr/GetExpr.h>
 #include "Parser.h"
 #include "ParseError.h"
 #include "lib/parser/nodes/Stmt/ExpressionStmt.h"
@@ -14,7 +14,7 @@
 #include "lib/parser/nodes/Expr/UnaryExpr.h"
 #include "lib/parser/nodes/Expr/CallExpr.h"
 #include "lib/parser/nodes/Expr/LiteralExpr.h"
-#include "lib/parser/nodes/Expr/VariableExpr.h"
+#include "lib/parser/nodes/Expr/IdentifierExpr.h"
 #include "lib/parser/nodes/Expr/GroupingExpr.h"
 #include "lib/parser/nodes/Expr.h"
 #include "lib/parser/nodes/Stmt.h"
@@ -50,9 +50,13 @@ bool Parser::match(Types... types) {
 }
 
 bool Parser::check(Token::Type tokenType) {
+    return check(tokenType, 0);
+}
+
+bool Parser::check(Token::Type tokenType, int n) {
     if (isAtEnd()) return false;
 
-    return peek()->type == tokenType;
+    return peek(n)->type == tokenType;
 }
 
 Token *Parser::peek() {
@@ -111,15 +115,20 @@ Stmt *Parser::declaration() {
 }
 
 Stmt *Parser::function() {
+    ParameterDefinition *receiver = nullptr;
+
+    if (match(Token::Type::LEFT_PAREN)) {
+        receiver = parameter();
+
+        consume(Token::Type::RIGHT_PAREN, "Expect ')' after receiver declaration.");
+    }
+
     Token *name = consume(Token::Type::IDENTIFIER, "Expect function name.");
 
     consume(Token::Type::LEFT_PAREN, "Expect '(' after function name.");
 
     std::vector<ParameterDefinition> parameters = enumeration<ParameterDefinition>([this]() {
-        auto name = consume(Token::Type::IDENTIFIER, "Expect parameter name.");
-        auto type = consume(Token::Type::IDENTIFIER, "Expect return type.");;
-
-        return ParameterDefinition(type, name);
+        return *parameter();
     }, Token::Type::RIGHT_PAREN);
 
     consume(Token::Type::RIGHT_PAREN, "Expect ')' after parameters.");
@@ -129,7 +138,14 @@ Stmt *Parser::function() {
     auto closeBlock = consume(Token::Type::LEFT_CURLY, "Expect '{' before function body.");
     std::vector<Stmt *> body = block();
 
-    return new FunctionStmt(name, returnType, parameters, body, closeBlock);
+    return new FunctionStmt(receiver, name, returnType, parameters, body, closeBlock);
+}
+
+ParameterDefinition *Parser::parameter() {
+    auto name = consume(Token::Type::IDENTIFIER, "Expect parameter name.");
+    auto type = consume(Token::Type::IDENTIFIER, "Expect parameter type.");;
+
+    return new ParameterDefinition(type, name);
 }
 
 std::vector<Stmt *> Parser::block() {
@@ -285,16 +301,19 @@ Expr *Parser::unary() {
 }
 
 Expr *Parser::call() {
-    Expr *expr = primary();
+    auto expr = primary();
 
     while (true) {
-        auto identifier = previous();
         if (match(Token::Type::LEFT_PAREN)) {
             auto args = arguments();
 
             Token *rParen = consume(Token::Type::RIGHT_PAREN, "Expect ')' after parameters.");
 
-            expr = new CallExpr(identifier, rParen, args);
+            expr = new CallExpr(expr, rParen, args);
+        } else if (match(Token::Type::DOT)) {
+            auto identifier = consume(Token::Type::IDENTIFIER, "Expect identifier.");
+
+            expr = new GetExpr(expr, identifier);
         } else {
             break;
         }
@@ -316,7 +335,7 @@ Expr *Parser::primary() {
     }
 
     if (match(Token::Type::IDENTIFIER)) {
-        return new VariableExpr(previous());
+        return new IdentifierExpr(previous());
     }
 
     if (match(Token::Type::LEFT_PAREN)) return group();

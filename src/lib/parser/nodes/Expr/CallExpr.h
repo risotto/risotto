@@ -9,14 +9,15 @@
 #include <lib/tokenizer/Token.h>
 #include <lib/parser/nodes/Expr.h>
 #include <vector>
+#include <lib/compiler/CompilerError.h>
 
 class CallExpr: public Expr {
 public:
-    Token *identifier;
+    Expr *callee;
     Token *rParen;
     std::vector<Expr *> args;
 
-    CallExpr(Token *identifier, Token *rParen, std::vector<Expr *> args);
+    CallExpr(Expr *callee, Token *rParen, std::vector<Expr *> args);
 
     virtual std::vector<Expr *> getArguments(Compiler *compiler);
     virtual FunctionEntry *getFunctionEntry(Compiler *compiler);

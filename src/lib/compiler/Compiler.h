@@ -22,6 +22,8 @@ public:
     Chunk chunk;
     Frame *frame;
 
+    TypeEntry *voidTypeEntry;
+
     explicit Compiler(std::vector<Stmt *> stmts);
 
     Chunk compile();
