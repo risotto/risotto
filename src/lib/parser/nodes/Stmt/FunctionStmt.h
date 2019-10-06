@@ -15,12 +15,13 @@ class FunctionStmt : public Stmt {
 public:
     ParameterDefinition *receiver;
     Token *name;
-    Token *returnType;
+    std::vector<Token *> returnTypes;
     std::vector<ParameterDefinition> parameters;
     std::vector<Stmt *> body;
     Token *closeBlock;
 
-    FunctionStmt(ParameterDefinition *receiver, Token *name, Token *returnType, std::vector<ParameterDefinition> parameters, std::vector<Stmt *> body,
+    FunctionStmt(ParameterDefinition *receiver, Token *name, const std::vector<Token *> &returnTypes,
+                 std::vector<ParameterDefinition> parameters, std::vector<Stmt *> body,
                  Token *closeBlock);
 
     std::vector<ByteResolver *> compile(Compiler *compiler) override;

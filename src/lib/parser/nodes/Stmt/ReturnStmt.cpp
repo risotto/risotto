@@ -4,9 +4,10 @@
 
 #include <lib/compiler/Compiler.h>
 #include <lib/compiler/CompilerError.h>
+#include <utility>
 #include "ReturnStmt.h"
 
-ReturnStmt::ReturnStmt(Token *keyword, Expr *value) : keyword(keyword), value(value) {
+ReturnStmt::ReturnStmt(Token *keyword, std::vector<Expr *> values) : keyword(keyword), values(std::move(values)) {
 
 }
 
@@ -14,19 +15,19 @@ std::vector<ByteResolver *> ReturnStmt::compile(Compiler *compiler) {
     auto distance = compiler->frame->findFrame(FUNCTION);
 
     if (distance < 0) {
-        throw CompilerError("Cannot  return from outside a function");
+        throw CompilerError("Cannot return from outside a function");
     }
 
     auto bytes = std::vector<ByteResolver *>();
 
-    if (value) {
+    for (auto value : values) {
         auto valueBytes = value->compile(compiler);
         bytes.insert(bytes.end(), valueBytes.begin(), valueBytes.end());
     }
 
     bytes.push_back(new ByteResolver(OpCode::OP_RETURN, &keyword->position));
     bytes.push_back(new ByteResolver(distance, nullptr));
-    bytes.push_back(new ByteResolver(value ? 1 : 0, nullptr));
+    bytes.push_back(new ByteResolver(values.size(), nullptr));
 
     return bytes;
 }

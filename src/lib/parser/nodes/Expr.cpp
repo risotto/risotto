@@ -4,16 +4,17 @@
 
 #include "Expr.h"
 
-TypeEntry *Expr::getReturnType(Compiler *compiler) {
-    if (_returnType) {
-        return _returnType;
+TypesEntries Expr::getReturnType(Compiler *compiler) {
+    if (_isReturnTypesInit) {
+        return _returnTypes;
     }
 
-    _returnType = computeReturnType(compiler);
+    _returnTypes = computeReturnType(compiler);
+    _isReturnTypesInit = true;
 
-    return _returnType;
+    return _returnTypes;
 }
 
-TypeEntry *Expr::computeReturnType(Compiler *compiler) {
+TypesEntries Expr::computeReturnType(Compiler *compiler) {
     throw std::logic_error("computeReturnType must be implemented");
 }

@@ -23,7 +23,7 @@ public:
     std::string getCandidatesFunctionsFor() override;
 
 protected:
-    TypeEntry *computeReturnType(Compiler *compiler) override;
+    TypesEntries computeReturnType(Compiler *compiler) override;
 };
 
 

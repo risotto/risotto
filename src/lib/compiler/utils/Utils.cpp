@@ -6,6 +6,7 @@ extern "C" {
 #include <lib/vm/chunk.h>
 }
 
+#include <lib/compiler/CompilerError.h>
 #include "Utils.h"
 #include "lib/compiler/FunctionsTable.h"
 #include "lib/compiler/Compiler.h"
@@ -70,7 +71,13 @@ std::vector<TypeEntry *> Utils::getTypes(const std::vector<Expr *>& exprs, Compi
     auto exprsTypes = std::vector<TypeEntry *>();
 
     for (auto expr : exprs) {
-        exprsTypes.push_back(expr->getReturnType(compiler));
+        auto types = expr->getReturnType(compiler);
+
+        if (!types.single()) {
+            throw CompilerError("Return types have to be single to be converted to types");
+        }
+
+        exprsTypes.push_back(types[0]);
     }
 
     return exprsTypes;

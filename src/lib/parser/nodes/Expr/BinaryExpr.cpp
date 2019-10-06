@@ -28,5 +28,5 @@ std::vector<Expr *> BinaryExpr::getArguments(Compiler *compiler) {
 FunctionEntry *BinaryExpr::getFunctionEntry(Compiler *compiler) {
     auto leftTypeEntry = left()->getReturnType(compiler);
 
-    return leftTypeEntry->operators.find(op()->lexeme, getArgumentsTypes(compiler));
+    return leftTypeEntry[0]->operators.find(op()->lexeme, getArgumentsTypes(compiler));
 }

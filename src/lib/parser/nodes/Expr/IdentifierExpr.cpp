@@ -14,8 +14,8 @@ IdentifierExpr::IdentifierExpr(Token *name) : name(name) {
 std::vector<ByteResolver *> IdentifierExpr::compile(Compiler *compiler) {
     auto bytes = std::vector<ByteResolver *>();
 
-    if (getReturnType(compiler)->isFunction()) {
-        auto functionEntry = getReturnType(compiler)->asFunctionTypeEntry()->function;
+    if (getReturnType(compiler)[0]->isFunction()) {
+        auto functionEntry = getReturnType(compiler)[0]->asFunctionTypeEntry()->function;
 
         Utils::loadFunctionEntryAddr(compiler, functionEntry, bytes);
 
@@ -35,7 +35,7 @@ std::vector<ByteResolver *> IdentifierExpr::compile(Compiler *compiler) {
     return bytes;
 }
 
-TypeEntry *IdentifierExpr::computeReturnType(Compiler *compiler) {
+TypesEntries IdentifierExpr::computeReturnType(Compiler *compiler) {
     auto candidates = getCandidatesFunctions(compiler);
 
     if (!candidates.empty()) {

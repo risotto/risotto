@@ -12,21 +12,25 @@
 FunctionStmt::FunctionStmt(
         ParameterDefinition *receiver,
         Token *name,
-        Token *returnType,
+        const std::vector<Token *> &returnTypes,
         std::vector<ParameterDefinition> parameters,
         std::vector<Stmt *> body,
         Token *closeBlock
-) : receiver(receiver), name(name), returnType(returnType), parameters(std::move(parameters)), body(std::move(body)),
+) : receiver(receiver), name(name), returnTypes(returnTypes), parameters(std::move(parameters)), body(std::move(body)),
     closeBlock(closeBlock) {
 
 }
 
 std::vector<ByteResolver *> FunctionStmt::compile(Compiler *compiler) {
     // Get return type
-    auto returnTypeEntry = compiler->frame->findType(returnType->lexeme);
+    auto returnTypesEntries = TypesEntries();
+    for (auto returnType : returnTypes) {
+        auto returnTypeEntry = compiler->frame->findType(returnType->lexeme);
+        returnTypesEntries.push_back(returnTypeEntry);
 
-    if (returnTypeEntry == nullptr) {
-        throw CompilerError("Cannot find type for " + returnType->lexeme);
+        if (returnTypeEntry == nullptr) {
+            throw CompilerError("Cannot find type for " + returnType->lexeme);
+        }
     }
 
     auto entryParameters = std::vector<FunctionEntryParameter>();
@@ -44,7 +48,7 @@ std::vector<ByteResolver *> FunctionStmt::compile(Compiler *compiler) {
     auto functionEntry = new FunctionEntry(
             name->lexeme,
             entryParameters,
-            returnTypeEntry
+            returnTypesEntries
     );
 
     if (receiver != nullptr) {
@@ -80,7 +84,7 @@ std::vector<ByteResolver *> FunctionStmt::compile(Compiler *compiler) {
         bytes.insert(bytes.end(), stmtBytes.begin(), stmtBytes.end());
     }
 
-    if (functionEntry->returnType == compiler->voidTypeEntry) {
+    if (functionEntry->returnTypes.empty()) {
         bytes.push_back(new ByteResolver(OP_RETURN, nullptr));
         bytes.push_back(new ByteResolver(0, nullptr)); // no frame to drop
         bytes.push_back(new ByteResolver(0, nullptr)); // no value to return

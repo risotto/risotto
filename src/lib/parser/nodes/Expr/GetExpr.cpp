@@ -20,8 +20,8 @@ std::vector<ByteResolver *> GetExpr::compile(Compiler *compiler) {
 
     auto returnType = getReturnType(compiler);
 
-    if (returnType->isFunction()) {
-        Utils::loadFunctionEntryAddr(compiler, returnType->asFunctionTypeEntry()->function, bytes);
+    if (returnType[0]->isFunction()) {
+        Utils::loadFunctionEntryAddr(compiler, returnType[0]->asFunctionTypeEntry()->function, bytes);
 
         return bytes;
     }
@@ -34,20 +34,20 @@ std::vector<ByteResolver *> GetExpr::compile(Compiler *compiler) {
 std::vector<FunctionEntry *> GetExpr::getCandidatesFunctions(Compiler *compiler) {
     auto calleeType = callee->getReturnType(compiler);
 
-    return calleeType->functions.findCandidates(getCandidatesFunctionsFor());
+    return calleeType[0]->functions.findCandidates(getCandidatesFunctionsFor());
 }
 
 std::string GetExpr::getCandidatesFunctionsFor() {
     return identifier->lexeme;
 }
 
-TypeEntry *GetExpr::computeReturnType(Compiler *compiler) {
+TypesEntries GetExpr::computeReturnType(Compiler *compiler) {
     auto calleeType = callee->getReturnType(compiler);
 
     auto candidates = getCandidatesFunctions(compiler);
 
     if (candidates.empty()) {
-        throw FunctionNotFoundError(identifier, calleeType->name);
+        throw FunctionNotFoundError(identifier, calleeType[0]->name);
     }
 
     if (candidates.size() > 1) {
