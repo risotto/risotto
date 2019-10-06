@@ -18,6 +18,7 @@ public:
     std::vector<Expr *> args;
 
     CallExpr(Expr *callee, Token *rParen, std::vector<Expr *> args);
+    CallExpr(Expr *callee, Token *rParen, std::vector<Expr *> args, bool calleeIsValue);
 
     virtual std::vector<Expr *> getArguments(Compiler *compiler);
     virtual FunctionEntry *getFunctionEntry(Compiler *compiler);
@@ -25,7 +26,7 @@ public:
     std::vector<ByteResolver *> compile(Compiler *compiler) override;
 
 protected:
-    TypeEntry *computeReturnType(Compiler *compiler) override;
+    TypesEntries computeReturnType(Compiler *compiler) override;
 
     std::vector<TypeEntry *> getArgumentsTypes(Compiler *compiler);
 };

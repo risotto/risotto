@@ -11,12 +11,17 @@ CompilerError::CompilerError(const std::string &message) {
     this->message = message;
 }
 
+CompilerError::CompilerError(const std::string& message, Position position) :
+        CompilerError(message + " at " + position.toString()) {
+
+}
+
 const char *CompilerError::what() const noexcept {
     return message.c_str();
 }
 
 std::string
-format(const std::string &name, const std::string &type, const std::vector<TypeEntry *> *argsTypes, Token *hook) {
+format(const std::string &name, const std::string &type, const std::vector<TypeEntry *> *argsTypes) {
     std::stringstream ss;
     ss << "Cannot find function matching ";
 
@@ -43,13 +48,11 @@ format(const std::string &name, const std::string &type, const std::vector<TypeE
 
     }
 
-    ss << " at " << hook->position.toString();
-
     return ss.str();
 }
 
 FunctionNotFoundError::FunctionNotFoundError(Token *name, const std::string &type) :
-        CompilerError(format(name->lexeme, type, nullptr, name)) {
+        CompilerError(format(name->lexeme, type, nullptr), name->position) {
 
 }
 
@@ -58,6 +61,6 @@ FunctionNotFoundError::FunctionNotFoundError(
         const std::string &type,
         const std::vector<TypeEntry *> &argsTypes,
         Token *hook
-) : CompilerError(format(name, type, &argsTypes, hook)) {
+) : CompilerError(format(name, type, &argsTypes), hook->position) {
 
 }

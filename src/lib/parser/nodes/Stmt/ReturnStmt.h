@@ -13,9 +13,9 @@
 class ReturnStmt : public Stmt {
 public:
     Token *keyword;
-    Expr *value;
+    std::vector<Expr *> values;
 
-    ReturnStmt(Token *keyword, Expr *value);
+    ReturnStmt(Token *keyword, std::vector<Expr *> values);
 
     std::vector<ByteResolver *> compile(Compiler *compiler) override;
 };

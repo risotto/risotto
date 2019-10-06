@@ -16,7 +16,7 @@ extern "C" {
         new NativeFunctionEntry( \
             #op, \
             {FunctionEntryParameter("right", param##Entry)}, \
-            return##Entry, \
+            {return##Entry}, \
             functionName \
         ) \
 );
@@ -52,7 +52,6 @@ Compiler::Compiler(std::vector<Stmt *> stmts) : stmts(std::move(stmts)) {
 
     initChunk(&chunk);
 
-    voidTypeEntry = frame->types.add("void");
     auto intEntry = frame->types.add("int");
     auto doubleEntry = frame->types.add("double");
     auto boolEntry = frame->types.add("bool");
@@ -81,7 +80,7 @@ Compiler::Compiler(std::vector<Stmt *> stmts) : stmts(std::move(stmts)) {
             new NativeFunctionEntry(
                     "println",
                     {FunctionEntryParameter("e", intEntry)},
-                    voidTypeEntry,
+                    {},
                     println_int
             )
     );
@@ -90,7 +89,7 @@ Compiler::Compiler(std::vector<Stmt *> stmts) : stmts(std::move(stmts)) {
             new NativeFunctionEntry(
                     "println",
                     {FunctionEntryParameter("e", doubleEntry)},
-                    voidTypeEntry,
+                    {},
                     println_double
             )
     );
@@ -99,7 +98,7 @@ Compiler::Compiler(std::vector<Stmt *> stmts) : stmts(std::move(stmts)) {
             new NativeFunctionEntry(
                     "println",
                     {FunctionEntryParameter("e", boolEntry)},
-                    voidTypeEntry,
+                    {},
                     println_bool
             )
     );
@@ -108,7 +107,7 @@ Compiler::Compiler(std::vector<Stmt *> stmts) : stmts(std::move(stmts)) {
             new NativeFunctionEntry(
                     "println",
                     {FunctionEntryParameter("e", stringEntry)},
-                    voidTypeEntry,
+                    {},
                     println_string
             )
     );

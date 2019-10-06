@@ -133,12 +133,21 @@ Stmt *Parser::function() {
 
     consume(Token::Type::RIGHT_PAREN, "Expect ')' after parameters.");
 
-    Token *returnType = consume(Token::Type::IDENTIFIER, "Expect return type.");
+    auto returnTypes = std::vector<Token *>();
+    while (!check(Token::Type::LEFT_CURLY) && !isAtEnd()) {
+        auto returnType = consume(Token::Type::IDENTIFIER, "Expect return type.");
+        returnTypes.push_back(returnType);
 
-    auto closeBlock = consume(Token::Type::LEFT_CURLY, "Expect '{' before function body.");
+        if (!match(Token::Type::COMMA)) {
+            break;
+        }
+    }
+
+    auto closeBlock = consume(Token::Type::LEFT_CURLY, "Expect '}'.");
+
     std::vector<Stmt *> body = block();
 
-    return new FunctionStmt(receiver, name, returnType, parameters, body, closeBlock);
+    return new FunctionStmt(receiver, name, returnTypes, parameters, body, closeBlock);
 }
 
 ParameterDefinition *Parser::parameter() {
@@ -179,10 +188,25 @@ Stmt *Parser::ifStatement() {
 
 
 Stmt *Parser::returnStatement() {
-    Token *keyword = previous();
-    Expr *value = expression();
+    auto values = std::vector<Expr *>();
 
-    return new ReturnStmt(keyword, value);
+    while (!isAtEnd()) {
+        auto value = expression();
+
+        if (value == nullptr) {
+            break;
+        }
+
+        values.push_back(value);
+
+        if (!match(Token::Type::COMMA)) {
+            break;
+        }
+    }
+
+    Token *keyword = previous();
+
+    return new ReturnStmt(keyword, values);
 }
 
 Stmt *Parser::expressionStatement() {

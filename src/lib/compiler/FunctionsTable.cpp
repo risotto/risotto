@@ -7,21 +7,27 @@
 #include "lib/compiler/utils/Utils.h"
 
 #include <utility>
-#include <sstream>
+
+bool TypesEntries::single() {
+    return size() == 1;
+}
+
+TypesEntries::TypesEntries(TypeEntry *entry): std::vector<TypeEntry *>({entry}) {
+}
 
 FunctionEntryParameter::FunctionEntryParameter(std::string name, TypeEntry *type) : name(std::move(name)), type(type) {}
 
-FunctionEntry::FunctionEntry(std::string name, std::vector<FunctionEntryParameter> params, TypeEntry *returnType) :
-        name(std::move(name)), params(std::move(params)), returnType(returnType) {
+FunctionEntry::FunctionEntry(std::string name, std::vector<FunctionEntryParameter> params, TypesEntries returnTypes) :
+        name(std::move(name)), params(std::move(params)), returnTypes(std::move(returnTypes)) {
     typeEntry = new FunctionTypeEntry(name, this);
 }
 
 NativeFunctionEntry::NativeFunctionEntry(
         std::string name,
         std::vector<FunctionEntryParameter> params,
-        TypeEntry *returnType,
+        TypesEntries returnTypes,
         Value (*fun)(Value[], int)
-) : FunctionEntry(std::move(name), std::move(params), returnType), fun(fun) {
+) : FunctionEntry(std::move(name), std::move(params), std::move(returnTypes)), fun(fun) {
 
 }
 

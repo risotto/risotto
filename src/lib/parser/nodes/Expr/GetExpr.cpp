@@ -18,12 +18,14 @@ GetExpr::GetExpr(Expr *callee, Token *identifier) : callee(callee), identifier(i
 std::vector<ByteResolver *> GetExpr::compile(Compiler *compiler) {
     auto bytes = std::vector<ByteResolver *>();
 
-    auto returnType = getReturnType(compiler);
+    if (shouldReturnFunctionReference) {
+        auto returnType = getReturnType(compiler);
 
-    if (returnType->isFunction()) {
-        Utils::loadFunctionEntryAddr(compiler, returnType->asFunctionTypeEntry()->function, bytes);
+        if (returnType[0]->isFunction()) {
+            Utils::loadFunctionEntryAddr(compiler, returnType[0]->asFunctionTypeEntry()->function, bytes);
 
-        return bytes;
+            return bytes;
+        }
     }
 
     throw CompilerError("Not implemented");
@@ -31,28 +33,28 @@ std::vector<ByteResolver *> GetExpr::compile(Compiler *compiler) {
     return bytes;
 }
 
-std::vector<FunctionEntry *> GetExpr::getCandidatesFunctions(Compiler *compiler) {
-    auto calleeType = callee->getReturnType(compiler);
-
-    return calleeType->functions.findCandidates(getCandidatesFunctionsFor());
-}
-
 std::string GetExpr::getCandidatesFunctionsFor() {
     return identifier->lexeme;
 }
 
-TypeEntry *GetExpr::computeReturnType(Compiler *compiler) {
+TypesEntries GetExpr::computeReturnType(Compiler *compiler) {
     auto calleeType = callee->getReturnType(compiler);
 
-    auto candidates = getCandidatesFunctions(compiler);
-
-    if (candidates.empty()) {
-        throw FunctionNotFoundError(identifier, calleeType->name);
+    if (!calleeType.single()) {
+        throw CompilerError("Return type has to be single", identifier->position);
     }
 
-    if (candidates.size() > 1) {
-        throw CompilerError("Multiple functions match");
+    if (shouldReturnFunctionReference) {
+        auto candidates = calleeType[0]->functions.findCandidates(getCandidatesFunctionsFor());
+
+        auto candidateTypes = TypesEntries();
+
+        for (auto candidate : candidates) {
+            candidateTypes.push_back(candidate->typeEntry);
+        }
+
+        return candidateTypes;
     }
 
-    return candidates[0]->typeEntry;
+    throw CompilerError("Not implemented");
 }

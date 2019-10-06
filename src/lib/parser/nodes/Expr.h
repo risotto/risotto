@@ -8,18 +8,20 @@
 
 #include <lib/compiler/TypesTable.h>
 #include "Node.h"
+#include <vector>
 
 class Expr : public Node {
 private:
-    TypeEntry *_returnType = nullptr;
+    bool _isReturnTypesInit = false;
+    TypesEntries _returnTypes;
 
 protected:
-    virtual TypeEntry *computeReturnType(Compiler *compiler);
+    virtual TypesEntries computeReturnType(Compiler *compiler);
 
 public:
     virtual ~Expr() = default;
 
-    TypeEntry *getReturnType(Compiler *compiler);
+    TypesEntries getReturnType(Compiler *compiler);
 };
 
 

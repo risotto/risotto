@@ -18,12 +18,10 @@ public:
 
     std::vector<ByteResolver *> compile(Compiler *compiler) override;
 
-    std::vector<FunctionEntry *> getCandidatesFunctions(Compiler *compiler) override;
-
     std::string getCandidatesFunctionsFor() override;
 
 protected:
-    TypeEntry *computeReturnType(Compiler *compiler) override;
+    TypesEntries computeReturnType(Compiler *compiler) override;
 };
 
 

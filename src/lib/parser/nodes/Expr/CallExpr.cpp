@@ -15,9 +15,19 @@ extern "C" {
 #include <lib/compiler/CompilerError.h>
 #include <lib/compiler/utils/Utils.h>
 
-CallExpr::CallExpr(Expr *callee, Token *rParen, std::vector<Expr *> args) : callee(callee), rParen(rParen),
-                                                                            args(std::move(args)) {
+CallExpr::CallExpr(Expr *callee, Token *rParen, std::vector<Expr *> args) :
+        CallExpr(callee, rParen, std::move(args), false) {
 
+}
+
+CallExpr::CallExpr(Expr *callee, Token *rParen, std::vector<Expr *> args, bool calleeIsValue) : callee(callee),
+                                                                                                rParen(rParen),
+                                                                                                args(std::move(args)) {
+    if (auto withCandidates = dynamic_cast<ReturnsCandidatesFunctions *>(callee)) {
+        if (!calleeIsValue) {
+            withCandidates->shouldReturnFunctionReference = true;
+        }
+    }
 }
 
 std::vector<Expr *> CallExpr::getArguments(Compiler *compiler) {
@@ -56,14 +66,40 @@ std::vector<ByteResolver *> CallExpr::compile(Compiler *compiler) {
 }
 
 std::vector<TypeEntry *> CallExpr::getArgumentsTypes(Compiler *compiler) {
-    return Utils::getTypes(getArguments(compiler), compiler);
+    auto arguments = getArguments(compiler);
+
+    for (auto arg : arguments) {
+        auto types = arg->getReturnType(compiler);
+
+        if (!types.single()) {
+            if (types.empty()) {
+                throw CompilerError("This parameter doesnt return any value");
+            } else if (types.size() > 1) {
+                throw CompilerError("This parameter returns more than one value");
+            }
+        }
+    }
+
+    return Utils::getTypes(arguments, compiler);
 }
 
 FunctionEntry *CallExpr::getFunctionEntry(Compiler *compiler) {
     auto argumentsTypes = getArgumentsTypes(compiler);
 
     if (auto withCandidates = dynamic_cast<ReturnsCandidatesFunctions *>(callee)) {
-        auto functions = withCandidates->getCandidatesFunctions(compiler);
+        auto returnTypes = callee->getReturnType(compiler);
+
+        auto functions = std::vector<FunctionEntry *>();
+
+        for (auto typeEntry : returnTypes) {
+            if (typeEntry->isFunction()) {
+                auto typeEntryFunction = typeEntry->asFunctionTypeEntry();
+
+                functions.push_back(typeEntryFunction->function);
+            } else {
+                throw CompilerError("Returned types is not a function");
+            }
+        }
 
         auto entry = Utils::findMatchingFunctions(functions, argumentsTypes);
 
@@ -71,7 +107,12 @@ FunctionEntry *CallExpr::getFunctionEntry(Compiler *compiler) {
             auto actualArgumentsTypes = Utils::getTypes(args, compiler);
 
             if (auto getExpr = dynamic_cast<GetExpr *>(callee)) {
-                throw FunctionNotFoundError(getExpr->identifier->lexeme, getExpr->callee->getReturnType(compiler)->name, actualArgumentsTypes, rParen);
+                throw FunctionNotFoundError(
+                        getExpr->identifier->lexeme,
+                        getExpr->callee->getReturnType(compiler)[0]->name,
+                        actualArgumentsTypes,
+                        rParen
+                );
             }
 
             throw FunctionNotFoundError(withCandidates->getCandidatesFunctionsFor(), "", actualArgumentsTypes, rParen);
@@ -81,15 +122,15 @@ FunctionEntry *CallExpr::getFunctionEntry(Compiler *compiler) {
     }
 
     auto calleeReturnType = callee->getReturnType(compiler);
-    if (calleeReturnType->isFunction()) {
-        return calleeReturnType->asFunctionTypeEntry()->function;
+    if (calleeReturnType.single() && calleeReturnType[0]->isFunction()) {
+        return calleeReturnType[0]->asFunctionTypeEntry()->function;
     }
 
     throw FunctionNotFoundError("", "", argumentsTypes, rParen);
 }
 
-TypeEntry *CallExpr::computeReturnType(Compiler *compiler) {
+TypesEntries CallExpr::computeReturnType(Compiler *compiler) {
     auto functionEntry = getFunctionEntry(compiler);
 
-    return functionEntry->returnType;
+    return functionEntry[0].returnTypes;
 }

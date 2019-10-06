@@ -11,6 +11,8 @@
 
 class CompilerError : public std::exception {
 public:
+    CompilerError(const std::string& message, Position position);
+
     std::string message;
 
     CompilerError(const std::string &message);

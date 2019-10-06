@@ -138,7 +138,8 @@ if (auto V = dynamic_cast<T *>(stmt)) { \
         std::stringstream ss;
 
         ss << "ReturnStmt" << std::endl;
-        ss << indent(print(stmt->value), 1);
+        ss << indent("+Values:", 1) << std::endl;
+        ss << indent(print(stmt->values), 2);
 
         return ss.str();
     }
