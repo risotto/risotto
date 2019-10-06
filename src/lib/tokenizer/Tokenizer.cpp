@@ -128,7 +128,7 @@ void Tokenizer::scan() {
             addToken(Token::Type::SEMICOLON);
             break;
         case ':':
-            addToken(Token::Type::COLON);
+            addToken(match('=') ? Token::Type::COLON_EQUAL : Token::Type::COLON);
             break;
         case '*':
             addToken(match('=') ? Token::Type::STAR_EQUAL : Token::Type::STAR);

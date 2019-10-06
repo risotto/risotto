@@ -42,7 +42,11 @@ typedef struct {
     ValueType type;
 } Value;
 
-typedef Value (*NativeFunction)(Value *, int);
+typedef struct {
+    Value * values;
+    int c;
+} NativeFunctionReturn;
+typedef NativeFunctionReturn (*NativeFunction)(Value *, int);
 
 typedef struct Object Object;
 

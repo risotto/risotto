@@ -5,6 +5,7 @@
 #include <utility>
 #include <lib/compiler/CompilerError.h>
 #include <lib/parser/nodes/Expr/GetExpr.h>
+#include <lib/parser/nodes/Expr/VarDeclStmt.h>
 #include "Parser.h"
 #include "ParseError.h"
 #include "lib/parser/nodes/Stmt/ExpressionStmt.h"
@@ -109,6 +110,25 @@ Stmt *Parser::declaration() {
 
     if (match(Token::Type::STRUCT)) {
         throw error(previous(), "TODO STRUCT");
+    }
+
+    auto c = current;
+    if (match(Token::Type::IDENTIFIER)) {
+        auto identifiers = std::vector<Token *>({previous()});
+        while (match(Token::Type::COMMA)) {
+            identifiers.push_back(consume(Token::Type::IDENTIFIER, "Expect identifier."));
+        }
+
+        if (match(Token::Type::COLON_EQUAL)) {
+            auto op = previous();
+
+            auto value = expression();
+
+            return new VarDeclStmt(identifiers, op, value);
+        } else {
+            // Reset and keep going
+            current = c;
+        }
     }
 
     return statement();

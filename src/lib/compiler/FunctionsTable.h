@@ -50,9 +50,9 @@ public:
 
 class NativeFunctionEntry: public FunctionEntry {
 public:
-    Value (*fun)(Value[], int);
+    NativeFunctionReturn (*fun)(Value[], int);
 
-    NativeFunctionEntry(std::string name, std::vector<FunctionEntryParameter> params, TypesEntries returnTypes, Value (*fun)(Value[], int));
+    NativeFunctionEntry(std::string name, std::vector<FunctionEntryParameter> params, TypesEntries returnTypes, NativeFunctionReturn (*fun)(Value[], int));
 };
 
 class FunctionsTable {

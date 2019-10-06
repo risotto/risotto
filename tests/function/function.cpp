@@ -30,6 +30,14 @@ TEST(Functions, Bound) {
     EXPECT_STDOUT(OUTPUT("bound"));
 }
 
+TEST(Functions, MultipleReturns) {
+    INIT_TEST;
+
+    risotto.runFile(INPUT("multiple_returns"));
+
+    EXPECT_STDOUT("1\nyolo\ntrue\n");
+}
+
 TEST(Functions, NonExistingFunction) {
     INIT_RISOTTO
 

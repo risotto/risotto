@@ -38,7 +38,7 @@ NativeFunctionEntry::NativeFunctionEntry(
         std::string name,
         std::vector<FunctionEntryParameter> params,
         TypesEntries returnTypes,
-        Value (*fun)(Value[], int)
+        NativeFunctionReturn (*fun)(Value[], int)
 ) : FunctionEntry(std::move(name), std::move(params), std::move(returnTypes)), fun(fun) {
 
 }

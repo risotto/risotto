@@ -72,6 +72,7 @@ if (auto V = dynamic_cast<T *>(stmt)) { \
         DC(BlockStmt)
         DC(ReturnStmt)
         DC(ExpressionStmt)
+        DC(VarDeclStmt)
 
         return print(dynamic_cast<Node *>(stmt));
     }
@@ -242,6 +243,21 @@ if (auto V = dynamic_cast<T *>(stmt)) { \
         ss << indent("+Callee:", 1) << std::endl;
         ss << indent(print(stmt->callee), 2);
         ss << indent("+Identifier: " + stmt->identifier->lexeme, 1) << std::endl;
+
+        return ss.str();
+    }
+
+    template<>
+    std::string print<VarDeclStmt *>(VarDeclStmt *stmt) {
+        std::stringstream ss;
+
+        ss << "VarDeclStmt" << std::endl;
+        ss << indent("+Identifiers:", 1) << std::endl;
+        for (auto id : stmt->identifiers) {
+            ss << indent("- " + id->lexeme, 2) << std::endl;
+        }
+        ss << indent("+Value:", 1) << std::endl;
+        ss << indent(print(stmt->value), 2);
 
         return ss.str();
     }

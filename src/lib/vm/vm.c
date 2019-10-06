@@ -202,9 +202,11 @@ static InterpretResult run() {
                     args[i] = pop();
                 }
 
-                Value returnValue = fun(args, argc);
+                NativeFunctionReturn returnValue = fun(args, argc);
 
-                push(returnValue);
+                for (int i = 0; i < returnValue.c; ++i) {
+                    push(returnValue.values[i]);
+                }
 
                 break;
             }
@@ -235,7 +237,8 @@ static InterpretResult run() {
                 int argc = v2i(pop());     // ... hom many args procedure has ...
                 vm.sp -= argc;     // ... discard all of the args left ...
 
-                for (int i = 0; i < rc; ++i) {
+                // Reverse pop onto the stack to restablish order
+                for (int i = rc - 1; i >= 0; --i) {
                     push(copy(rvals[i])); // ... leave return value on top of the stack
                 }
 
