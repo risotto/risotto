@@ -10,6 +10,7 @@
 #include <lib/tokenizer/Token.h>
 #include <lib/parser/nodes/Expr.h>
 #include <lib/compiler/CompilerError.h>
+#include "lib/compiler/TypeReference.h"
 
 class CallExpr: public Expr {
 public:

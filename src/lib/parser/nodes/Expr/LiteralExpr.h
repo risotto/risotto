@@ -8,6 +8,7 @@
 
 #include <lib/tokenizer/Token.h>
 #include <lib/parser/nodes/Expr.h>
+#include "lib/compiler/TypeReference.h"
 
 class LiteralExpr: public Expr {
 public:

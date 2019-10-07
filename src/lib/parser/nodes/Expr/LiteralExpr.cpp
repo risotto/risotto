@@ -9,6 +9,7 @@ extern "C" {
 #include <lib/compiler/CompilerError.h>
 #include "LiteralExpr.h"
 #include "lib/compiler/Compiler.h"
+#include "lib/compiler/TypeReference.h"
 
 LiteralExpr::LiteralExpr(Token *value) : value(value) {
 

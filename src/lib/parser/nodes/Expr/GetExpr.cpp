@@ -10,6 +10,7 @@ extern "C" {
 #include <lib/compiler/CompilerError.h>
 #include <lib/compiler/utils/Utils.h>
 #include "lib/compiler/Compiler.h"
+#include "lib/compiler/TypeReference.h"
 
 GetExpr::GetExpr(Expr *callee, Token *identifier) : callee(callee), identifier(identifier) {
 

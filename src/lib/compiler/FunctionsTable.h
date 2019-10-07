@@ -10,19 +10,9 @@
 #include <lib/parser/nodes/ParameterDefinition.h>
 #include <lib/vm/value.h>
 #include "ByteResolver.h"
+#include "lib/compiler/TypeReference.h"
 
 class TypeEntry;
-
-class TypesEntries: public std::vector<TypeEntry *> {
-public:
-    TypesEntries(TypeEntry *entry);
-
-    bool single();
-
-    using std::vector<TypeEntry *>::vector;
-
-    TypesEntries onlyFunctions();
-};
 
 class FunctionEntryParameter {
 public:

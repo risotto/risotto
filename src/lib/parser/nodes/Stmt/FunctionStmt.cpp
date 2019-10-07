@@ -8,6 +8,7 @@
 #include <lib/compiler/CompilerError.h>
 #include "FunctionStmt.h"
 #include "BlockStmt.h"
+#include "lib/compiler/TypeReference.h"
 
 FunctionStmt::FunctionStmt(
         Token *type,

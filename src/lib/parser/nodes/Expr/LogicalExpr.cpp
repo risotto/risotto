@@ -8,6 +8,7 @@ extern "C" {
 #include <lib/compiler/Compiler.h>
 #include <lib/compiler/CompilerError.h>
 #include "LogicalExpr.h"
+#include "lib/compiler/TypeReference.h"
 
 LogicalExpr::LogicalExpr(Expr *left, Token *op, Expr *right): left(left), op(op), right(right) {
 

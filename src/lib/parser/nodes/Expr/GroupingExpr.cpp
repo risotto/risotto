@@ -3,6 +3,7 @@
 //
 
 #include "GroupingExpr.h"
+#include "lib/compiler/TypeReference.h"
 
 GroupingExpr::GroupingExpr(Expr *expr, Token *lParen, Token *rParen): expr(expr), lParen(lParen), rParen(rParen) {
 

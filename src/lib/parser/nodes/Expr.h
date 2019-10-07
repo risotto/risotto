@@ -8,6 +8,7 @@
 
 #include <lib/compiler/TypesTable.h>
 #include "Node.h"
+#include "lib/compiler/TypeReference.h"
 #include <vector>
 
 class Expr : public Node {

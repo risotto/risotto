@@ -6,6 +6,7 @@
 #include <lib/compiler/CompilerError.h>
 #include <lib/compiler/utils/Utils.h>
 #include "IdentifierExpr.h"
+#include "lib/compiler/TypeReference.h"
 
 IdentifierExpr::IdentifierExpr(Token *name) : name(name) {
 

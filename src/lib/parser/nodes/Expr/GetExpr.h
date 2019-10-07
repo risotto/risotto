@@ -7,6 +7,7 @@
 
 
 #include <lib/parser/nodes/Expr.h>
+#include "lib/compiler/TypeReference.h"
 
 class GetExpr: public Expr {
 public:

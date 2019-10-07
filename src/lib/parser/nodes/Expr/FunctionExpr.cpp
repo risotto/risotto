@@ -3,6 +3,7 @@
 //
 
 #include "FunctionExpr.h"
+#include "lib/compiler/TypeReference.h"
 
 FunctionExpr::FunctionExpr(FunctionStmt *functionStmt) : functionStmt(functionStmt) {}
 
