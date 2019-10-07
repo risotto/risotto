@@ -22,6 +22,7 @@
 #include <lib/parser/nodes/Expr/GetExpr.h>
 #include <lib/parser/nodes/Expr/VarDeclStmt.h>
 #include <lib/parser/nodes/Expr/SetExpr.h>
+#include <lib/parser/nodes/Stmt/WhileStmt.h>
 
 namespace ASTPrinter {
     std::string indent(std::string str, int n);
@@ -79,6 +80,9 @@ namespace ASTPrinter {
 
     template<>
     std::string print<SetExpr *>(SetExpr *stmt);
+
+    template<>
+    std::string print<WhileStmt *>(WhileStmt *stmt);
 };
 
 

@@ -6,9 +6,9 @@
 #define RISOTTOV2_CALLEXPR_H
 
 
+#include <vector>
 #include <lib/tokenizer/Token.h>
 #include <lib/parser/nodes/Expr.h>
-#include <vector>
 #include <lib/compiler/CompilerError.h>
 
 class CallExpr: public Expr {
@@ -29,6 +29,8 @@ protected:
     TypesEntries computeReturnType(Compiler *compiler) override;
 
     std::vector<TypeEntry *> getArgumentsTypes(Compiler *compiler);
+
+    virtual FunctionNotFoundError getFunctionNotFoundError(Compiler *compiler);
 };
 
 

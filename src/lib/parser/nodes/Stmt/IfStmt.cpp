@@ -2,36 +2,94 @@
 // Created by rvigee on 10/2/19.
 //
 
+extern "C" {
 #include <lib/vm/chunk.h>
+}
+#include <assert.h>
 #include "IfStmt.h"
 #include "lib/compiler/ByteResolver.h"
 #include "lib/compiler/Compiler.h"
 
-IfStmt::IfStmt(Expr *condition, Stmt *thenBranch) : condition(condition), thenBranch(thenBranch) {
+IfStmt::IfStmt(
+        Expr *condition,
+        Stmt *thenBranch,
+        std::vector<IfStmt *> elseifs,
+        Stmt *elseBranch
+) : condition(condition),
+    thenBranch(thenBranch),
+    elseifs(elseifs),
+    elseBranch(elseBranch) {}
 
+ByteResolver *generateNextBranchByte(std::vector<std::vector<ByteResolver *>> *branchesBytes) {
+    auto nextBranchByte = branchesBytes->back().front();
+
+    return new ByteResolver([nextBranchByte](Compiler *c) {
+        return c->getAddr(nextBranchByte);
+    }, nullptr);
 }
 
-std::vector<ByteResolver *> IfStmt::compile(Compiler *compiler) {
+ByteResolver *generateExitByte(std::vector<std::vector<ByteResolver *>> *branchesBytes) {
+    auto lastElseByte = branchesBytes->front().back();
+    return new ByteResolver([lastElseByte](Compiler *c) {
+        return c->getAddr(lastElseByte) + 1;
+    }, nullptr);
+}
+
+std::vector<ByteResolver *> generateElseifBytes(Compiler  *compiler, IfStmt *elseif,
+                                        std::vector<std::vector<ByteResolver *>> *branchesBytes) {
     auto bytes = std::vector<ByteResolver *>();
 
-    // Compile condition
-    auto conditionBytes = condition->compile(compiler);
+    auto conditionBytes = elseif->condition->compile(compiler);
     bytes.insert(bytes.end(), conditionBytes.begin(), conditionBytes.end());
 
-    // Compile then branch
-    auto thenBytes = thenBranch->compile(compiler);
+    bytes.push_back(new ByteResolver(OpCode::OP_JUMPF, nullptr));
+    bytes.push_back(generateNextBranchByte(branchesBytes));
 
-    // Keep reference to last byte of then
-    auto lastThenByte = thenBytes.back();
+    auto thenBytes = elseif->thenBranch->compile(compiler);
+    if (thenBytes.empty()) {
+        thenBytes.push_back(new ByteResolver(OpCode::OP_NOOP, nullptr));
+    }
 
-    // If condition == false, jump after then branch
-    bytes.push_back(new ByteResolver(OP_JUMPF, nullptr));
-    bytes.push_back(new ByteResolver([lastThenByte](Compiler *c) {
-        return c->getAddr(lastThenByte) + 1;
-    }, nullptr));
-
-    // Else, run then branch
     bytes.insert(bytes.end(), thenBytes.begin(), thenBytes.end());
+    bytes.push_back(new ByteResolver(OpCode::OP_JUMP, nullptr));
+    bytes.push_back(generateExitByte(branchesBytes));
+
+    return bytes;
+}
+
+std::vector<ByteResolver *> IfStmt::compile(Compiler  *compiler) {
+    auto branchesBytes = std::vector<std::vector<ByteResolver *>>();
+
+    auto elseBytes = std::vector<ByteResolver *>();
+    if (elseBranch) {
+        elseBytes = elseBranch->compile(compiler);
+    }
+
+    if (elseBytes.empty()) {
+        elseBytes.push_back(new ByteResolver(OpCode::OP_NOOP, nullptr));
+    }
+
+    branchesBytes.push_back(elseBytes);
+
+    for (auto it = elseifs.rbegin(); it != elseifs.rend(); ++it) {
+        auto elseif = *it;
+
+        assert(elseif->elseBranch == nullptr);
+        assert(elseif->elseifs.empty());
+
+        auto branchBytes = generateElseifBytes(compiler, elseif, &branchesBytes);
+        branchesBytes.push_back(branchBytes);
+    }
+
+    auto mainBytes = generateElseifBytes(compiler, this, &branchesBytes);
+    branchesBytes.push_back(mainBytes);
+
+    auto bytes = std::vector<ByteResolver *>();
+
+    for (auto it = branchesBytes.rbegin(); it != branchesBytes.rend(); ++it) {
+        auto branchBytes = *it;
+        bytes.insert(bytes.end(), branchBytes.begin(), branchBytes.end());
+    }
 
     return bytes;
 }

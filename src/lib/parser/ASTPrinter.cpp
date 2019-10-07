@@ -73,6 +73,7 @@ if (auto V = dynamic_cast<T *>(stmt)) { \
         DC(ReturnStmt)
         DC(ExpressionStmt)
         DC(VarDeclStmt)
+        DC(WhileStmt)
 
         return print(dynamic_cast<Node *>(stmt));
     }
@@ -272,6 +273,19 @@ if (auto V = dynamic_cast<T *>(stmt)) { \
         ss << indent(print(stmt->left), 2);
         ss << indent("+Right:", 1) << std::endl;
         ss << indent(print(stmt->right), 2);
+
+        return ss.str();
+    }
+
+    template<>
+    std::string print<WhileStmt *>(WhileStmt *stmt) {
+        std::stringstream ss;
+
+        ss << "WhileStmt" << std::endl;
+        ss << indent("+Condition:", 1) << std::endl;
+        ss << indent(print(stmt->condition), 2);
+        ss << indent("+Body:", 1) << std::endl;
+        ss << indent(print(stmt->body), 2);
 
         return ss.str();
     }

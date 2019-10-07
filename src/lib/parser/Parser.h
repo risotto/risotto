@@ -36,13 +36,18 @@ private:
     bool isAtEnd();
 
     bool check(Token::Type tokenType);
+
     bool check(Token::Type tokenType, int n);
 
     Stmt *declaration();
 
     Stmt *statement();
 
-    Stmt *ifStatement();
+    Stmt *whileStatement();
+
+    Stmt *forStatement();
+
+    Stmt *ifStatement(bool canHaveElse);
 
     Stmt *returnStatement();
 
@@ -79,7 +84,7 @@ private:
     template<typename T>
     std::vector<T> enumeration(std::function<T()> of, Token::Type end);
 
-    Token *consume(Token::Type type, const std::string& message);
+    Token *consume(Token::Type type, const std::string &message);
 
     ParseError error(Token *token, const std::string &message);
 
@@ -87,7 +92,9 @@ private:
 
     Stmt *function();
 
-    ParameterDefinition * parameter();
+    ParameterDefinition *parameter();
+
+    Stmt *varDecl();
 };
 
 

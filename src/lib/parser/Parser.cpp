@@ -6,6 +6,7 @@
 #include <lib/compiler/CompilerError.h>
 #include <lib/parser/nodes/Expr/GetExpr.h>
 #include <lib/parser/nodes/Expr/VarDeclStmt.h>
+#include <lib/parser/nodes/Stmt/ForStmt.h>
 #include "Parser.h"
 #include "ParseError.h"
 #include "lib/parser/nodes/Stmt/ExpressionStmt.h"
@@ -112,6 +113,15 @@ Stmt *Parser::declaration() {
         throw error(previous(), "TODO STRUCT");
     }
 
+    auto varDeclStmt = varDecl();
+    if (varDeclStmt) {
+        return varDeclStmt;
+    }
+
+    return statement();
+}
+
+Stmt *Parser::varDecl() {
     auto c = current;
     if (match(Token::Type::IDENTIFIER)) {
         auto identifiers = std::vector<Token *>({previous()});
@@ -131,7 +141,7 @@ Stmt *Parser::declaration() {
         }
     }
 
-    return statement();
+    return nullptr;
 }
 
 Stmt *Parser::function() {
@@ -208,23 +218,90 @@ std::vector<Stmt *> Parser::block() {
 }
 
 Stmt *Parser::statement() {
-//    if (match(FOR)) return forStatement();
-    if (match(Token::Type::IF)) return ifStatement();
+    if (match(Token::Type::FOR)) return forStatement();
+    if (match(Token::Type::IF)) return ifStatement(true);
     if (match(Token::Type::RETURN)) return returnStatement();
     if (match(Token::Type::LEFT_CURLY)) return new BlockStmt(block());
-//    if (match(WHILE)) return whileStatement();
+    if (match(Token::Type::WHILE)) return whileStatement();
 
     return expressionStatement();
 }
 
-Stmt *Parser::ifStatement() {
+Stmt *Parser::whileStatement() {
+    Expr *condition = expression();
+
+    Stmt *bodyStmt = statement();
+
+    BlockStmt *body;
+    if (dynamic_cast<BlockStmt *>(bodyStmt)) {
+        body = dynamic_cast<BlockStmt *>(bodyStmt);
+    } else {
+        body = new BlockStmt({bodyStmt});
+    }
+
+    return new WhileStmt(condition, body);
+}
+
+Stmt *Parser::forStatement() {
+    Stmt *initializer;
+    if (match(Token::Type::SEMICOLON)) {
+        initializer = nullptr;
+    } else {
+        auto varDeclStmt = varDecl();
+
+        if (varDeclStmt != nullptr) {
+            initializer = varDeclStmt;
+        } else {
+            initializer = expressionStatement();
+        }
+    }
+
+    consume(Token::Type::SEMICOLON, "Expect ';' after loop initializer.");
+
+    Expr *condition = nullptr;
+    if (!check(Token::Type::SEMICOLON)) {
+        condition = expression();
+    }
+    consume(Token::Type::SEMICOLON, "Expect ';' after loop condition.");
+
+    Expr *increment = nullptr;
+    if (!check(Token::Type::RIGHT_PAREN)) {
+        increment = expression();
+    }
+
+    Stmt *bodyStmt = statement();
+
+    BlockStmt *body;
+    if (dynamic_cast<BlockStmt *>(bodyStmt)) {
+        body = dynamic_cast<BlockStmt *>(bodyStmt);
+    } else {
+        body = new BlockStmt({bodyStmt});
+    }
+
+    if (increment != nullptr) {
+        body->stmts.push_back(new ExpressionStmt(increment));
+    }
+
+    return new ForStmt(initializer, new WhileStmt(condition, body));
+}
+
+Stmt *Parser::ifStatement(bool canHaveElse) {
     Expr *condition = expression();
 
     Stmt *thenBranch = statement();
+    auto elseifs = std::vector<IfStmt *>();
+    Stmt *elseBranch = nullptr;
+    while (canHaveElse && match(Token::Type::ELSE)) {
+        if (match(Token::Type::IF)) {
+            elseifs.push_back((IfStmt *) ifStatement(false));
+        } else {
+            elseBranch = statement();
+            break;
+        }
+    }
 
-    return new IfStmt(condition, thenBranch);
+    return new IfStmt(condition, thenBranch, elseifs, elseBranch);
 }
-
 
 Stmt *Parser::returnStatement() {
     auto values = std::vector<Expr *>();

@@ -13,8 +13,10 @@ class IfStmt: public Stmt {
 public:
     Expr *condition;
     Stmt *thenBranch;
+    std::vector<IfStmt *> elseifs;
+    Stmt *elseBranch;
 
-    IfStmt(Expr *condition, Stmt *thenBranch);
+    IfStmt(Expr *condition, Stmt *thenBranch, std::vector<IfStmt *> elseifs, Stmt *elseBranch);
 
     std::vector<ByteResolver *> compile(Compiler *compiler) override;
 };

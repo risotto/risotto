@@ -34,3 +34,7 @@ FunctionEntry *BinaryExpr::getFunctionEntry(Compiler *compiler) {
 
     return leftTypeEntry[0]->operators.find(op()->lexeme, getArgumentsTypes(compiler));
 }
+
+FunctionNotFoundError BinaryExpr::getFunctionNotFoundError(Compiler *compiler) {
+    return FunctionNotFoundError(op()->lexeme, left()->getReturnType(compiler)[0]->name, getArgumentsTypes(compiler), op());
+}

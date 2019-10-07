@@ -25,3 +25,6 @@ std::vector<ByteResolver *> SetExpr::compile(Compiler *compiler) {
     return bytes;
 }
 
+TypesEntries SetExpr::computeReturnType(Compiler *compiler) {
+    return left->getReturnType(compiler);
+}

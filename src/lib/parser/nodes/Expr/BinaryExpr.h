@@ -23,6 +23,9 @@ public:
     Token *op();
 
     std::vector<Expr *> getArguments(Compiler *compiler) override;
+
+protected:
+    FunctionNotFoundError getFunctionNotFoundError(Compiler *compiler) override;
 };
 
 

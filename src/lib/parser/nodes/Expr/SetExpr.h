@@ -18,6 +18,9 @@ public:
     SetExpr(Expr *left, Token *op, Expr *right);
 
     std::vector<ByteResolver *> compile(Compiler *compiler) override;
+
+protected:
+    TypesEntries computeReturnType(Compiler *compiler) override;
 };
 
 

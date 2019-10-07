@@ -292,8 +292,8 @@ static InterpretResult run() {
 
                 Object *instance = malloc(sizeof(*instance));
                 instance->size = size;
-                instance->values = malloc(size * sizeof(*instance->values));
                 instance->marked = 0;
+                instance->values = malloc(size * sizeof(*instance->values));
 
                 for (int i = 0; i < size; ++i) {
                     instance->values[i] = n2v();
@@ -314,7 +314,12 @@ static InterpretResult run() {
                 break;
             }
             case OP_POP: {
-                popp();
+                int n = READ_BYTE();
+
+                for (int i = 0; i < n; ++i) {
+                    popp();
+                }
+
                 break;
             }
             case OP_COPY: {

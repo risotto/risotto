@@ -37,7 +37,7 @@ VariableFindResponse *Frame::findVariable(const std::string &name) {
     Frame *current = this;
     int distance = 0;
     while (current != nullptr) {
-        auto entry = variables.find(name);
+        auto entry = current->variables.find(name);
 
         if (entry != nullptr) {
             return new VariableFindResponse(entry, distance);

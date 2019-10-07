@@ -201,7 +201,7 @@ int disassembleInstruction(Chunk *chunk, int offset) {
         case OP_NATIVE_CALL:
             return callInstruction(getName(instruction), chunk, offset);
         case OP_POP:
-            return simpleInstruction(getName(instruction), offset);
+            return intInstruction(getName(instruction), chunk, offset);
         case OP_COPY:
             return simpleInstruction(getName(instruction), offset);
         case OP_NIL:

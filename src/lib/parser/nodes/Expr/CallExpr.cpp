@@ -86,7 +86,7 @@ std::vector<TypeEntry *> CallExpr::getArgumentsTypes(Compiler *compiler) {
 FunctionEntry *CallExpr::getFunctionEntry(Compiler *compiler) {
     auto argumentsTypes = getArgumentsTypes(compiler);
 
-    if (auto withCandidates = dynamic_cast<ReturnsCandidatesFunctions *>(callee)) {
+    if (dynamic_cast<ReturnsCandidatesFunctions *>(callee) != nullptr) {
         auto returnTypes = callee->getReturnType(compiler);
 
         auto functions = std::vector<FunctionEntry *>();
@@ -104,18 +104,7 @@ FunctionEntry *CallExpr::getFunctionEntry(Compiler *compiler) {
         auto entry = Utils::findMatchingFunctions(functions, argumentsTypes);
 
         if (entry == nullptr) {
-            auto actualArgumentsTypes = Utils::getTypes(args, compiler);
-
-            if (auto getExpr = dynamic_cast<GetExpr *>(callee)) {
-                throw FunctionNotFoundError(
-                        getExpr->identifier->lexeme,
-                        getExpr->callee->getReturnType(compiler)[0]->name,
-                        actualArgumentsTypes,
-                        rParen
-                );
-            }
-
-            throw FunctionNotFoundError(withCandidates->getCandidatesFunctionsFor(), "", actualArgumentsTypes, rParen);
+            throw getFunctionNotFoundError(compiler);
         }
 
         return entry;
@@ -126,11 +115,36 @@ FunctionEntry *CallExpr::getFunctionEntry(Compiler *compiler) {
         return calleeReturnType[0]->asFunctionTypeEntry()->function;
     }
 
+    throw getFunctionNotFoundError(compiler);
+}
+
+FunctionNotFoundError CallExpr::getFunctionNotFoundError(Compiler *compiler) {
+    auto actualArgumentsTypes = Utils::getTypes(args, compiler);
+
+    if (auto getExpr = dynamic_cast<GetExpr *>(callee)) {
+        throw FunctionNotFoundError(
+                getExpr->identifier->lexeme,
+                getExpr->callee->getReturnType(compiler)[0]->name,
+                actualArgumentsTypes,
+                rParen
+        );
+    }
+
+    if (auto withCandidates = dynamic_cast<ReturnsCandidatesFunctions *>(callee)) {
+        throw FunctionNotFoundError(withCandidates->getCandidatesFunctionsFor(), "", actualArgumentsTypes, rParen);
+    }
+
+    auto argumentsTypes = getArgumentsTypes(compiler);
+
     throw FunctionNotFoundError("", "", argumentsTypes, rParen);
 }
 
 TypesEntries CallExpr::computeReturnType(Compiler *compiler) {
     auto functionEntry = getFunctionEntry(compiler);
 
-    return functionEntry[0].returnTypes;
+    if (functionEntry == nullptr) {
+        throw getFunctionNotFoundError(compiler);
+    }
+
+    return functionEntry->returnTypes;
 }
