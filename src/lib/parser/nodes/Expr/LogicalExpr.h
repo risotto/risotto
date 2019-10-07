@@ -16,6 +16,17 @@ public:
     Expr *right;
 
     LogicalExpr(Expr *left, Token *op, Expr *right);
+
+    std::vector<ByteResolver *>
+    generateOr(std::vector<ByteResolver *> leftBytes, std::vector<ByteResolver *> rightBytes, Compiler *compiler);
+
+    std::vector<ByteResolver *>
+    generateAnd(std::vector<ByteResolver *> leftBytes, std::vector<ByteResolver *> rightBytes, Compiler *compiler);
+
+    std::vector<ByteResolver *> compile(Compiler *compiler) override;
+
+protected:
+    TypesEntries computeReturnType(Compiler *compiler) override;
 };
 
 

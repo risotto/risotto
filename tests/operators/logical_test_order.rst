@@ -1,43 +1,44 @@
-fun bool false_fun() {
-    print "false_fun";
-    return false;
+func false_fun() bool {
+    println("false_fun")
+    return false
 }
 
-fun bool true_fun() {
-    print "true_fun";
-    return true;
+func true_fun() bool {
+    println("true_fun")
+    return true
 }
+
 
 if(false_fun() || true_fun()) {
-    print "or > test1";
+    println("or > test1")
 }
 
 if(true_fun() || false_fun()) {
-    print "or > test2";
+    println("or > test2")
 }
 
 if(true_fun() || true_fun()) {
-    print "or > test3";
+    println("or > test3")
 }
 
 if(false_fun() || false_fun()) {
-    print "or > test4";
+    println("or > test4")
 }
 
 
 
 if(false_fun() && true_fun()) {
-    print "and > test1";
+    println("and > test1")
 }
 
 if(true_fun() && false_fun()) {
-    print "and > test2";
+    println("and > test2")
 }
 
 if(true_fun() && true_fun()) {
-    print "and > test3";
+    println("and > test3")
 }
 
 if(false_fun() && false_fun()) {
-    print "and > test4";
+    println("and > test4")
 }

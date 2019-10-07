@@ -199,7 +199,7 @@ TEST(Operators, DISABLED_SlashEqual) {
     EXPECT_STDOUT("1\n0\n0\n");
 }
 
-TEST(Operators, DISABLED_LogicalOr) {
+TEST(Operators, LogicalOr) {
     INIT_TEST
 
     risotto.run(LOGICAL_OPERATOR_INPUT(||));
@@ -208,7 +208,7 @@ TEST(Operators, DISABLED_LogicalOr) {
 }
 
 
-TEST(Operators, DISABLED_LogicalAnd) {
+TEST(Operators, LogicalAnd) {
     INIT_TEST
 
     risotto.run(LOGICAL_OPERATOR_INPUT(&&));
@@ -216,7 +216,7 @@ TEST(Operators, DISABLED_LogicalAnd) {
     EXPECT_STDOUT("false\nfalse\ntrue\nfalse\n");
 }
 
-TEST(Operators, DISABLED_LogicalTestOrder) {
+TEST(Operators, LogicalTestOrder) {
     INIT_TEST
 
     risotto.runFile(INPUT("logical_test_order"));
@@ -231,4 +231,3 @@ TEST(Operators, DISABLED_Overloading) {
 
     EXPECT_STDOUT(OUTPUT("overloading"));
 }
-

@@ -58,8 +58,7 @@ public:
     std::string lexeme;
     Position position;
 
-    Token(Type
-          type,
+    Token(Type type,
           ValueData value,
           std::string lexeme,
           Position position
