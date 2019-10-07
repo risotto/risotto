@@ -51,6 +51,23 @@ FunctionEntry *FunctionsTable::find(const std::string &name, const std::vector<T
 }
 
 FunctionEntry *FunctionsTable::add(FunctionEntry *entry) {
+    auto paramsTypes = std::vector<TypeEntry *>();
+    for (const auto& param: entry->params) {
+        paramsTypes.push_back(param.type);
+    }
+
+    auto existingFunction = find(entry->name, paramsTypes);
+
+    if (existingFunction != nullptr) {
+        auto it = std::find(functions.begin(), functions.end(), existingFunction);
+
+        if (it != functions.end()) {
+            auto index = std::distance(functions.begin(), it);
+
+            functions.erase(functions.begin()+index);
+        }
+    }
+
     functions.push_back(entry);
 
     return entry;
