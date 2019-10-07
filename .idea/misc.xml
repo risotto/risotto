@@ -5,15 +5,13 @@
     <sourceRoots>
       <file path="$PROJECT_DIR$/src" />
     </sourceRoots>
-    <libraryRoots>
-      <file path="$PROJECT_DIR$/lib" />
-    </libraryRoots>
     <excludeRoots>
       <file path="$PROJECT_DIR$/cmake-build-coverage-gnu" />
       <file path="$PROJECT_DIR$/cmake-build-debug" />
       <file path="$PROJECT_DIR$/cmake-build-debug-gnu" />
       <file path="$PROJECT_DIR$/cmake-build-release" />
       <file path="$PROJECT_DIR$/cmake-build-release-gnu" />
+      <file path="$PROJECT_DIR$/lib" />
     </excludeRoots>
   </component>
   <component name="JavaScriptSettings">

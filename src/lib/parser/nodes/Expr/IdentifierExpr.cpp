@@ -15,22 +15,17 @@ std::vector<ByteResolver *> IdentifierExpr::compile(Compiler *compiler) {
     auto bytes = std::vector<ByteResolver *>();
 
     auto returnType = getReturnType(compiler);
-    auto functionsReturnType = returnType.onlyFunctions();
 
-    if (!functionsReturnType.empty()) {
-        if (!functionsReturnType.single()) {
-            throw CompilerError("Return type has to be single", name->position);
-        }
+    if (!returnType.single()) {
+        throw CompilerError("Must resolve to a single symbol");
+    }
 
-        auto functionEntry = functionsReturnType[0]->asFunctionTypeEntry()->function;
+    if (returnType[0]->isFunction()) {
+        auto functionEntry = returnType[0]->asFunctionTypeEntry()->function;
 
         Utils::loadFunctionEntryAddr(compiler, functionEntry, bytes);
 
         return bytes;
-    }
-
-    if (forceReturnFunctionReference) {
-        throw CompilerError("A single function must be returned", name->position);
     }
 
     auto response = compiler->frame->findVariable(name->lexeme);
@@ -39,7 +34,7 @@ std::vector<ByteResolver *> IdentifierExpr::compile(Compiler *compiler) {
         throw CompilerError("Cannot find variable " + name->lexeme);
     }
 
-    bytes.push_back(new ByteResolver(OP_LOAD_LOCAL, nullptr));
+    bytes.push_back(new ByteResolver(OP_LOAD_LOCAL, &name->position));
     bytes.push_back(new ByteResolver(response->distance, nullptr));
     bytes.push_back(new ByteResolver(response->variable->index, nullptr));
 
@@ -47,7 +42,7 @@ std::vector<ByteResolver *> IdentifierExpr::compile(Compiler *compiler) {
 }
 
 TypesEntries IdentifierExpr::computeReturnType(Compiler *compiler) {
-    auto candidates = compiler->frame->findFunctionsCandidates(getCandidatesFunctionsFor());
+    auto candidates = compiler->frame->findFunctionsCandidates(name->lexeme);
 
     auto candidateTypes = TypesEntries();
 
@@ -55,21 +50,15 @@ TypesEntries IdentifierExpr::computeReturnType(Compiler *compiler) {
         candidateTypes.push_back(candidate->typeEntry);
     }
 
-    if (forceReturnFunctionReference) {
-        return candidateTypes;
-    }
-
     auto response = compiler->frame->findVariable(name->lexeme);
 
-    if (response == nullptr) {
+    if (response != nullptr) {
+        candidateTypes.push_back(response->variable->type);
+    }
+
+    if (candidateTypes.empty()) {
         throw CompilerError("Cannot find symbol " + name->lexeme);
     }
 
-    candidateTypes.push_back(response->variable->type);
-
     return candidateTypes;
-}
-
-std::string IdentifierExpr::getCandidatesFunctionsFor() {
-    return name->lexeme;
 }

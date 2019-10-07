@@ -31,6 +31,8 @@ protected:
     std::vector<TypeEntry *> getArgumentsTypes(Compiler *compiler);
 
     virtual FunctionNotFoundError getFunctionNotFoundError(Compiler *compiler);
+
+    TypesEntries getCalleeEntry(Compiler *compiler);
 };
 
 

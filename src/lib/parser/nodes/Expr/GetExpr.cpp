@@ -19,27 +19,20 @@ std::vector<ByteResolver *> GetExpr::compile(Compiler *compiler) {
     auto bytes = std::vector<ByteResolver *>();
 
     auto returnType = getReturnType(compiler);
-    auto functionsReturnType = returnType.onlyFunctions();
 
-    if (!functionsReturnType.empty()) {
-        if (returnType[0]->isFunction()) {
-            Utils::loadFunctionEntryAddr(compiler, returnType[0]->asFunctionTypeEntry()->function, bytes);
-
-            return bytes;
-        }
+    if (!returnType.single()) {
+        throw CompilerError("Must resolve to a single symbol");
     }
 
-    if (forceReturnFunctionReference) {
-        throw CompilerError("A single function must be returned", identifier->position);
+    if (returnType[0]->isFunction()) {
+        Utils::loadFunctionEntryAddr(compiler, returnType[0]->asFunctionTypeEntry()->function, bytes);
+
+        return bytes;
     }
 
     throw CompilerError("Not implemented");
 
     return bytes;
-}
-
-std::string GetExpr::getCandidatesFunctionsFor() {
-    return identifier->lexeme;
 }
 
 TypesEntries GetExpr::computeReturnType(Compiler *compiler) {
@@ -49,19 +42,13 @@ TypesEntries GetExpr::computeReturnType(Compiler *compiler) {
         throw CompilerError("Return type has to be single", identifier->position);
     }
 
-    auto candidates = calleeType[0]->functions.findCandidates(getCandidatesFunctionsFor());
+    auto candidates = calleeType[0]->functions.findCandidates(identifier->lexeme);
 
     auto candidateTypes = TypesEntries();
 
     for (auto candidate : candidates) {
         candidateTypes.push_back(candidate->typeEntry);
     }
-
-    if (forceReturnFunctionReference) {
-        return candidateTypes;
-    }
-
-    throw CompilerError("Not implemented");
 
     return candidateTypes;
 }

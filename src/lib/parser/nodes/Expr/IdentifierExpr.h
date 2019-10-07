@@ -8,17 +8,14 @@
 
 #include <lib/tokenizer/Token.h>
 #include <lib/parser/nodes/Expr.h>
-#include <lib/compiler/utils/ReturnsCandidatesFunctions.h>
 
-class IdentifierExpr: public Expr, public ReturnsCandidatesFunctions {
+class IdentifierExpr: public Expr {
 public:
     Token *name;
 
     explicit IdentifierExpr(Token *name);
 
     std::vector<ByteResolver *> compile(Compiler *compiler) override;
-
-    std::string getCandidatesFunctionsFor() override;
 
 protected:
     TypesEntries computeReturnType(Compiler *compiler) override;

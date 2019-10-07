@@ -23,11 +23,6 @@ CallExpr::CallExpr(Expr *callee, Token *rParen, std::vector<Expr *> args) :
 CallExpr::CallExpr(Expr *callee, Token *rParen, std::vector<Expr *> args, bool calleeIsValue) : callee(callee),
                                                                                                 rParen(rParen),
                                                                                                 args(std::move(args)) {
-    if (auto withCandidates = dynamic_cast<ReturnsCandidatesFunctions *>(callee)) {
-        if (!calleeIsValue) {
-            withCandidates->forceReturnFunctionReference = true;
-        }
-    }
 }
 
 std::vector<Expr *> CallExpr::getArguments(Compiler *compiler) {
@@ -91,36 +86,29 @@ std::vector<TypeEntry *> CallExpr::getArgumentsTypes(Compiler *compiler) {
     return Utils::getTypes(arguments, compiler);
 }
 
+TypesEntries CallExpr::getCalleeEntry(Compiler *compiler) {
+    try {
+        return callee->getReturnType(compiler);
+    } catch (CompilerError &e) {
+        throw getFunctionNotFoundError(compiler);
+    }
+}
+
 FunctionEntry *CallExpr::getFunctionEntry(Compiler *compiler) {
     auto argumentsTypes = getArgumentsTypes(compiler);
 
-    if (dynamic_cast<ReturnsCandidatesFunctions *>(callee) != nullptr) {
-        auto returnTypes = callee->getReturnType(compiler);
+    auto calleeReturnTypes = getCalleeEntry(compiler);
 
-        auto functions = std::vector<FunctionEntry *>();
+    auto functions = std::vector<FunctionEntry *>();
 
-        for (auto typeEntry : returnTypes) {
-            if (typeEntry->isFunction()) {
-                auto typeEntryFunction = typeEntry->asFunctionTypeEntry();
-
-                functions.push_back(typeEntryFunction->function);
-            } else {
-                throw CompilerError("Returned types is not a function");
-            }
-        }
-
-        auto entry = Utils::findMatchingFunctions(functions, argumentsTypes);
-
-        if (entry == nullptr) {
-            throw getFunctionNotFoundError(compiler);
-        }
-
-        return entry;
+    for (auto returnType : calleeReturnTypes.onlyFunctions()) {
+        functions.push_back(returnType->asFunctionTypeEntry()->function);
     }
 
-    auto calleeReturnType = callee->getReturnType(compiler);
-    if (calleeReturnType.single() && calleeReturnType[0]->isFunction()) {
-        return calleeReturnType[0]->asFunctionTypeEntry()->function;
+    auto entry = Utils::findMatchingFunctions(functions, argumentsTypes);
+
+    if (entry != nullptr) {
+        return entry;
     }
 
     throw getFunctionNotFoundError(compiler);
@@ -138,8 +126,13 @@ FunctionNotFoundError CallExpr::getFunctionNotFoundError(Compiler *compiler) {
         );
     }
 
-    if (auto withCandidates = dynamic_cast<ReturnsCandidatesFunctions *>(callee)) {
-        throw FunctionNotFoundError(withCandidates->getCandidatesFunctionsFor(), "", actualArgumentsTypes, rParen);
+    if (auto identifierExpr = dynamic_cast<IdentifierExpr *>(callee)) {
+        throw FunctionNotFoundError(
+                identifierExpr->name->lexeme,
+                "",
+                actualArgumentsTypes,
+                rParen
+        );
     }
 
     auto argumentsTypes = getArgumentsTypes(compiler);

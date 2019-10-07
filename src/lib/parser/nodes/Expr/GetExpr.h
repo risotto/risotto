@@ -7,9 +7,8 @@
 
 
 #include <lib/parser/nodes/Expr.h>
-#include <lib/compiler/utils/ReturnsCandidatesFunctions.h>
 
-class GetExpr: public Expr, public ReturnsCandidatesFunctions {
+class GetExpr: public Expr {
 public:
     Expr *callee;
     Token *identifier;
@@ -17,9 +16,6 @@ public:
     GetExpr(Expr *callee, Token *identifier);
 
     std::vector<ByteResolver *> compile(Compiler *compiler) override;
-
-    std::string getCandidatesFunctionsFor() override;
-
 protected:
     TypesEntries computeReturnType(Compiler *compiler) override;
 };
