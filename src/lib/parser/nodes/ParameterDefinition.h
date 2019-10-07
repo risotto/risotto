@@ -10,10 +10,11 @@
 
 class ParameterDefinition {
 public:
-    Token *type;
     Token *name;
+    Token *type;
+    bool isReference;
 
-    ParameterDefinition(Token *type, Token *name);
+    ParameterDefinition(Token *name, Token *type, bool isReference);
 };
 
 

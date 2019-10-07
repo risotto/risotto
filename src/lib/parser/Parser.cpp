@@ -194,9 +194,15 @@ Stmt *Parser::function() {
 
 ParameterDefinition *Parser::parameter() {
     auto name = consume(Token::Type::IDENTIFIER, "Expect parameter name.");
-    auto type = consume(Token::Type::IDENTIFIER, "Expect parameter type.");;
 
-    return new ParameterDefinition(type, name);
+    auto isReference = false;
+    if (match(Token::Type::AMPERSAND)) {
+        isReference = true;
+    }
+
+    auto type = consume(Token::Type::IDENTIFIER, "Expect parameter type.");
+
+    return new ParameterDefinition(name, type, isReference);
 }
 
 std::vector<Stmt *> Parser::block() {
@@ -342,8 +348,14 @@ Expr *Parser::expression() {
 Expr *Parser::assignment() {
     Expr *expr = logicalOr();
 
+    if(match(Token::Type::EQUAL)) {
+        Token *op = previous();
+        Expr *value = assignment();
+
+        return new SetExpr(expr, op, value);
+    }
+
     if (match(
-            Token::Type::EQUAL,
             Token::Type::PLUS_EQUAL,
             Token::Type::MINUS_EQUAL,
             Token::Type::STAR_EQUAL,
@@ -352,7 +364,7 @@ Expr *Parser::assignment() {
         Token *op = previous();
         Expr *value = assignment();
 
-        return new SetExpr(expr, op, value);
+        return new BinaryExpr(expr, op, value);
     }
 
     return expr;

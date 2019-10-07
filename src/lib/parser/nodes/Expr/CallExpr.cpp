@@ -54,13 +54,21 @@ std::vector<ByteResolver *> CallExpr::compile(Compiler *compiler) {
 
     Utils::loadFunctionEntryAddr(compiler, functionEntry, bytes);
 
-    if (dynamic_cast<NativeFunctionEntry *>(functionEntry) != nullptr) {
+    auto isNative = dynamic_cast<NativeFunctionEntry *>(functionEntry) != nullptr;
+
+    if (isNative) {
         bytes.push_back(new ByteResolver(OpCode::OP_NATIVE_CALL, &rParen->position));
     } else {
         bytes.push_back(new ByteResolver(OpCode::OP_CALL, &rParen->position));
     }
 
     bytes.push_back(new ByteResolver(static_cast<int>(functionEntry->params.size()), nullptr));
+
+    if (!isNative) {
+        for (const auto &parameter: functionEntry->params) {
+            bytes.push_back(new ByteResolver(parameter.isReference, nullptr));
+        }
+    }
 
     return bytes;
 }

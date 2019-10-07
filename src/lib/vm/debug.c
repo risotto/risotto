@@ -92,6 +92,13 @@ static int callInstruction(const char *name, Chunk *chunk, int offset) {
     int c = chunk->code[offset + 1];
     printf("%-11s C:%-3d \n", name, c);
 
+    return offset + 2 + c + c;
+}
+
+static int nativeCallInstruction(const char *name, Chunk *chunk, int offset) {
+    int c = chunk->code[offset + 1];
+    printf("%-11s C:%-3d \n", name, c);
+
     return offset + 2 + c;
 }
 
@@ -199,7 +206,7 @@ int disassembleInstruction(Chunk *chunk, int offset) {
         case OP_CALL:
             return callInstruction(getName(instruction), chunk, offset);
         case OP_NATIVE_CALL:
-            return callInstruction(getName(instruction), chunk, offset);
+            return nativeCallInstruction(getName(instruction), chunk, offset);
         case OP_POP:
             return intInstruction(getName(instruction), chunk, offset);
         case OP_COPY:

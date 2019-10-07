@@ -14,14 +14,14 @@ bool TypeEntry::canReceiveType(TypeEntry *type) {
     return this == type;
 }
 
-FunctionEntry *TypeEntry::addFunction(const std::string &selfName, FunctionEntry *entry) {
-    entry->params.insert(entry->params.begin(), {FunctionEntryParameter(selfName, this)});
+FunctionEntry *TypeEntry::addFunction(const std::string &selfName, bool isReference, FunctionEntry *entry) {
+    entry->params.insert(entry->params.begin(), {FunctionEntryParameter(selfName, this, isReference)});
 
     return functions.add(entry);
 }
 
-FunctionEntry *TypeEntry::addOperator(const std::string &selfName, FunctionEntry *entry) {
-    entry->params.insert(entry->params.begin(), {FunctionEntryParameter(selfName, this)});
+FunctionEntry *TypeEntry::addOperator(const std::string &selfName, bool isReference, FunctionEntry *entry) {
+    entry->params.insert(entry->params.begin(), {FunctionEntryParameter(selfName, this, isReference)});
 
     return operators.add(entry);
 }

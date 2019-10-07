@@ -181,6 +181,11 @@ static InterpretResult run() {
                 int addr = v2i(pop()); // get next instruction as an address of procedure jump ...
                 int argc = READ_BYTE(); // ... and next one as number of arguments to load ...
 
+                bool refs[argc];
+                for (int i = 0; i < argc; ++i) {
+                    refs[i] = (bool) READ_BYTE();
+                }
+
                 push(i2v(argc));   // ... save num args ...
                 push(p2v(vm.ip)); // ... save instruction pointer ...
                 cframe();
@@ -188,7 +193,12 @@ static InterpretResult run() {
 
                 for (int i = 0; i < argc; ++i) {
                     Value *a = vm.fp - 4 - i;
-                    push(copy(*a));
+
+                    if(refs[i] == true) {
+                        push(vp2v(a));
+                    } else {
+                        push(copy(*a));
+                    }
                 }
 
                 break;

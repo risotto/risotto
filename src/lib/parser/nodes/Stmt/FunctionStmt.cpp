@@ -65,12 +65,14 @@ std::vector<ByteResolver *> FunctionStmt::compile(Compiler *compiler) {
             case Token::Type::FUNC:
                 functionEntry = receiverType->addFunction(
                         receiver->name->lexeme,
+                        receiver->isReference,
                         functionEntry
                 );
                 break;
             case Token::Type::OP:
                 functionEntry = receiverType->addOperator(
                         receiver->name->lexeme,
+                        receiver->isReference,
                         functionEntry
                 );
                 break;

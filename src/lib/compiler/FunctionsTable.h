@@ -28,8 +28,10 @@ class FunctionEntryParameter {
 public:
     std::string name;
     TypeEntry *type;
+    bool isReference;
 
     FunctionEntryParameter(std::string name, TypeEntry *type);
+    FunctionEntryParameter(std::string name, TypeEntry *type, bool isReference);
 };
 
 class FunctionTypeEntry;

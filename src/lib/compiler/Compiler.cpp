@@ -13,6 +13,7 @@ extern "C" {
 #define NATIVE_BINARY_DECLARATION_NAMED(target, op, param, return, functionName, define) \
     target##Entry->addOperator( \
         "self", \
+        true, \
         new NativeFunctionEntry( \
             #op, \
             {FunctionEntryParameter("right", param##Entry)}, \

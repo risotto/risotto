@@ -7,7 +7,7 @@
 
 //#define OPERATOR_INPUT(op) "println(-2.1 " #op " 2) println(2 " #op " -2.2) println(2.0 " #op " 2.0) println(1 " #op " 2)"
 #define OPERATOR_INPUT(op) "println(1.0 " #op " 2) println(1 " #op " 2.0) println(1 " #op " 2)"
-#define SHORTHAND_OPERATOR_INPUT(op) "var a = 1 println(a) a " #op " 2 println(a) a " #op " 5 println(a)"
+#define SHORTHAND_OPERATOR_INPUT(op) "a := 1 println(a) a " #op " 2 println(a) a " #op " 5 println(a)"
 #define LOGICAL_OPERATOR_INPUT(op) "println(true " #op " false) println(false " #op " true) println(true " #op " true) println(false " #op " false)"
 
 TEST(Operators, Precedence) {
@@ -167,7 +167,7 @@ TEST(Operators, BinaryBangEqual) {
     EXPECT_STDOUT("true\ntrue\ntrue\n");
 }
 
-TEST(Operators, DISABLED_PlusEqual) {
+TEST(Operators, PlusEqual) {
     INIT_TEST
 
     risotto.run(SHORTHAND_OPERATOR_INPUT(+=));
@@ -175,7 +175,7 @@ TEST(Operators, DISABLED_PlusEqual) {
     EXPECT_STDOUT("1\n3\n8\n");
 }
 
-TEST(Operators, DISABLED_MinusEqual) {
+TEST(Operators, MinusEqual) {
     INIT_TEST
 
     risotto.run(SHORTHAND_OPERATOR_INPUT(-=));
@@ -183,7 +183,7 @@ TEST(Operators, DISABLED_MinusEqual) {
     EXPECT_STDOUT("1\n-1\n-6\n");
 }
 
-TEST(Operators, DISABLED_StarEqual) {
+TEST(Operators, StarEqual) {
     INIT_TEST
 
     risotto.run(SHORTHAND_OPERATOR_INPUT(*=));
@@ -191,7 +191,7 @@ TEST(Operators, DISABLED_StarEqual) {
     EXPECT_STDOUT("1\n2\n10\n");
 }
 
-TEST(Operators, DISABLED_SlashEqual) {
+TEST(Operators, SlashEqual) {
     INIT_TEST
 
     risotto.run(SHORTHAND_OPERATOR_INPUT(/=));
@@ -224,7 +224,7 @@ TEST(Operators, LogicalTestOrder) {
     EXPECT_STDOUT(OUTPUT("logical_test_order"));
 }
 
-TEST(Operators, DISABLED_Overloading) {
+TEST(Operators, Overloading) {
     INIT_TEST
 
     risotto.runFile(INPUT("overloading"));
