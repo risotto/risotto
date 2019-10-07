@@ -16,12 +16,6 @@ LiteralExpr::LiteralExpr(Token *value) : value(value) {
 
 Value literalToValue(Token *value) {
     switch (value->type) {
-        case Token::Type::FALSE:
-            return b2v(false);
-        case Token::Type::TRUE:
-            return b2v(true);
-        case Token::Type::NIL:
-            return n2v();
         case Token::Type::INT:
             return i2v(value->value._int);
         case Token::Type::DOUBLE:
@@ -36,9 +30,16 @@ Value literalToValue(Token *value) {
 std::vector<ByteResolver *> LiteralExpr::compile(Compiler *compiler) {
     auto bytes = std::vector<ByteResolver *>();
 
-    if (value == nullptr) {
-        bytes.push_back(new ByteResolver(OP_NIL, nullptr));
-        return bytes;
+    switch (value->type) {
+        case Token::Type::NIL:
+            bytes.push_back(new ByteResolver(OP_NIL, nullptr));
+            return bytes;
+        case Token::Type::TRUE:
+            bytes.push_back(new ByteResolver(OP_TRUE, nullptr));
+            return bytes;
+        case Token::Type::FALSE:
+            bytes.push_back(new ByteResolver(OP_FALSE, nullptr));
+            return bytes;
     }
 
     auto v = literalToValue(value);

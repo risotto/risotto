@@ -48,7 +48,7 @@ FunctionTypeEntry *TypeEntry::asFunctionTypeEntry() {
 }
 
 TypeEntry *TypesTable::find(const std::string &name) {
-    for (auto entry : types) {
+    for (auto entry : entries) {
         if (entry->name == name) {
             return entry;
         }
@@ -60,7 +60,7 @@ TypeEntry *TypesTable::find(const std::string &name) {
 TypeEntry *TypesTable::add(std::string name) {
     auto entry = new TypeEntry(std::move(name));
 
-    types.push_back(entry);
+    entries.push_back(entry);
 
     return entry;
 }

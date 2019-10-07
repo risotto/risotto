@@ -12,7 +12,7 @@ VariableEntry::VariableEntry(std::string name, TypeEntry *typeEntry, int index) 
 }
 
 VariableEntry *VariablesTable::find(const std::string &name) {
-    for (auto entry : variables) {
+    for (auto entry : entries) {
         if (entry->name == name) {
             return entry;
         }
@@ -22,9 +22,9 @@ VariableEntry *VariablesTable::find(const std::string &name) {
 }
 
 VariableEntry *VariablesTable::add(std::string name, TypeEntry *typeEntry) {
-    auto entry = new VariableEntry(std::move(name), typeEntry, variables.size());
+    auto entry = new VariableEntry(std::move(name), typeEntry, entries.size());
 
-    variables.push_back(entry);
+    entries.push_back(entry);
 
     return entry;
 }

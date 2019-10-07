@@ -19,7 +19,7 @@ public:
 
 class VariablesTable {
 private:
-    std::vector<VariableEntry *> variables;
+    std::vector<VariableEntry *> entries;
 public:
     VariableEntry *find(const std::string &name);
 

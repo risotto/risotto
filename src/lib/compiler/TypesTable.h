@@ -44,7 +44,7 @@ public:
 
 class TypesTable {
 private:
-    std::vector<TypeEntry *> types;
+    std::vector<TypeEntry *> entries;
 public:
     TypeEntry *find(const std::string& name);
     TypeEntry *add(std::string name);

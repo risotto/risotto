@@ -59,20 +59,20 @@ FunctionEntry *FunctionsTable::add(FunctionEntry *entry) {
     auto existingFunction = find(entry->name, paramsTypes);
 
     if (existingFunction != nullptr) {
-        auto it = std::find(functions.begin(), functions.end(), existingFunction);
+        auto it = std::find(entries.begin(), entries.end(), existingFunction);
 
-        if (it != functions.end()) {
-            auto index = std::distance(functions.begin(), it);
+        if (it != entries.end()) {
+            auto index = std::distance(entries.begin(), it);
 
-            functions.erase(functions.begin()+index);
+            entries.erase(entries.begin() + index);
         }
     }
 
-    functions.push_back(entry);
+    entries.push_back(entry);
 
     return entry;
 }
 
 std::vector<FunctionEntry *> FunctionsTable::findCandidates(const std::string &name) {
-    return Utils::findCandidatesFunctions(functions, name);
+    return Utils::findCandidatesFunctions(entries, name);
 }

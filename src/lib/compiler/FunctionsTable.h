@@ -59,7 +59,7 @@ public:
 
 class FunctionsTable {
 private:
-    std::vector<FunctionEntry *> functions;
+    std::vector<FunctionEntry *> entries;
 public:
     FunctionEntry *find(const std::string &name, const std::vector<TypeEntry *>& argsTypes);
     std::vector<FunctionEntry *> findCandidates(const std::string &name);
