@@ -87,7 +87,7 @@ std::vector<TypeEntry *> CallExpr::getArgumentsTypes(Compiler *compiler) {
     return Utils::getTypes(arguments, compiler);
 }
 
-TypesEntries CallExpr::getCalleeEntry(Compiler *compiler) {
+TypeReferences CallExpr::getCalleeEntry(Compiler *compiler) {
     try {
         return callee->getReturnType(compiler);
     } catch (CompilerError &e) {
@@ -141,7 +141,7 @@ FunctionNotFoundError CallExpr::getFunctionNotFoundError(Compiler *compiler) {
     throw FunctionNotFoundError("", "", argumentsTypes, rParen);
 }
 
-TypesEntries CallExpr::computeReturnType(Compiler *compiler) {
+TypeReferences CallExpr::computeReturnType(Compiler *compiler) {
     auto functionEntry = getFunctionEntry(compiler);
 
     if (functionEntry == nullptr) {

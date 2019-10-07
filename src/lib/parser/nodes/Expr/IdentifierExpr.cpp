@@ -42,10 +42,10 @@ std::vector<ByteResolver *> IdentifierExpr::compile(Compiler *compiler) {
     return bytes;
 }
 
-TypesEntries IdentifierExpr::computeReturnType(Compiler *compiler) {
+TypeReferences IdentifierExpr::computeReturnType(Compiler *compiler) {
     auto candidates = compiler->frame->findFunctionsCandidates(name->lexeme);
 
-    auto candidateTypes = TypesEntries();
+    auto candidateTypes = TypeReferences();
 
     for (auto candidate : candidates) {
         candidateTypes.push_back(candidate->typeEntry);

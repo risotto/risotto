@@ -7,15 +7,15 @@
 
 TypeReference::TypeReference(TypeEntry *type, bool isArray) : type(type), isArray(isArray) {}
 
-bool TypesEntries::single() {
+bool TypeReferences::single() {
     return size() == 1;
 }
 
-TypesEntries::TypesEntries(TypeEntry *entry) : vector<TypeEntry *>({entry}) {
+TypeReferences::TypeReferences(TypeEntry *entry) : vector<TypeEntry *>({entry}) {
 }
 
-TypesEntries TypesEntries::onlyFunctions() {
-    auto onlyFunctions = TypesEntries();
+TypeReferences TypeReferences::onlyFunctions() {
+    auto onlyFunctions = TypeReferences();
 
     for (auto entry : *this) {
         if (entry->isFunction()) {

@@ -9,15 +9,15 @@
 
 class TypeEntry;
 
-class TypesEntries: public std::vector<TypeEntry *> {
+class TypeReferences: public std::vector<TypeEntry *> {
 public:
     using std::vector<TypeEntry *>::vector;
 
-    TypesEntries(TypeEntry *entry);
+    TypeReferences(TypeEntry *entry);
 
     bool single();
 
-    TypesEntries onlyFunctions();
+    TypeReferences onlyFunctions();
 };
 
 class TypeReference {

@@ -11,7 +11,7 @@
 FunctionEntryParameter::FunctionEntryParameter(std::string name, TypeEntry *type) : FunctionEntryParameter(std::move(name), type, false) {}
 FunctionEntryParameter::FunctionEntryParameter(std::string name, TypeEntry *type, bool isReference) : name(std::move(name)), type(type), isReference(isReference) {}
 
-FunctionEntry::FunctionEntry(std::string name, std::vector<FunctionEntryParameter> params, TypesEntries returnTypes) :
+FunctionEntry::FunctionEntry(std::string name, std::vector<FunctionEntryParameter> params, TypeReferences returnTypes) :
         name(std::move(name)), params(std::move(params)), returnTypes(std::move(returnTypes)) {
     typeEntry = new FunctionTypeEntry(name, this);
 }
@@ -19,7 +19,7 @@ FunctionEntry::FunctionEntry(std::string name, std::vector<FunctionEntryParamete
 NativeFunctionEntry::NativeFunctionEntry(
         std::string name,
         std::vector<FunctionEntryParameter> params,
-        TypesEntries returnTypes,
+        TypeReferences returnTypes,
         NativeFunctionReturn (*fun)(Value[], int)
 ) : FunctionEntry(std::move(name), std::move(params), std::move(returnTypes)), fun(fun) {
 

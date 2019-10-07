@@ -28,11 +28,11 @@ class FunctionTypeEntry;
 
 class FunctionEntry {
 public:
-    FunctionEntry(std::string name, std::vector<FunctionEntryParameter> params, TypesEntries returnTypes);
+    FunctionEntry(std::string name, std::vector<FunctionEntryParameter> params, TypeReferences returnTypes);
 
     std::string name;
     std::vector<FunctionEntryParameter> params;
-    TypesEntries returnTypes;
+    TypeReferences returnTypes;
     FunctionTypeEntry *typeEntry = nullptr;
 
     ByteResolver *firstByte = nullptr;
@@ -44,7 +44,7 @@ class NativeFunctionEntry: public FunctionEntry {
 public:
     NativeFunctionReturn (*fun)(Value[], int);
 
-    NativeFunctionEntry(std::string name, std::vector<FunctionEntryParameter> params, TypesEntries returnTypes, NativeFunctionReturn (*fun)(Value[], int));
+    NativeFunctionEntry(std::string name, std::vector<FunctionEntryParameter> params, TypeReferences returnTypes, NativeFunctionReturn (*fun)(Value[], int));
 };
 
 class FunctionsTable {

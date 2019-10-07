@@ -13,6 +13,6 @@ std::vector<ByteResolver *> GroupingExpr::compile(Compiler *compiler) {
     return expr->compile(compiler);
 }
 
-TypesEntries GroupingExpr::computeReturnType(Compiler *compiler) {
+TypeReferences GroupingExpr::computeReturnType(Compiler *compiler) {
     return expr->getReturnType(compiler);
 }

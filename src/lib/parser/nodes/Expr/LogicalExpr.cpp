@@ -86,6 +86,6 @@ std::vector<ByteResolver *> LogicalExpr::compile(Compiler *compiler) {
     throw CompilerError("Unhandled logical operator", op->position);
 }
 
-TypesEntries LogicalExpr::computeReturnType(Compiler *compiler) {
+TypeReferences LogicalExpr::computeReturnType(Compiler *compiler) {
     return compiler->frame->types.find("bool");
 }

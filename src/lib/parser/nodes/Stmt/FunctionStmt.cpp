@@ -30,7 +30,7 @@ FunctionEntry *FunctionStmt::getFunctionEntry(Compiler *compiler) {
     }
 
     // Get return type
-    auto returnTypesEntries = TypesEntries();
+    auto returnTypeReferences = TypeReferences();
     for (auto returnType : returnTypes) {
         auto returnTypeEntry = compiler->frame->findType(returnType->lexeme);
 
@@ -38,7 +38,7 @@ FunctionEntry *FunctionStmt::getFunctionEntry(Compiler *compiler) {
             throw CompilerError("Cannot find type for " + returnType->lexeme);
         }
 
-        returnTypesEntries.push_back(returnTypeEntry);
+        returnTypeReferences.push_back(returnTypeEntry);
     }
 
     auto entryParameters = std::vector<FunctionEntryParameter>();
@@ -61,7 +61,7 @@ FunctionEntry *FunctionStmt::getFunctionEntry(Compiler *compiler) {
     auto functionEntry = new FunctionEntry(
             nameStr,
             entryParameters,
-            returnTypesEntries
+            returnTypeReferences
     );
 
     if (autoRegister) {

@@ -36,7 +36,7 @@ std::vector<ByteResolver *> GetExpr::compile(Compiler *compiler) {
     return bytes;
 }
 
-TypesEntries GetExpr::computeReturnType(Compiler *compiler) {
+TypeReferences GetExpr::computeReturnType(Compiler *compiler) {
     auto calleeType = callee->getReturnType(compiler);
 
     if (!calleeType.single()) {
@@ -45,7 +45,7 @@ TypesEntries GetExpr::computeReturnType(Compiler *compiler) {
 
     auto candidates = calleeType[0]->functions.findCandidates(identifier->lexeme);
 
-    auto candidateTypes = TypesEntries();
+    auto candidateTypes = TypeReferences();
 
     for (auto candidate : candidates) {
         candidateTypes.push_back(candidate->typeEntry);

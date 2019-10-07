@@ -20,7 +20,7 @@ public:
     std::vector<ByteResolver *> compile(Compiler *compiler) override;
 
 protected:
-    TypesEntries computeReturnType(Compiler *compiler) override;
+    TypeReferences computeReturnType(Compiler *compiler) override;
 };
 
 

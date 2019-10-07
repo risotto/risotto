@@ -52,7 +52,7 @@ std::vector<ByteResolver *> LiteralExpr::compile(Compiler *compiler) {
     return bytes;
 }
 
-TypesEntries LiteralExpr::computeReturnType(Compiler *compiler) {
+TypeReferences LiteralExpr::computeReturnType(Compiler *compiler) {
     switch (value->type) {
         case Token::Type::FALSE:
         case Token::Type::TRUE:

@@ -27,13 +27,13 @@ public:
     std::vector<ByteResolver *> compile(Compiler *compiler) override;
 
 protected:
-    TypesEntries computeReturnType(Compiler *compiler) override;
+    TypeReferences computeReturnType(Compiler *compiler) override;
 
     std::vector<TypeEntry *> getArgumentsTypes(Compiler *compiler);
 
     virtual FunctionNotFoundError getFunctionNotFoundError(Compiler *compiler);
 
-    TypesEntries getCalleeEntry(Compiler *compiler);
+    TypeReferences getCalleeEntry(Compiler *compiler);
 };
 
 
