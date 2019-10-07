@@ -10,13 +10,15 @@
 #include "BlockStmt.h"
 
 FunctionStmt::FunctionStmt(
+        Token *type,
         ParameterDefinition *receiver,
         Token *name,
-        const std::vector<Token *> &returnTypes,
+        std::vector<Token *> returnTypes,
         std::vector<ParameterDefinition> parameters,
         std::vector<Stmt *> body,
         Token *closeBlock
-) : receiver(receiver), name(name), returnTypes(returnTypes), parameters(std::move(parameters)), body(std::move(body)),
+) : type(type), receiver(receiver), name(name), returnTypes(std::move(returnTypes)), parameters(std::move(parameters)),
+    body(std::move(body)),
     closeBlock(closeBlock) {
 
 }
@@ -26,11 +28,12 @@ std::vector<ByteResolver *> FunctionStmt::compile(Compiler *compiler) {
     auto returnTypesEntries = TypesEntries();
     for (auto returnType : returnTypes) {
         auto returnTypeEntry = compiler->frame->findType(returnType->lexeme);
-        returnTypesEntries.push_back(returnTypeEntry);
 
         if (returnTypeEntry == nullptr) {
             throw CompilerError("Cannot find type for " + returnType->lexeme);
         }
+
+        returnTypesEntries.push_back(returnTypeEntry);
     }
 
     auto entryParameters = std::vector<FunctionEntryParameter>();
@@ -58,10 +61,22 @@ std::vector<ByteResolver *> FunctionStmt::compile(Compiler *compiler) {
             throw CompilerError("Cannot find type for " + receiver->type->lexeme);
         }
 
-        functionEntry = receiverType->addFunction(
-                receiver->name->lexeme,
-                functionEntry
-        );
+        switch (type->type) {
+            case Token::Type::FUNC:
+                functionEntry = receiverType->addFunction(
+                        receiver->name->lexeme,
+                        functionEntry
+                );
+                break;
+            case Token::Type::OP:
+                functionEntry = receiverType->addOperator(
+                        receiver->name->lexeme,
+                        functionEntry
+                );
+                break;
+            default:
+                throw CompilerError("Unhandled function type");
+        }
     } else {
         functionEntry = compiler->frame->functions.add(functionEntry);
     }
@@ -84,6 +99,7 @@ std::vector<ByteResolver *> FunctionStmt::compile(Compiler *compiler) {
         bytes.insert(bytes.end(), stmtBytes.begin(), stmtBytes.end());
     }
 
+    // Ensure functions have a return TODO: add branches check
     if (functionEntry->returnTypes.empty()) {
         bytes.push_back(new ByteResolver(OP_RETURN, nullptr));
         bytes.push_back(new ByteResolver(0, nullptr)); // no frame to drop

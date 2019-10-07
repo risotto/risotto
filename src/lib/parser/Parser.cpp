@@ -104,7 +104,7 @@ Stmt *Parser::declaration() {
         throw error(previous(), "TODO TYPE");
     }
 
-    if (match(Token::Type::FUNC)) {
+    if (match(Token::Type::FUNC, Token::Type::OP)) {
         return function();
     }
 
@@ -135,6 +135,8 @@ Stmt *Parser::declaration() {
 }
 
 Stmt *Parser::function() {
+    auto type = previous();
+
     ParameterDefinition *receiver = nullptr;
 
     if (match(Token::Type::LEFT_PAREN)) {
@@ -143,7 +145,17 @@ Stmt *Parser::function() {
         consume(Token::Type::RIGHT_PAREN, "Expect ')' after receiver declaration.");
     }
 
-    Token *name = consume(Token::Type::IDENTIFIER, "Expect function name.");
+    Token *name = nullptr;
+    switch (type->type) {
+        case Token::Type::FUNC:
+            name = consume(Token::Type::IDENTIFIER, "Expect function name.");
+            break;
+        case Token::Type::OP:
+            name = advance(); // anything
+            break;
+        default:
+            throw ParseError("Unexpected function type", type);
+    }
 
     consume(Token::Type::LEFT_PAREN, "Expect '(' after function name.");
 
@@ -167,7 +179,7 @@ Stmt *Parser::function() {
 
     std::vector<Stmt *> body = block();
 
-    return new FunctionStmt(receiver, name, returnTypes, parameters, body, closeBlock);
+    return new FunctionStmt(type, receiver, name, returnTypes, parameters, body, closeBlock);
 }
 
 ParameterDefinition *Parser::parameter() {
@@ -181,7 +193,14 @@ std::vector<Stmt *> Parser::block() {
     std::vector<Stmt *> statements;
 
     while (!check(Token::Type::RIGHT_CURLY) && !isAtEnd()) {
-        statements.push_back(declaration());
+        auto stmt = declaration();
+
+        if (stmt == nullptr) {
+            auto c = tokens[current];
+            throw ParseError("Unexpected token " + c->lexeme, c);
+        }
+
+        statements.push_back(stmt);
     }
 
     consume(Token::Type::RIGHT_CURLY, "Expect '}' after block.");

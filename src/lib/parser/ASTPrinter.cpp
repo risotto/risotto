@@ -85,6 +85,7 @@ if (auto V = dynamic_cast<T *>(stmt)) { \
         DC(CallExpr)
         DC(GroupingExpr)
         DC(GetExpr)
+        DC(SetExpr)
 
         return print(dynamic_cast<Node *>(stmt));
     }
@@ -258,6 +259,19 @@ if (auto V = dynamic_cast<T *>(stmt)) { \
         }
         ss << indent("+Value:", 1) << std::endl;
         ss << indent(print(stmt->value), 2);
+
+        return ss.str();
+    }
+
+    template<>
+    std::string print<SetExpr *>(SetExpr *stmt) {
+        std::stringstream ss;
+
+        ss << "SetExpr" << std::endl;
+        ss << indent("+Left:", 1) << std::endl;
+        ss << indent(print(stmt->left), 2);
+        ss << indent("+Right:", 1) << std::endl;
+        ss << indent(print(stmt->right), 2);
 
         return ss.str();
     }

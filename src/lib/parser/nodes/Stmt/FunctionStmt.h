@@ -13,6 +13,7 @@
 
 class FunctionStmt : public Stmt {
 public:
+    Token *type;
     ParameterDefinition *receiver;
     Token *name;
     std::vector<Token *> returnTypes;
@@ -20,7 +21,7 @@ public:
     std::vector<Stmt *> body;
     Token *closeBlock;
 
-    FunctionStmt(ParameterDefinition *receiver, Token *name, const std::vector<Token *> &returnTypes,
+    FunctionStmt(Token *type, ParameterDefinition *receiver, Token *name, std::vector<Token *> returnTypes,
                  std::vector<ParameterDefinition> parameters, std::vector<Stmt *> body,
                  Token *closeBlock);
 

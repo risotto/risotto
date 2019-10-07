@@ -16,6 +16,8 @@ public:
     Expr *right;
 
     SetExpr(Expr *left, Token *op, Expr *right);
+
+    std::vector<ByteResolver *> compile(Compiler *compiler) override;
 };
 
 

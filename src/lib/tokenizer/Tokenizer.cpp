@@ -32,8 +32,8 @@ namespace literal_to_value_data {
 
     template<>
     ValueData convert<std::string>(std::string str) {
-        char * cstr = new char [str.length()+1];
-        std::strcpy (cstr, str.c_str());
+        char *cstr = new char[str.length() + 1];
+        std::strcpy(cstr, str.c_str());
 
         return ValueData{._str = cstr};
     }
@@ -194,7 +194,8 @@ template<typename T>
 void Tokenizer::addToken(Token::Type type, T literal) {
     std::string lexeme = src.substr(start, current - start);
     tokens.push_back(
-            new Token(type, literal_to_value_data::convert(literal), lexeme, Position(line + 1, column - lexeme.size() + 1))
+            new Token(type, literal_to_value_data::convert(literal), lexeme,
+                      Position(line + 1, column - lexeme.size() + 1))
     );
 }
 
@@ -281,6 +282,7 @@ std::map<std::string, Token::Type> Tokenizer::keywords = {
         {"false",  Token::Type::FALSE},
         {"for",    Token::Type::FOR},
         {"func",   Token::Type::FUNC},
+        {"op",     Token::Type::OP},
         {"if",     Token::Type::IF},
         {"nil",    Token::Type::NIL},
         {"return", Token::Type::RETURN},
