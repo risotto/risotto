@@ -94,6 +94,17 @@ Compiler::Compiler(std::vector<Stmt *> stmts) : stmts(std::move(stmts)) {
     NATIVE_BINARY_OPERATOR_DECLARATION(string, +, string, string, add)
     NATIVE_BINARY_OPERATOR_DECLARATION(string, +=, string, string, add_equal)
 
+    boolEntry->addPrefix(
+            "self",
+            true,
+            new NativeFunctionEntry(
+                    "!",
+                    {},
+                    {boolEntry},
+                    unary_prefix_bool_invert
+            )
+    );
+
     frame->functions.add(
             new NativeFunctionEntry(
                     "println",

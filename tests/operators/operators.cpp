@@ -210,6 +210,14 @@ TEST(Operators, LogicalAnd) {
     EXPECT_STDOUT("false\nfalse\ntrue\nfalse\n");
 }
 
+TEST(Operators, BangBool) {
+    INIT_TEST
+
+    risotto.run("println(!true)");
+
+    EXPECT_STDOUT("false\n");
+}
+
 TEST(Operators, LogicalTestOrder) {
     INIT_TEST
 

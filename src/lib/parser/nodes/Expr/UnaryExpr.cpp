@@ -31,5 +31,5 @@ FunctionEntry *UnaryExpr::getFunctionEntry(Compiler *compiler) {
 }
 
 FunctionNotFoundError UnaryExpr::getFunctionNotFoundError(Compiler *compiler) {
-    return FunctionNotFoundError(op()->lexeme, right()->getReturnType(compiler)[0]->name, getArgumentsTypes(compiler), op());
+    return FunctionNotFoundError(op()->lexeme, "", getArgumentsTypes(compiler), op());
 }
