@@ -5,7 +5,8 @@
 extern "C" {
 #include <lib/vm/chunk.h>
 }
-#include <assert.h>
+#include <cassert>
+#include <utility>
 #include "IfStmt.h"
 #include "lib/compiler/ByteResolver.h"
 #include "lib/compiler/Compiler.h"
@@ -17,7 +18,7 @@ IfStmt::IfStmt(
         Stmt *elseBranch
 ) : condition(condition),
     thenBranch(thenBranch),
-    elseifs(elseifs),
+    elseifs(std::move(std::move(elseifs))),
     elseBranch(elseBranch) {}
 
 ByteResolver *generateNextBranchByte(std::vector<std::vector<ByteResolver *>> *branchesBytes) {
