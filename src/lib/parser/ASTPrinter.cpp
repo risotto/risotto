@@ -81,12 +81,14 @@ if (auto V = dynamic_cast<T *>(stmt)) { \
     template<>
     std::string print<Expr *>(Expr *stmt) {
         DC(BinaryExpr)
+        DC(UnaryExpr)
         DC(IdentifierExpr)
         DC(LiteralExpr)
-        DC(CallExpr)
         DC(GroupingExpr)
         DC(GetExpr)
         DC(SetExpr)
+
+        DC(CallExpr)
 
         return print(dynamic_cast<Node *>(stmt));
     }
@@ -167,6 +169,18 @@ if (auto V = dynamic_cast<T *>(stmt)) { \
         ss << "BinaryExpr" << std::endl;
         ss << indent("+Left:", 1) << std::endl;
         ss << indent(print(stmt->left()), 2);
+        ss << indent("+Op: " + stmt->op()->lexeme, 1) << std::endl;
+        ss << indent("+Right:", 1) << std::endl;
+        ss << indent(print(stmt->right()), 2);
+
+        return ss.str();
+    }
+
+    template<>
+    std::string print<UnaryExpr *>(UnaryExpr *stmt) {
+        std::stringstream ss;
+
+        ss << "UnaryExpr" << std::endl;
         ss << indent("+Op: " + stmt->op()->lexeme, 1) << std::endl;
         ss << indent("+Right:", 1) << std::endl;
         ss << indent(print(stmt->right()), 2);

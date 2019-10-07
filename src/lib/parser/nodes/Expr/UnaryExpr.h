@@ -7,14 +7,21 @@
 
 
 #include <lib/tokenizer/Token.h>
-#include <lib/parser/nodes/Expr.h>
+#include "CallExpr.h"
 
-class UnaryExpr: public Expr {
+class UnaryExpr: public CallExpr {
 public:
-    Token *op;
-    Expr *right;
+    Expr *right();
+    Token *op();
 
     UnaryExpr(Token *op, Expr *right);
+
+    FunctionEntry *getFunctionEntry(Compiler *compiler) override;
+
+protected:
+    std::vector<Expr *> getArguments(Compiler *compiler) override;
+
+    FunctionNotFoundError getFunctionNotFoundError(Compiler *compiler) override;
 };
 
 

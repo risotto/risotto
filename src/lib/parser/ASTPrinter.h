@@ -23,6 +23,7 @@
 #include <lib/parser/nodes/Expr/VarDeclStmt.h>
 #include <lib/parser/nodes/Expr/SetExpr.h>
 #include <lib/parser/nodes/Stmt/WhileStmt.h>
+#include <lib/parser/nodes/Expr/UnaryExpr.h>
 
 namespace ASTPrinter {
     std::string indent(std::string str, int n);
@@ -53,6 +54,9 @@ namespace ASTPrinter {
 
     template<>
     std::string print<BinaryExpr *>(BinaryExpr *stmt);
+
+    template<>
+    std::string print<UnaryExpr *>(UnaryExpr *stmt);
 
     template<>
     std::string print<IdentifierExpr *>(IdentifierExpr *stmt);

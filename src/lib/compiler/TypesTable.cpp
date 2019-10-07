@@ -26,6 +26,12 @@ FunctionEntry *TypeEntry::addOperator(const std::string &selfName, bool isRefere
     return operators.add(entry);
 }
 
+FunctionEntry *TypeEntry::addPrefix(const std::string &selfName, bool isReference, FunctionEntry *entry) {
+    entry->params.insert(entry->params.begin(), {FunctionEntryParameter(selfName, this, isReference)});
+
+    return prefixes.add(entry);
+}
+
 FunctionEntry *TypeEntry::findFunction(const std::string &functionName, std::vector<TypeEntry *> argsTypes) {
     auto newArgsTypes = std::vector<TypeEntry *>(std::move(argsTypes));
     newArgsTypes.insert(newArgsTypes.begin(), this);

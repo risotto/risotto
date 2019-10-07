@@ -10,7 +10,7 @@ extern "C" {
 #include <lib/vm/native_functions.h>
 }
 
-#define NATIVE_BINARY_DECLARATION_NAMED(target, op, param, return, functionName, define) \
+#define NATIVE_BINARY_DECLARATION_NAMED(target, op, param, return, functionName) \
     target##Entry->addOperator( \
         "self", \
         true, \
@@ -20,10 +20,10 @@ extern "C" {
             {return##Entry}, \
             functionName \
         ) \
-);
+    );
 
 #define NATIVE_BINARY_OPERATOR_DECLARATION(target, op, param, return, opName) \
-NATIVE_BINARY_DECLARATION_NAMED(target, op, param, return, binary_##target##_##opName##_##param, defineNativeOperator)
+NATIVE_BINARY_DECLARATION_NAMED(target, op, param, return, binary_##target##_##opName##_##param)
 
 #define NATIVE_BINARY_OPERATOR_MATH_DECLARATIONS(target, param, return) \
 NATIVE_BINARY_OPERATOR_DECLARATION(target, +, param, return, add) \
@@ -46,7 +46,25 @@ NATIVE_BINARY_OPERATOR_DECLARATION(string, +, type, string, add) \
 NATIVE_BINARY_OPERATOR_DECLARATION(type, +, string, string, add) \
 NATIVE_BINARY_OPERATOR_DECLARATION(string, +=, type, string, add_equal)
 
+#define NATIVE_UNARY_OPERATOR_DECLARATION(target, op, return, functionName) \
+    target##Entry->addPrefix( \
+        "self", \
+        true, \
+        new NativeFunctionEntry( \
+            #op, \
+            {}, \
+            {return##Entry}, \
+            functionName \
+        ) \
+    );
 
+#define NATIVE_UNARY_PREFIX_OPERATOR_DECLARATION(target, op, return, functionName) \
+NATIVE_UNARY_OPERATOR_DECLARATION(target, op, return, unary_prefix_##target##_##functionName)
+
+#define NATIVE_UNARY_OPERATOR_MATH_DECLARATIONS(target, return) \
+NATIVE_UNARY_PREFIX_OPERATOR_DECLARATION(target, -, return, negate) \
+NATIVE_UNARY_PREFIX_OPERATOR_DECLARATION(target, ++, return, increment) \
+NATIVE_UNARY_PREFIX_OPERATOR_DECLARATION(target, --, return, decrement) \
 
 Compiler::Compiler(std::vector<Stmt *> stmts) : stmts(std::move(stmts)) {
     frame = new Frame();
@@ -63,19 +81,18 @@ Compiler::Compiler(std::vector<Stmt *> stmts) : stmts(std::move(stmts)) {
     NATIVE_BINARY_OPERATOR_STRING_DECLARATIONS(int)
     NATIVE_BINARY_OPERATOR_DECLARATION(int, %, int, int, mod)
 
-    // prefix + postfix
+    NATIVE_UNARY_OPERATOR_MATH_DECLARATIONS(int, int)
 
     NATIVE_BINARY_OPERATOR_MATH_DECLARATIONS(double, double, double)
     NATIVE_BINARY_OPERATOR_MATH_DECLARATIONS(double, int, double)
     NATIVE_BINARY_OPERATOR_STRING_DECLARATIONS(double)
 
-    // prefix + postfix
+    NATIVE_UNARY_OPERATOR_MATH_DECLARATIONS(double, double)
 
     NATIVE_BINARY_OPERATOR_STRING_DECLARATIONS(bool)
 
     NATIVE_BINARY_OPERATOR_DECLARATION(string, +, string, string, add)
     NATIVE_BINARY_OPERATOR_DECLARATION(string, +=, string, string, add_equal)
-
 
     frame->functions.add(
             new NativeFunctionEntry(
