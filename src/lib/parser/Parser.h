@@ -90,7 +90,7 @@ private:
 
     std::vector<Stmt *> block();
 
-    Stmt *function();
+    Stmt *function(bool isNamed);
 
     ParameterDefinition *parameter();
 

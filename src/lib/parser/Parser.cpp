@@ -7,6 +7,7 @@
 #include <lib/parser/nodes/Expr/GetExpr.h>
 #include <lib/parser/nodes/Expr/VarDeclStmt.h>
 #include <lib/parser/nodes/Stmt/ForStmt.h>
+#include <lib/parser/nodes/Expr/FunctionExpr.h>
 #include "Parser.h"
 #include "ParseError.h"
 #include "lib/parser/nodes/Stmt/ExpressionStmt.h"
@@ -106,7 +107,7 @@ Stmt *Parser::declaration() {
     }
 
     if (match(Token::Type::FUNC, Token::Type::OP)) {
-        return function();
+        return function(true);
     }
 
     if (match(Token::Type::STRUCT)) {
@@ -144,27 +145,30 @@ Stmt *Parser::varDecl() {
     return nullptr;
 }
 
-Stmt *Parser::function() {
+Stmt *Parser::function(bool isNamed) {
     auto type = previous();
 
     ParameterDefinition *receiver = nullptr;
+    if (isNamed) {
+        if (match(Token::Type::LEFT_PAREN)) {
+            receiver = parameter();
 
-    if (match(Token::Type::LEFT_PAREN)) {
-        receiver = parameter();
-
-        consume(Token::Type::RIGHT_PAREN, "Expect ')' after receiver declaration.");
+            consume(Token::Type::RIGHT_PAREN, "Expect ')' after receiver declaration.");
+        }
     }
 
     Token *name = nullptr;
-    switch (type->type) {
-        case Token::Type::FUNC:
-            name = consume(Token::Type::IDENTIFIER, "Expect function name.");
-            break;
-        case Token::Type::OP:
-            name = advance(); // anything
-            break;
-        default:
-            throw ParseError("Unexpected function type", type);
+    if (isNamed) {
+        switch (type->type) {
+            case Token::Type::FUNC:
+                name = consume(Token::Type::IDENTIFIER, "Expect function name.");
+                break;
+            case Token::Type::OP:
+                name = advance(); // anything
+                break;
+            default:
+                throw ParseError("Unexpected function type", type);
+        }
     }
 
     consume(Token::Type::LEFT_PAREN, "Expect '(' after function name.");
@@ -342,13 +346,20 @@ Stmt *Parser::expressionStatement() {
 }
 
 Expr *Parser::expression() {
+    if (match(Token::Type::FUNC)) {
+        auto functionStmt = (FunctionStmt *) function(false);
+        functionStmt->autoRegister = false;
+
+        return new FunctionExpr(functionStmt);
+    }
+
     return assignment();
 }
 
 Expr *Parser::assignment() {
     Expr *expr = logicalOr();
 
-    if(match(Token::Type::EQUAL)) {
+    if (match(Token::Type::EQUAL)) {
         Token *op = previous();
         Expr *value = assignment();
 

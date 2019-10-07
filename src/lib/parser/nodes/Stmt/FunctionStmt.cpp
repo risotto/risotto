@@ -23,7 +23,11 @@ FunctionStmt::FunctionStmt(
 
 }
 
-std::vector<ByteResolver *> FunctionStmt::compile(Compiler *compiler) {
+FunctionEntry *FunctionStmt::getFunctionEntry(Compiler *compiler) {
+    if (_functionEntry != nullptr) {
+        return _functionEntry;
+    }
+
     // Get return type
     auto returnTypesEntries = TypesEntries();
     for (auto returnType : returnTypes) {
@@ -47,41 +51,56 @@ std::vector<ByteResolver *> FunctionStmt::compile(Compiler *compiler) {
         entryParameters.emplace_back(parameter.name->lexeme, paramType);
     }
 
+    std::string nameStr;
+    if (name != nullptr) {
+        nameStr = name->lexeme;
+    }
+
     // Register function
     auto functionEntry = new FunctionEntry(
-            name->lexeme,
+            nameStr,
             entryParameters,
             returnTypesEntries
     );
 
-    if (receiver != nullptr) {
-        auto receiverType = compiler->frame->findType(receiver->type->lexeme);
+    if (autoRegister) {
+        if (receiver != nullptr) {
+            auto receiverType = compiler->frame->findType(receiver->type->lexeme);
 
-        if (receiverType == nullptr) {
-            throw CompilerError("Cannot find type for " + receiver->type->lexeme);
-        }
+            if (receiverType == nullptr) {
+                throw CompilerError("Cannot find type for " + receiver->type->lexeme);
+            }
 
-        switch (type->type) {
-            case Token::Type::FUNC:
-                functionEntry = receiverType->addFunction(
-                        receiver->name->lexeme,
-                        receiver->isReference,
-                        functionEntry
-                );
-                break;
-            case Token::Type::OP:
-                functionEntry = receiverType->addOperator(
-                        receiver->name->lexeme,
-                        receiver->isReference,
-                        functionEntry
-                );
-                break;
-            default:
-                throw CompilerError("Unhandled function type");
+            switch (type->type) {
+                case Token::Type::FUNC:
+                    functionEntry = receiverType->addFunction(
+                            receiver->name->lexeme,
+                            receiver->isReference,
+                            functionEntry
+                    );
+                    break;
+                case Token::Type::OP:
+                    functionEntry = receiverType->addOperator(
+                            receiver->name->lexeme,
+                            receiver->isReference,
+                            functionEntry
+                    );
+                    break;
+                default:
+                    throw CompilerError("Unhandled function type");
+            }
+        } else {
+            functionEntry = compiler->frame->functions.add(functionEntry);
         }
-    } else {
-        functionEntry = compiler->frame->functions.add(functionEntry);
     }
+
+    this->_functionEntry = functionEntry;
+
+    return functionEntry;
+}
+
+std::vector<ByteResolver *> FunctionStmt::compile(Compiler *compiler) {
+    auto functionEntry = getFunctionEntry(compiler);
 
     // Keep reference previous frame
     auto previousFrame = compiler->frame;

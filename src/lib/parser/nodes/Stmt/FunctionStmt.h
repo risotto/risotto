@@ -9,6 +9,7 @@
 #include <lib/parser/nodes/Stmt.h>
 #include <lib/tokenizer/Token.h>
 #include <lib/parser/nodes/ParameterDefinition.h>
+#include <lib/compiler/FunctionsTable.h>
 #include <vector>
 
 class FunctionStmt : public Stmt {
@@ -21,11 +22,17 @@ public:
     std::vector<Stmt *> body;
     Token *closeBlock;
 
+    bool autoRegister = true;
+
     FunctionStmt(Token *type, ParameterDefinition *receiver, Token *name, std::vector<Token *> returnTypes,
                  std::vector<ParameterDefinition> parameters, std::vector<Stmt *> body,
                  Token *closeBlock);
 
     std::vector<ByteResolver *> compile(Compiler *compiler) override;
+
+    FunctionEntry *getFunctionEntry(Compiler *compiler);
+private:
+    FunctionEntry *_functionEntry = nullptr;
 };
 
 

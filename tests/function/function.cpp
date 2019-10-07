@@ -30,6 +30,14 @@ TEST(Functions, Bound) {
     EXPECT_STDOUT(OUTPUT("bound"));
 }
 
+TEST(Functions, Lambda) {
+    INIT_TEST;
+
+    risotto.runFile(INPUT("lambda"));
+
+    EXPECT_STDOUT(OUTPUT("lambda"));
+}
+
 TEST(Functions, MultipleReturns) {
     INIT_TEST;
 

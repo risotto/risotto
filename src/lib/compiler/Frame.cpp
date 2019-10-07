@@ -50,7 +50,7 @@ VariableFindResponse *Frame::findVariable(const std::string &name) {
     return nullptr;
 }
 
-FunctionEntry *Frame::findFunction(const std::string &name, const std::vector<TypeEntry *>& argsTypes) {
+FunctionEntry *Frame::findFunction(const std::string &name, const std::vector<TypeEntry *> &argsTypes) {
     auto entry = functions.find(name, argsTypes);
 
     if (entry != nullptr) {
@@ -84,8 +84,13 @@ std::vector<FunctionEntry *> Frame::findFunctionsCandidates(const std::string &n
 
     Frame *current = this;
     while (current != nullptr) {
-        auto candidates = current->functions.findCandidates(name);
-        allCandidates.insert(allCandidates.end(), candidates.begin(), candidates.end());
+        auto functionCandidates = current->functions.findCandidates(name);
+        allCandidates.insert(allCandidates.end(), functionCandidates.begin(), functionCandidates.end());
+
+        auto var = current->variables.find(name);
+        if (var != nullptr && var->type->isFunction()) {
+            allCandidates.push_back(var->type->asFunctionTypeEntry()->function);
+        }
 
         current = current->parent;
     }
