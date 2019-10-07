@@ -2,10 +2,6 @@
 // Created by rvigee on 2018-09-24.
 //
 
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE 1
-#endif
-
 #include <stdio.h>
 #include "value.h"
 #include "vm.c"
