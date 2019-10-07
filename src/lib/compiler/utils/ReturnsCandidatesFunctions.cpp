@@ -3,7 +3,3 @@
 //
 
 #include "ReturnsCandidatesFunctions.h"
-
-std::string ReturnsCandidatesFunctions::getCandidatesFunctionsFor() {
-    throw std::logic_error("Not implemented");
-}

@@ -15,7 +15,7 @@ class Node {
 public:
     virtual ~Node() = default;
 
-    virtual std::vector<ByteResolver *> compile(Compiler *compiler);
+    virtual std::vector<ByteResolver *> compile(Compiler *compiler) = 0;
 };
 
 

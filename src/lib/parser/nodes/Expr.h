@@ -16,11 +16,9 @@ private:
     TypesEntries _returnTypes;
 
 protected:
-    virtual TypesEntries computeReturnType(Compiler *compiler);
+    virtual TypesEntries computeReturnType(Compiler *compiler) = 0;
 
 public:
-    virtual ~Expr() = default;
-
     TypesEntries getReturnType(Compiler *compiler);
 };
 

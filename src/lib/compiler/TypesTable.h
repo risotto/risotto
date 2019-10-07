@@ -21,7 +21,6 @@ public:
     bool canReceiveType(TypeEntry *type);
 
     FunctionEntry *addFunction(const std::string& selfName, bool isReference, FunctionEntry *entry);
-    FunctionEntry *findFunction(const std::string &name, std::vector<TypeEntry *> argsTypes);
     FunctionEntry *addOperator(const std::string& selfName, bool isReference, FunctionEntry *entry);
     FunctionEntry *addPrefix(const std::string& selfName, bool isReference, FunctionEntry *entry);
 

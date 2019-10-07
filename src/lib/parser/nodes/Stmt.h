@@ -9,8 +9,7 @@
 #include "Node.h"
 
 class Stmt: public Node {
-public:
-    virtual ~Stmt() = default;
+
 };
 
 

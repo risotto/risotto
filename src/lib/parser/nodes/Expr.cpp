@@ -15,6 +15,3 @@ TypesEntries Expr::getReturnType(Compiler *compiler) {
     return _returnTypes;
 }
 
-TypesEntries Expr::computeReturnType(Compiler *compiler) {
-    throw std::logic_error("computeReturnType must be implemented");
-}

@@ -12,7 +12,7 @@ class ReturnsCandidatesFunctions {
 public:
     bool forceReturnFunctionReference = false;
 
-    virtual std::string getCandidatesFunctionsFor();
+    virtual std::string getCandidatesFunctionsFor() = 0;
 };
 
 

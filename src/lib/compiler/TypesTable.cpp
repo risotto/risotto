@@ -32,13 +32,6 @@ FunctionEntry *TypeEntry::addPrefix(const std::string &selfName, bool isReferenc
     return prefixes.add(entry);
 }
 
-FunctionEntry *TypeEntry::findFunction(const std::string &functionName, std::vector<TypeEntry *> argsTypes) {
-    auto newArgsTypes = std::vector<TypeEntry *>(std::move(argsTypes));
-    newArgsTypes.insert(newArgsTypes.begin(), this);
-
-    return functions.find(functionName, newArgsTypes);
-}
-
 bool TypeEntry::isFunction() {
     return false;
 }
