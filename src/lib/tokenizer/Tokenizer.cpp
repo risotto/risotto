@@ -278,18 +278,19 @@ bool Tokenizer::isAlpha(char c) {
 }
 
 std::map<std::string, Token::Type> Tokenizer::keywords = {
-        {"else",   Token::Type::ELSE},
-        {"false",  Token::Type::FALSE},
-        {"for",    Token::Type::FOR},
-        {"func",   Token::Type::FUNC},
-        {"op",     Token::Type::OP},
-        {"if",     Token::Type::IF},
-        {"nil",    Token::Type::NIL},
-        {"return", Token::Type::RETURN},
-        {"this",   Token::Type::THIS},
-        {"new",    Token::Type::NEW},
-        {"true",   Token::Type::TRUE},
-        {"while",  Token::Type::WHILE},
+        {"else",      Token::Type::ELSE},
+        {"false",     Token::Type::FALSE},
+        {"for",       Token::Type::FOR},
+        {"func",      Token::Type::FUNC},
+        {"op",        Token::Type::OP},
+        {"if",        Token::Type::IF},
+        {"nil",       Token::Type::NIL},
+        {"return",    Token::Type::RETURN},
+        {"this",      Token::Type::THIS},
+        {"new",       Token::Type::NEW},
+        {"true",      Token::Type::TRUE},
+        {"while",     Token::Type::WHILE},
+        {"interface", Token::Type::INTERFACE},
 };
 
 void Tokenizer::identifier() {

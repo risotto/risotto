@@ -12,6 +12,7 @@
 #include <lib/parser/nodes/Stmt.h>
 #include <lib/parser/nodes/Expr.h>
 #include "ParseError.h"
+#include "lib/parser/nodes/TypeDescriptor.h"
 
 class Parser {
 private:
@@ -97,6 +98,8 @@ private:
     Stmt *varDecl();
 
     TypeDescriptor *typeRef();
+
+    InterfaceTypeDescriptor *interface();
 };
 
 

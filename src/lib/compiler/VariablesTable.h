@@ -8,6 +8,8 @@
 #include <string>
 #include "TypesTable.h"
 
+class TypeReference;
+
 class VariableEntry {
 public:
     std::string name;

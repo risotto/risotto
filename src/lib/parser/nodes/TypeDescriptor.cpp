@@ -3,12 +3,14 @@
 //
 
 #include <lib/compiler/CompilerError.h>
+
+#include <utility>
 #include "TypeDescriptor.h"
 #include "lib/compiler/Compiler.h"
 
-ConcreteTypeDescriptor::ConcreteTypeDescriptor(Token *name) : name(name) {}
+IdentifierTypeDescriptor::IdentifierTypeDescriptor(Token *name) : name(name) {}
 
-TypeReference *ConcreteTypeDescriptor::toTypeReference(Compiler *compiler) {
+TypeReference *IdentifierTypeDescriptor::toTypeReference(Compiler *compiler) {
     auto paramType = compiler->frame->types.find(name->lexeme);
 
     if (paramType == nullptr) {
@@ -18,7 +20,7 @@ TypeReference *ConcreteTypeDescriptor::toTypeReference(Compiler *compiler) {
     return new ConcreteTypeReference(paramType);
 }
 
-std::string ConcreteTypeDescriptor::toString() {
+std::string IdentifierTypeDescriptor::toString() {
     return name->lexeme;
 }
 
@@ -33,3 +35,23 @@ TypeReference *ArrayTypeDescriptor::toTypeReference(Compiler *compiler) {
 std::string ArrayTypeDescriptor::toString() {
     return "[]" + element->toString();
 }
+
+//FunctionTypeDescriptor::FunctionTypeDescriptor(std::vector<TypeDescriptor *> parameters, TypeDescriptor *returnType): parameters(std::move(parameters)), returnType(returnType) {
+//
+//}
+
+InterfaceTypeDescriptor::InterfaceTypeDescriptor(std::vector<Function *> functions): functions(std::move(functions)) {
+
+}
+
+std::string InterfaceTypeDescriptor::toString() {
+    return "interface { ... }";
+}
+
+TypeReference *InterfaceTypeDescriptor::toTypeReference(Compiler *compiler) {
+    return new InterfaceTypeReference({});
+}
+
+InterfaceTypeDescriptor::Function::Function(std::string name, std::vector<TypeDescriptor *> arguments,
+                                            TypeDescriptor *returnType) : name(std::move(name)), arguments(std::move(arguments)),
+                                                                          returnType(returnType) {}

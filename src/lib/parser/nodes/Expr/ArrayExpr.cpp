@@ -8,6 +8,7 @@ extern "C" {
 #include "ArrayExpr.h"
 #include <utility>
 #include <lib/compiler/Compiler.h>
+#include "lib/parser/nodes/TypeDescriptor.h"
 
 ArrayExpr::ArrayExpr(TypeDescriptor *type, std::vector<Expr *> elements) : type(type), elements(std::move(elements)) {
 

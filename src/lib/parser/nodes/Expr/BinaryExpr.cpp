@@ -32,7 +32,7 @@ FunctionEntry *BinaryExpr::getFunctionEntry(Compiler *compiler) {
         throw CompilerError("LHS of binary operation must be a single value", op()->position);
     }
 
-    return leftTypeEntry[0]->findOperator(op()->lexeme, getArgumentsTypes(compiler));
+    return leftTypeEntry[0]->findOperator(compiler, op()->lexeme, getArgumentsTypes(compiler));
 }
 
 FunctionNotFoundError BinaryExpr::getFunctionNotFoundError(Compiler *compiler) {

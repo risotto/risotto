@@ -54,7 +54,7 @@ FunctionEntry *FunctionStmt::getFunctionEntry(Compiler *compiler) {
 
     if (autoRegister) {
         if (receiver != nullptr) {
-            auto concrete = dynamic_cast<ConcreteTypeDescriptor *>(receiver->type);
+            auto concrete = dynamic_cast<IdentifierTypeDescriptor *>(receiver->type);
             if (concrete == nullptr) {
                 throw CompilerError("Type must be concrete");
             }

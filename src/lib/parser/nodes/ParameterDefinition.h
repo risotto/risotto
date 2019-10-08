@@ -7,7 +7,8 @@
 
 
 #include <lib/tokenizer/Token.h>
-#include "TypeDescriptor.h"
+
+class TypeDescriptor;
 
 class ParameterDefinition {
 public:
