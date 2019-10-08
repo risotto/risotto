@@ -14,7 +14,7 @@ FunctionStmt::FunctionStmt(
         Token *type,
         ParameterDefinition *receiver,
         Token *name,
-        std::vector<TypeDescriptor> returnTypes,
+        std::vector<TypeDescriptor *> returnTypes,
         std::vector<ParameterDefinition> parameters,
         std::vector<Stmt *> body,
         Token *closeBlock
@@ -32,12 +32,12 @@ FunctionEntry *FunctionStmt::getFunctionEntry(Compiler *compiler) {
     // Get return type
     auto returnTypeReferences = TypeReferences();
     for (auto returnType : returnTypes) {
-        returnTypeReferences.push_back(returnType.toTypeReference(compiler));
+        returnTypeReferences.push_back(returnType->toTypeReference(compiler));
     }
 
     auto entryParameters = std::vector<FunctionEntryParameter>();
     for (auto parameter : parameters) {
-        entryParameters.emplace_back(parameter.name->lexeme, parameter.type.toTypeReference(compiler));
+        entryParameters.emplace_back(parameter.name->lexeme, parameter.type->toTypeReference(compiler));
     }
 
     std::string nameStr;
@@ -54,14 +54,15 @@ FunctionEntry *FunctionStmt::getFunctionEntry(Compiler *compiler) {
 
     if (autoRegister) {
         if (receiver != nullptr) {
-            auto receiverType = compiler->frame->findType(receiver->type.name->lexeme);
-
-            if (receiverType == nullptr) {
-                throw CompilerError("Cannot find type for " + receiver->type.name->lexeme);
+            auto concrete = dynamic_cast<ConcreteTypeDescriptor *>(receiver->type);
+            if (concrete == nullptr) {
+                throw CompilerError("Type must be concrete");
             }
 
-            if (receiver->type.isArray) {
-                throw CompilerError("Unhandled array");
+            auto receiverType = compiler->frame->findType(concrete->name->lexeme);
+
+            if (receiverType == nullptr) {
+                throw CompilerError("Cannot find type for " + concrete->name->lexeme);
             }
 
             switch (type->type) {

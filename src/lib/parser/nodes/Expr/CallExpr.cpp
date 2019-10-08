@@ -69,7 +69,7 @@ std::vector<ByteResolver *> CallExpr::compile(Compiler *compiler) {
     return bytes;
 }
 
-std::vector<TypeReference> CallExpr::getArgumentsTypes(Compiler *compiler) {
+std::vector<TypeReference *> CallExpr::getArgumentsTypes(Compiler *compiler) {
     auto arguments = getArguments(compiler);
 
     for (auto arg : arguments) {
@@ -103,7 +103,9 @@ FunctionEntry *CallExpr::getFunctionEntry(Compiler *compiler) {
     auto functions = std::vector<FunctionEntry *>();
 
     for (auto returnType : calleeReturnTypes.onlyFunctions()) {
-        functions.push_back(returnType.entry->asFunctionTypeEntry()->function);
+        if (auto concrete = dynamic_cast<ConcreteTypeReference *>(returnType)) {
+            functions.push_back(concrete->entry->asFunctionTypeEntry()->function);
+        }
     }
 
     auto entry = Utils::findMatchingFunctions(functions, argumentsTypes);
@@ -121,7 +123,7 @@ FunctionNotFoundError CallExpr::getFunctionNotFoundError(Compiler *compiler) {
     if (auto getExpr = dynamic_cast<GetExpr *>(callee)) {
         throw FunctionNotFoundError(
                 getExpr->identifier->lexeme,
-                getExpr->callee->getReturnType(compiler)[0].entry->name,
+                getExpr->callee->getReturnType(compiler)[0]->toString(),
                 actualArgumentsTypes,
                 rParen
         );

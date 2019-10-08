@@ -87,6 +87,7 @@ if (auto V = dynamic_cast<T *>(stmt)) { \
         DC(GroupingExpr)
         DC(GetExpr)
         DC(SetExpr)
+        DC(ArrayExpr)
 
         DC(CallExpr)
 
@@ -129,7 +130,7 @@ if (auto V = dynamic_cast<T *>(stmt)) { \
 
         ss << "FunctionStmt" << std::endl;
         if (stmt->receiver) {
-            ss << indent("+Receiver: " + stmt->receiver->type.name->lexeme, 1) << std::endl;
+            ss << indent("+Receiver: " + stmt->receiver->type->toString(), 1) << std::endl;
         }
         ss << indent("+Name: " + stmt->name->lexeme, 1) << std::endl;
         ss << indent("+Body: ", 1) << std::endl;
@@ -300,6 +301,18 @@ if (auto V = dynamic_cast<T *>(stmt)) { \
         ss << indent(print(stmt->condition), 2);
         ss << indent("+Body:", 1) << std::endl;
         ss << indent(print(stmt->body), 2);
+
+        return ss.str();
+    }
+
+    template<>
+    std::string print<ArrayExpr *>(ArrayExpr *stmt) {
+        std::stringstream ss;
+
+        ss << "ArrayExpr" << std::endl;
+        ss << indent("+Type:", 1) + stmt->type->toString() << std::endl;
+        ss << indent("+Elements:", 1) << std::endl;
+        ss << indent(print(stmt->elements), 2);
 
         return ss.str();
     }

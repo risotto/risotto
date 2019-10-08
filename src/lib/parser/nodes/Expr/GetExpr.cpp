@@ -25,10 +25,12 @@ std::vector<ByteResolver *> GetExpr::compile(Compiler *compiler) {
         throw CompilerError("Must resolve to a single symbol");
     }
 
-    if (returnType[0].isFunction()) {
-        Utils::loadFunctionEntryAddr(compiler, returnType[0].entry->asFunctionTypeEntry()->function, bytes);
+    if (auto concrete = dynamic_cast<ConcreteTypeReference *>(returnType[0])) {
+        if (concrete->isFunction()) {
+            Utils::loadFunctionEntryAddr(compiler, concrete->entry->asFunctionTypeEntry()->function, bytes);
 
-        return bytes;
+            return bytes;
+        }
     }
 
     throw CompilerError("Not implemented");
@@ -43,12 +45,18 @@ TypeReferences GetExpr::computeReturnType(Compiler *compiler) {
         throw CompilerError("Return type has to be single", identifier->position);
     }
 
-    auto candidates = calleeType[0].entry->functions.findCandidates(identifier->lexeme);
+    auto concrete = dynamic_cast<ConcreteTypeReference *>(calleeType[0]);
+
+    if (concrete == nullptr) {
+        throw CompilerError("Return type has to be concrete", identifier->position);
+    }
+
+    auto candidates = concrete->entry->functions.findCandidates(identifier->lexeme);
 
     auto candidateTypes = TypeReferences();
 
     for (auto candidate : candidates) {
-        candidateTypes.push_back(TypeReference(candidate->typeEntry, false));
+        candidateTypes.push_back(new ConcreteTypeReference(candidate->typeEntry));
     }
 
     return candidateTypes;

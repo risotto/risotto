@@ -96,7 +96,7 @@ private:
 
     Stmt *varDecl();
 
-    TypeDescriptor typeRef();
+    TypeDescriptor *typeRef();
 };
 
 

@@ -27,7 +27,7 @@ FunctionEntry *UnaryExpr::getFunctionEntry(Compiler *compiler) {
         throw CompilerError("RHS of unary operation must be a single value", op()->position);
     }
 
-    return leftTypeEntry[0].findPrefix(op()->lexeme, getArgumentsTypes(compiler));
+    return leftTypeEntry[0]->findPrefix(op()->lexeme, getArgumentsTypes(compiler));
 }
 
 FunctionNotFoundError UnaryExpr::getFunctionNotFoundError(Compiler *compiler) {

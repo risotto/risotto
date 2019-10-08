@@ -6,14 +6,30 @@
 #include "TypeDescriptor.h"
 #include "lib/compiler/Compiler.h"
 
-TypeDescriptor::TypeDescriptor(Token *name, bool isArray) : name(name), isArray(isArray) {}
+ConcreteTypeDescriptor::ConcreteTypeDescriptor(Token *name) : name(name) {}
 
-TypeReference TypeDescriptor::toTypeReference(Compiler *compiler) {
+TypeReference *ConcreteTypeDescriptor::toTypeReference(Compiler *compiler) {
     auto paramType = compiler->frame->types.find(name->lexeme);
 
     if (paramType == nullptr) {
         throw CompilerError("Cannot find type for " + name->lexeme);
     }
 
-    return TypeReference(paramType, isArray);
+    return new ConcreteTypeReference(paramType);
+}
+
+std::string ConcreteTypeDescriptor::toString() {
+    return name->lexeme;
+}
+
+ArrayTypeDescriptor::ArrayTypeDescriptor(TypeDescriptor *element) : element(element) {
+
+}
+
+TypeReference *ArrayTypeDescriptor::toTypeReference(Compiler *compiler) {
+    return new ArrayTypeReference(element->toTypeReference(compiler));
+}
+
+std::string ArrayTypeDescriptor::toString() {
+    return "[]" + element->toString();
 }

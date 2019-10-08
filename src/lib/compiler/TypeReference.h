@@ -9,28 +9,64 @@
 #include <string>
 
 class TypeEntry;
+
 class FunctionEntry;
 
 class TypeReference {
 public:
-    TypeEntry *entry;
-    bool isArray;
+    virtual FunctionEntry *findOperator(const std::string &name, const std::vector<TypeReference *> &types) = 0;
 
-    TypeReference(TypeEntry *entry, bool isArray);
+    virtual FunctionEntry *findPrefix(const std::string &name, const std::vector<TypeReference *> &types) = 0;
 
-    FunctionEntry *findOperator(const std::string& name, const std::vector<TypeReference>& types);
-    FunctionEntry *findPrefix(const std::string& name, const std::vector<TypeReference>& types);
+    virtual bool canReceiveType(TypeReference *other) = 0;
 
-    bool canReceiveType(TypeReference other);
-    bool isFunction();
+    virtual bool isFunction() = 0;
+
+    virtual std::string toString() = 0;
 };
 
-class TypeReferences: public std::vector<TypeReference> {
+class ArrayTypeReference : public TypeReference {
 public:
-    using std::vector<TypeReference>::vector;
+    TypeReference *element;
+
+    explicit ArrayTypeReference(TypeReference *element);
+
+    FunctionEntry *findOperator(const std::string &name, const std::vector<TypeReference *> &types) override;
+
+    FunctionEntry *findPrefix(const std::string &name, const std::vector<TypeReference *> &types) override;
+
+    bool canReceiveType(TypeReference *other) override;
+
+    bool isFunction() override;
+
+    std::string toString() override;
+};
+
+class ConcreteTypeReference : public TypeReference {
+public:
+    TypeEntry *entry;
+
+    explicit ConcreteTypeReference(TypeEntry *entry);
+
+    bool canReceiveType(TypeReference *other) override;
+
+    FunctionEntry *findOperator(const std::string &name, const std::vector<TypeReference *> &types) override;
+
+    FunctionEntry *findPrefix(const std::string &name, const std::vector<TypeReference *> &types) override;
+
+    bool isFunction() override;
+
+    std::string toString() override;
+};
+
+
+class TypeReferences : public std::vector<TypeReference *> {
+public:
+    using std::vector<TypeReference *>::vector;
 
     TypeReferences(TypeEntry *entry);
-    TypeReferences(TypeReference ref);
+
+    TypeReferences(TypeReference *ref);
 
     bool single();
 

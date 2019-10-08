@@ -29,7 +29,7 @@ public:
 protected:
     TypeReferences computeReturnType(Compiler *compiler) override;
 
-    std::vector<TypeReference> getArgumentsTypes(Compiler *compiler);
+    std::vector<TypeReference *> getArgumentsTypes(Compiler *compiler);
 
     virtual FunctionNotFoundError getFunctionNotFoundError(Compiler *compiler);
 

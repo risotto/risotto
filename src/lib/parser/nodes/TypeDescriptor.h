@@ -13,12 +13,31 @@ class Compiler;
 
 class TypeDescriptor {
 public:
+    virtual TypeReference *toTypeReference(Compiler *compiler) = 0;
+
+    virtual std::string toString() = 0;
+};
+
+class ArrayTypeDescriptor : public TypeDescriptor {
+public:
+    TypeDescriptor *element;
+
+    explicit ArrayTypeDescriptor(TypeDescriptor *element);
+
+    TypeReference *toTypeReference(Compiler *compiler) override;
+
+    std::string toString() override;
+};
+
+class ConcreteTypeDescriptor : public TypeDescriptor {
+public:
     Token *name;
-    bool isArray;
 
-    TypeDescriptor(Token *name, bool isArray);
+    explicit ConcreteTypeDescriptor(Token *name);
 
-    TypeReference toTypeReference(Compiler *compiler);
+    TypeReference *toTypeReference(Compiler *compiler) override;
+
+    std::string toString() override;
 };
 
 

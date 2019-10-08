@@ -21,7 +21,7 @@ const char *CompilerError::what() const noexcept {
 }
 
 std::string
-format(const std::string &name, const std::string &type, const std::vector<TypeReference> *argsTypes) {
+format(const std::string &name, const std::string &type, const std::vector<TypeReference *> *argsTypes) {
     std::stringstream ss;
     ss << "Cannot find function matching ";
 
@@ -41,7 +41,7 @@ format(const std::string &name, const std::string &type, const std::vector<TypeR
                 ss << ", ";
             }
 
-            ss << (*argsTypes)[i].entry->name;
+            ss << (*argsTypes)[i]->toString();
         }
 
         ss << ")";
@@ -59,7 +59,7 @@ FunctionNotFoundError::FunctionNotFoundError(Token *name, const std::string &typ
 FunctionNotFoundError::FunctionNotFoundError(
         const std::string &name,
         const std::string &type,
-        const std::vector<TypeReference> &argsTypes,
+        const std::vector<TypeReference *> &argsTypes,
         Token *hook
 ) : CompilerError(format(name, type, &argsTypes), hook->position) {
 

@@ -15,7 +15,7 @@ bool TypeEntry::canReceiveType(TypeEntry *type) {
 }
 
 void TypeEntry::addSelf(const std::string &selfName, bool asReference, FunctionEntry *entry) {
-    entry->params.insert(entry->params.begin(), {FunctionEntryParameter(selfName, TypeReference(this, false), asReference)});
+    entry->params.insert(entry->params.begin(), {FunctionEntryParameter(selfName, new ConcreteTypeReference(this), asReference)});
 }
 
 FunctionEntry *TypeEntry::addFunction(const std::string &selfName, bool asReference, FunctionEntry *entry) {

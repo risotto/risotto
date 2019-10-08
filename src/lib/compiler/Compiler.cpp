@@ -16,8 +16,8 @@ extern "C" {
         true, \
         new NativeFunctionEntry( \
             #op, \
-            {FunctionEntryParameter("right", TypeReference(param##Entry, false))}, \
-            {TypeReference(return##Entry, false)}, \
+            {FunctionEntryParameter("right", new ConcreteTypeReference(param##Entry))}, \
+            {new ConcreteTypeReference(return##Entry)}, \
             functionName \
         ) \
     );
@@ -108,7 +108,7 @@ Compiler::Compiler(std::vector<Stmt *> stmts) : stmts(std::move(stmts)) {
     frame->functions.add(
             new NativeFunctionEntry(
                     "println",
-                    {FunctionEntryParameter("e",  TypeReference(intEntry,  false))},
+                    {FunctionEntryParameter("e",  new ConcreteTypeReference(intEntry))},
                     {},
                     println_int
             )
@@ -117,7 +117,7 @@ Compiler::Compiler(std::vector<Stmt *> stmts) : stmts(std::move(stmts)) {
     frame->functions.add(
             new NativeFunctionEntry(
                     "println",
-                    {FunctionEntryParameter("e",  TypeReference(doubleEntry, false))},
+                    {FunctionEntryParameter("e",  new ConcreteTypeReference(doubleEntry))},
                     {},
                     println_double
             )
@@ -126,7 +126,7 @@ Compiler::Compiler(std::vector<Stmt *> stmts) : stmts(std::move(stmts)) {
     frame->functions.add(
             new NativeFunctionEntry(
                     "println",
-                    {FunctionEntryParameter("e",  TypeReference(boolEntry, false))},
+                    {FunctionEntryParameter("e",  new ConcreteTypeReference(boolEntry))},
                     {},
                     println_bool
             )
@@ -135,7 +135,7 @@ Compiler::Compiler(std::vector<Stmt *> stmts) : stmts(std::move(stmts)) {
     frame->functions.add(
             new NativeFunctionEntry(
                     "println",
-                    {FunctionEntryParameter("e",  TypeReference(stringEntry, false))},
+                    {FunctionEntryParameter("e",  new ConcreteTypeReference(stringEntry))},
                     {},
                     println_string
             )

@@ -74,8 +74,12 @@ std::vector<FunctionEntry *> Frame::findFunctionsCandidates(const std::string &n
         allCandidates.insert(allCandidates.end(), functionCandidates.begin(), functionCandidates.end());
 
         auto var = current->variables.find(name);
-        if (var != nullptr && var->typeRef.isFunction()) {
-            allCandidates.push_back(var->typeRef.entry->asFunctionTypeEntry()->function);
+        if (var != nullptr) {
+            if (var->typeRef->isFunction()) {
+                if (auto concrete = dynamic_cast<ConcreteTypeReference *>(var->typeRef)) {
+                    allCandidates.push_back(concrete->entry->asFunctionTypeEntry()->function);
+                }
+            }
         }
 
         current = current->parent;
