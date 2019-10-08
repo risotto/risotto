@@ -21,8 +21,8 @@ std::vector<ByteResolver *> IdentifierExpr::compile(Compiler *compiler) {
         throw CompilerError("Must resolve to a single symbol");
     }
 
-    if (returnType[0]->isFunction()) {
-        auto functionEntry = returnType[0]->asFunctionTypeEntry()->function;
+    if (returnType[0].isFunction()) {
+        auto functionEntry = returnType[0].entry->asFunctionTypeEntry()->function;
 
         Utils::loadFunctionEntryAddr(compiler, functionEntry, bytes);
 
@@ -48,13 +48,13 @@ TypeReferences IdentifierExpr::computeReturnType(Compiler *compiler) {
     auto candidateTypes = TypeReferences();
 
     for (auto candidate : candidates) {
-        candidateTypes.push_back(candidate->typeEntry);
+        candidateTypes.push_back(TypeReference(candidate->typeEntry, false));
     }
 
     auto response = compiler->frame->findVariable(name->lexeme);
 
     if (response != nullptr) {
-        candidateTypes.push_back(response->variable->type);
+        candidateTypes.push_back(response->variable->typeRef);
     }
 
     if (candidateTypes.empty()) {

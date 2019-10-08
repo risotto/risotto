@@ -11,10 +11,10 @@
 class VariableEntry {
 public:
     std::string name;
-    TypeEntry *type;
+    TypeReference typeRef;
     int index;
 
-    VariableEntry(std::string name, TypeEntry *typeEntry, int index);
+    VariableEntry(std::string name, TypeReference typeRef, int index);
 };
 
 class VariablesTable {
@@ -23,7 +23,7 @@ private:
 public:
     VariableEntry *find(const std::string &name);
 
-    VariableEntry *add(std::string name, TypeEntry *typeEntry);
+    VariableEntry *add(std::string name, TypeReference typeRef);
 };
 
 

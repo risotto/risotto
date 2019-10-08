@@ -129,7 +129,7 @@ if (auto V = dynamic_cast<T *>(stmt)) { \
 
         ss << "FunctionStmt" << std::endl;
         if (stmt->receiver) {
-            ss << indent("+Receiver: " + stmt->receiver->type->lexeme, 1) << std::endl;
+            ss << indent("+Receiver: " + stmt->receiver->type.name->lexeme, 1) << std::endl;
         }
         ss << indent("+Name: " + stmt->name->lexeme, 1) << std::endl;
         ss << indent("+Body: ", 1) << std::endl;

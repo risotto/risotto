@@ -25,8 +25,8 @@ std::vector<ByteResolver *> GetExpr::compile(Compiler *compiler) {
         throw CompilerError("Must resolve to a single symbol");
     }
 
-    if (returnType[0]->isFunction()) {
-        Utils::loadFunctionEntryAddr(compiler, returnType[0]->asFunctionTypeEntry()->function, bytes);
+    if (returnType[0].isFunction()) {
+        Utils::loadFunctionEntryAddr(compiler, returnType[0].entry->asFunctionTypeEntry()->function, bytes);
 
         return bytes;
     }
@@ -43,12 +43,12 @@ TypeReferences GetExpr::computeReturnType(Compiler *compiler) {
         throw CompilerError("Return type has to be single", identifier->position);
     }
 
-    auto candidates = calleeType[0]->functions.findCandidates(identifier->lexeme);
+    auto candidates = calleeType[0].entry->functions.findCandidates(identifier->lexeme);
 
     auto candidateTypes = TypeReferences();
 
     for (auto candidate : candidates) {
-        candidateTypes.push_back(candidate->typeEntry);
+        candidateTypes.push_back(TypeReference(candidate->typeEntry, false));
     }
 
     return candidateTypes;

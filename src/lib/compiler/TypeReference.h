@@ -6,26 +6,35 @@
 #define RISOTTOV2_TYPEREFERENCE_H
 
 #include <vector>
+#include <string>
 
 class TypeEntry;
+class FunctionEntry;
 
-class TypeReferences: public std::vector<TypeEntry *> {
+class TypeReference {
 public:
-    using std::vector<TypeEntry *>::vector;
+    TypeEntry *entry;
+    bool isArray;
+
+    TypeReference(TypeEntry *entry, bool isArray);
+
+    FunctionEntry *findOperator(const std::string& name, const std::vector<TypeReference>& types);
+    FunctionEntry *findPrefix(const std::string& name, const std::vector<TypeReference>& types);
+
+    bool canReceiveType(TypeReference other);
+    bool isFunction();
+};
+
+class TypeReferences: public std::vector<TypeReference> {
+public:
+    using std::vector<TypeReference>::vector;
 
     TypeReferences(TypeEntry *entry);
+    TypeReferences(TypeReference ref);
 
     bool single();
 
     TypeReferences onlyFunctions();
-};
-
-class TypeReference {
-public:
-    TypeEntry *type;
-    bool isArray;
-
-    TypeReference(TypeEntry *type, bool isArray);
 };
 
 #endif //RISOTTOV2_TYPEREFERENCE_H

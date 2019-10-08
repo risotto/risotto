@@ -95,6 +95,8 @@ private:
     ParameterDefinition *parameter();
 
     Stmt *varDecl();
+
+    TypeDescriptor typeRef();
 };
 
 

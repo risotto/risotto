@@ -84,6 +84,18 @@ ParseError Parser::error(Token *token, const std::string &message) {
     return ParseError(message, token);
 }
 
+TypeDescriptor Parser::typeRef() {
+    auto isArray = false;
+
+    if (match(Token::Type::LEFT_SQUARED)) {
+        consume(Token::Type::RIGHT_SQUARED, "Expect '['");
+    }
+
+    auto name = consume(Token::Type::IDENTIFIER, "Expect type");
+
+    return TypeDescriptor(name, isArray);
+}
+
 std::vector<Stmt *> Parser::program() {
     std::vector<Stmt *> nodes;
 
@@ -179,9 +191,9 @@ Stmt *Parser::function(bool isNamed) {
 
     consume(Token::Type::RIGHT_PAREN, "Expect ')' after parameters.");
 
-    auto returnTypes = std::vector<Token *>();
+    auto returnTypes = std::vector<TypeDescriptor>();
     while (!check(Token::Type::LEFT_CURLY) && !isAtEnd()) {
-        auto returnType = consume(Token::Type::IDENTIFIER, "Expect return type.");
+        auto returnType = typeRef();
         returnTypes.push_back(returnType);
 
         if (!match(Token::Type::COMMA)) {
@@ -199,14 +211,14 @@ Stmt *Parser::function(bool isNamed) {
 ParameterDefinition *Parser::parameter() {
     auto name = consume(Token::Type::IDENTIFIER, "Expect parameter name.");
 
-    auto isReference = false;
+    auto asReference = false;
     if (match(Token::Type::AMPERSAND)) {
-        isReference = true;
+        asReference = true;
     }
 
-    auto type = consume(Token::Type::IDENTIFIER, "Expect parameter type.");
+    auto type = typeRef();
 
-    return new ParameterDefinition(name, type, isReference);
+    return new ParameterDefinition(name, type, asReference);
 }
 
 std::vector<Stmt *> Parser::block() {

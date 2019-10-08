@@ -17,11 +17,11 @@ class TypeEntry;
 class FunctionEntryParameter {
 public:
     std::string name;
-    TypeEntry *type;
-    bool isReference;
+    TypeReference type;
+    bool asReference;
 
-    FunctionEntryParameter(std::string name, TypeEntry *type);
-    FunctionEntryParameter(std::string name, TypeEntry *type, bool isReference);
+    FunctionEntryParameter(std::string name, TypeReference type);
+    FunctionEntryParameter(std::string name, TypeReference type, bool asReference);
 };
 
 class FunctionTypeEntry;
@@ -51,7 +51,7 @@ class FunctionsTable {
 private:
     std::vector<FunctionEntry *> entries;
 public:
-    FunctionEntry *find(const std::string &name, const std::vector<TypeEntry *>& argsTypes);
+    FunctionEntry *find(const std::string &name, const std::vector<TypeReference>& argsTypes);
     std::vector<FunctionEntry *> findCandidates(const std::string &name);
 
     FunctionEntry * add(FunctionEntry *entry);
