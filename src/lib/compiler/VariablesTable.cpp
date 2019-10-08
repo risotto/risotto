@@ -6,8 +6,8 @@
 
 #include <utility>
 
-VariableEntry::VariableEntry(std::string name, TypeEntry *typeEntry, int index) : name(std::move(name)),
-                                                                                  type(typeEntry), index(index) {
+VariableEntry::VariableEntry(std::string name, TypeReference typeRef, int index) : name(std::move(name)),
+                                                                                   typeRef(typeRef), index(index) {
 
 }
 
@@ -21,8 +21,8 @@ VariableEntry *VariablesTable::find(const std::string &name) {
     return nullptr;
 }
 
-VariableEntry *VariablesTable::add(std::string name, TypeEntry *typeEntry) {
-    auto entry = new VariableEntry(std::move(name), typeEntry, entries.size());
+VariableEntry *VariablesTable::add(std::string name, TypeReference typeRef) {
+    auto entry = new VariableEntry(std::move(name), typeRef, entries.size());
 
     entries.push_back(entry);
 

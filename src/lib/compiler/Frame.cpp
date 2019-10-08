@@ -50,20 +50,6 @@ VariableFindResponse *Frame::findVariable(const std::string &name) {
     return nullptr;
 }
 
-FunctionEntry *Frame::findFunction(const std::string &name, const std::vector<TypeEntry *> &argsTypes) {
-    auto entry = functions.find(name, argsTypes);
-
-    if (entry != nullptr) {
-        return entry;
-    }
-
-    if (parent != nullptr) {
-        return parent->findFunction(name, argsTypes);
-    }
-
-    return nullptr;
-}
-
 int Frame::findFrame(FrameType type) {
     Frame *current = this;
     int distance = 0;
@@ -88,8 +74,8 @@ std::vector<FunctionEntry *> Frame::findFunctionsCandidates(const std::string &n
         allCandidates.insert(allCandidates.end(), functionCandidates.begin(), functionCandidates.end());
 
         auto var = current->variables.find(name);
-        if (var != nullptr && var->type->isFunction()) {
-            allCandidates.push_back(var->type->asFunctionTypeEntry()->function);
+        if (var != nullptr && var->typeRef.isFunction()) {
+            allCandidates.push_back(var->typeRef.entry->asFunctionTypeEntry()->function);
         }
 
         current = current->parent;

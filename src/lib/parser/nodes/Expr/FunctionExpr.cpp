@@ -3,10 +3,11 @@
 //
 
 #include "FunctionExpr.h"
+#include "lib/compiler/TypeReference.h"
 
 FunctionExpr::FunctionExpr(FunctionStmt *functionStmt) : functionStmt(functionStmt) {}
 
-TypesEntries FunctionExpr::computeReturnType(Compiler *compiler) {
+TypeReferences FunctionExpr::computeReturnType(Compiler *compiler) {
     auto functionEntry = functionStmt->getFunctionEntry(compiler);
 
     return new FunctionTypeEntry("", functionEntry);

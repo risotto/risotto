@@ -8,12 +8,13 @@
 #include <lib/compiler/CompilerError.h>
 #include "FunctionStmt.h"
 #include "BlockStmt.h"
+#include "lib/compiler/TypeReference.h"
 
 FunctionStmt::FunctionStmt(
         Token *type,
         ParameterDefinition *receiver,
         Token *name,
-        std::vector<Token *> returnTypes,
+        std::vector<TypeDescriptor> returnTypes,
         std::vector<ParameterDefinition> parameters,
         std::vector<Stmt *> body,
         Token *closeBlock
@@ -29,26 +30,14 @@ FunctionEntry *FunctionStmt::getFunctionEntry(Compiler *compiler) {
     }
 
     // Get return type
-    auto returnTypesEntries = TypesEntries();
+    auto returnTypeReferences = TypeReferences();
     for (auto returnType : returnTypes) {
-        auto returnTypeEntry = compiler->frame->findType(returnType->lexeme);
-
-        if (returnTypeEntry == nullptr) {
-            throw CompilerError("Cannot find type for " + returnType->lexeme);
-        }
-
-        returnTypesEntries.push_back(returnTypeEntry);
+        returnTypeReferences.push_back(returnType.toTypeReference(compiler));
     }
 
     auto entryParameters = std::vector<FunctionEntryParameter>();
     for (auto parameter : parameters) {
-        auto paramType = compiler->frame->types.find(parameter.type->lexeme);
-
-        if (paramType == nullptr) {
-            throw CompilerError("Cannot find type for " + parameter.type->lexeme);
-        }
-
-        entryParameters.emplace_back(parameter.name->lexeme, paramType);
+        entryParameters.emplace_back(parameter.name->lexeme, parameter.type.toTypeReference(compiler));
     }
 
     std::string nameStr;
@@ -60,29 +49,33 @@ FunctionEntry *FunctionStmt::getFunctionEntry(Compiler *compiler) {
     auto functionEntry = new FunctionEntry(
             nameStr,
             entryParameters,
-            returnTypesEntries
+            returnTypeReferences
     );
 
     if (autoRegister) {
         if (receiver != nullptr) {
-            auto receiverType = compiler->frame->findType(receiver->type->lexeme);
+            auto receiverType = compiler->frame->findType(receiver->type.name->lexeme);
 
             if (receiverType == nullptr) {
-                throw CompilerError("Cannot find type for " + receiver->type->lexeme);
+                throw CompilerError("Cannot find type for " + receiver->type.name->lexeme);
+            }
+
+            if (receiver->type.isArray) {
+                throw CompilerError("Unhandled array");
             }
 
             switch (type->type) {
                 case Token::Type::FUNC:
                     functionEntry = receiverType->addFunction(
                             receiver->name->lexeme,
-                            receiver->isReference,
+                            receiver->asReference,
                             functionEntry
                     );
                     break;
                 case Token::Type::OP:
                     functionEntry = receiverType->addOperator(
                             receiver->name->lexeme,
-                            receiver->isReference,
+                            receiver->asReference,
                             functionEntry
                     );
                     break;

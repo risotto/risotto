@@ -8,29 +8,10 @@
 
 #include <utility>
 
-bool TypesEntries::single() {
-    return size() == 1;
-}
+FunctionEntryParameter::FunctionEntryParameter(std::string name, TypeReference type) : FunctionEntryParameter(std::move(name), type, false) {}
+FunctionEntryParameter::FunctionEntryParameter(std::string name, TypeReference type, bool asReference) : name(std::move(name)), type(type), asReference(asReference) {}
 
-TypesEntries::TypesEntries(TypeEntry *entry) : std::vector<TypeEntry *>({entry}) {
-}
-
-TypesEntries TypesEntries::onlyFunctions() {
-    auto onlyFunctions = TypesEntries();
-
-    for (auto entry : *this) {
-        if (entry->isFunction()) {
-            onlyFunctions.push_back(entry);
-        }
-    }
-
-    return onlyFunctions;
-}
-
-FunctionEntryParameter::FunctionEntryParameter(std::string name, TypeEntry *type) : FunctionEntryParameter(std::move(name), type, false) {}
-FunctionEntryParameter::FunctionEntryParameter(std::string name, TypeEntry *type, bool isReference) : name(std::move(name)), type(type), isReference(isReference) {}
-
-FunctionEntry::FunctionEntry(std::string name, std::vector<FunctionEntryParameter> params, TypesEntries returnTypes) :
+FunctionEntry::FunctionEntry(std::string name, std::vector<FunctionEntryParameter> params, TypeReferences returnTypes) :
         name(std::move(name)), params(std::move(params)), returnTypes(std::move(returnTypes)) {
     typeEntry = new FunctionTypeEntry(name, this);
 }
@@ -38,20 +19,20 @@ FunctionEntry::FunctionEntry(std::string name, std::vector<FunctionEntryParamete
 NativeFunctionEntry::NativeFunctionEntry(
         std::string name,
         std::vector<FunctionEntryParameter> params,
-        TypesEntries returnTypes,
+        TypeReferences returnTypes,
         NativeFunctionReturn (*fun)(Value[], int)
 ) : FunctionEntry(std::move(name), std::move(params), std::move(returnTypes)), fun(fun) {
 
 }
 
-FunctionEntry *FunctionsTable::find(const std::string &name, const std::vector<TypeEntry *> &argsTypes) {
+FunctionEntry *FunctionsTable::find(const std::string &name, const std::vector<TypeReference > &argsTypes) {
     auto functionsWithName = findCandidates(name);
 
     return Utils::findMatchingFunctions(functionsWithName, argsTypes);
 }
 
 FunctionEntry *FunctionsTable::add(FunctionEntry *entry) {
-    auto paramsTypes = std::vector<TypeEntry *>();
+    auto paramsTypes = std::vector<TypeReference>();
     for (const auto& param: entry->params) {
         paramsTypes.push_back(param.type);
     }

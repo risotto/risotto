@@ -9,6 +9,7 @@ extern "C" {
 #include "CallExpr.h"
 #include "IdentifierExpr.h"
 #include "GetExpr.h"
+#include "lib/compiler/TypeReference.h"
 
 #include <utility>
 #include <lib/compiler/Compiler.h>
@@ -61,14 +62,14 @@ std::vector<ByteResolver *> CallExpr::compile(Compiler *compiler) {
 
     if (!isNative) {
         for (const auto &parameter: functionEntry->params) {
-            bytes.push_back(new ByteResolver(parameter.isReference, nullptr));
+            bytes.push_back(new ByteResolver(parameter.asReference, nullptr));
         }
     }
 
     return bytes;
 }
 
-std::vector<TypeEntry *> CallExpr::getArgumentsTypes(Compiler *compiler) {
+std::vector<TypeReference> CallExpr::getArgumentsTypes(Compiler *compiler) {
     auto arguments = getArguments(compiler);
 
     for (auto arg : arguments) {
@@ -86,7 +87,7 @@ std::vector<TypeEntry *> CallExpr::getArgumentsTypes(Compiler *compiler) {
     return Utils::getTypes(arguments, compiler);
 }
 
-TypesEntries CallExpr::getCalleeEntry(Compiler *compiler) {
+TypeReferences CallExpr::getCalleeEntry(Compiler *compiler) {
     try {
         return callee->getReturnType(compiler);
     } catch (CompilerError &e) {
@@ -102,7 +103,7 @@ FunctionEntry *CallExpr::getFunctionEntry(Compiler *compiler) {
     auto functions = std::vector<FunctionEntry *>();
 
     for (auto returnType : calleeReturnTypes.onlyFunctions()) {
-        functions.push_back(returnType->asFunctionTypeEntry()->function);
+        functions.push_back(returnType.entry->asFunctionTypeEntry()->function);
     }
 
     auto entry = Utils::findMatchingFunctions(functions, argumentsTypes);
@@ -120,7 +121,7 @@ FunctionNotFoundError CallExpr::getFunctionNotFoundError(Compiler *compiler) {
     if (auto getExpr = dynamic_cast<GetExpr *>(callee)) {
         throw FunctionNotFoundError(
                 getExpr->identifier->lexeme,
-                getExpr->callee->getReturnType(compiler)[0]->name,
+                getExpr->callee->getReturnType(compiler)[0].entry->name,
                 actualArgumentsTypes,
                 rParen
         );
@@ -140,7 +141,7 @@ FunctionNotFoundError CallExpr::getFunctionNotFoundError(Compiler *compiler) {
     throw FunctionNotFoundError("", "", argumentsTypes, rParen);
 }
 
-TypesEntries CallExpr::computeReturnType(Compiler *compiler) {
+TypeReferences CallExpr::computeReturnType(Compiler *compiler) {
     auto functionEntry = getFunctionEntry(compiler);
 
     if (functionEntry == nullptr) {

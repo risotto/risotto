@@ -9,6 +9,7 @@ extern "C" {
 #include <lib/compiler/CompilerError.h>
 #include "LiteralExpr.h"
 #include "lib/compiler/Compiler.h"
+#include "lib/compiler/TypeReference.h"
 
 LiteralExpr::LiteralExpr(Token *value) : value(value) {
 
@@ -51,7 +52,7 @@ std::vector<ByteResolver *> LiteralExpr::compile(Compiler *compiler) {
     return bytes;
 }
 
-TypesEntries LiteralExpr::computeReturnType(Compiler *compiler) {
+TypeReferences LiteralExpr::computeReturnType(Compiler *compiler) {
     switch (value->type) {
         case Token::Type::FALSE:
         case Token::Type::TRUE:

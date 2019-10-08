@@ -16,8 +16,8 @@ extern "C" {
         true, \
         new NativeFunctionEntry( \
             #op, \
-            {FunctionEntryParameter("right", param##Entry)}, \
-            {return##Entry}, \
+            {FunctionEntryParameter("right", TypeReference(param##Entry, false))}, \
+            {TypeReference(return##Entry, false)}, \
             functionName \
         ) \
     );
@@ -108,7 +108,7 @@ Compiler::Compiler(std::vector<Stmt *> stmts) : stmts(std::move(stmts)) {
     frame->functions.add(
             new NativeFunctionEntry(
                     "println",
-                    {FunctionEntryParameter("e", intEntry)},
+                    {FunctionEntryParameter("e",  TypeReference(intEntry,  false))},
                     {},
                     println_int
             )
@@ -117,7 +117,7 @@ Compiler::Compiler(std::vector<Stmt *> stmts) : stmts(std::move(stmts)) {
     frame->functions.add(
             new NativeFunctionEntry(
                     "println",
-                    {FunctionEntryParameter("e", doubleEntry)},
+                    {FunctionEntryParameter("e",  TypeReference(doubleEntry, false))},
                     {},
                     println_double
             )
@@ -126,7 +126,7 @@ Compiler::Compiler(std::vector<Stmt *> stmts) : stmts(std::move(stmts)) {
     frame->functions.add(
             new NativeFunctionEntry(
                     "println",
-                    {FunctionEntryParameter("e", boolEntry)},
+                    {FunctionEntryParameter("e",  TypeReference(boolEntry, false))},
                     {},
                     println_bool
             )
@@ -135,7 +135,7 @@ Compiler::Compiler(std::vector<Stmt *> stmts) : stmts(std::move(stmts)) {
     frame->functions.add(
             new NativeFunctionEntry(
                     "println",
-                    {FunctionEntryParameter("e", stringEntry)},
+                    {FunctionEntryParameter("e",  TypeReference(stringEntry, false))},
                     {},
                     println_string
             )

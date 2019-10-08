@@ -14,20 +14,24 @@ bool TypeEntry::canReceiveType(TypeEntry *type) {
     return this == type;
 }
 
-FunctionEntry *TypeEntry::addFunction(const std::string &selfName, bool isReference, FunctionEntry *entry) {
-    entry->params.insert(entry->params.begin(), {FunctionEntryParameter(selfName, this, isReference)});
+void TypeEntry::addSelf(const std::string &selfName, bool asReference, FunctionEntry *entry) {
+    entry->params.insert(entry->params.begin(), {FunctionEntryParameter(selfName, TypeReference(this, false), asReference)});
+}
+
+FunctionEntry *TypeEntry::addFunction(const std::string &selfName, bool asReference, FunctionEntry *entry) {
+    addSelf(selfName, asReference, entry);
 
     return functions.add(entry);
 }
 
-FunctionEntry *TypeEntry::addOperator(const std::string &selfName, bool isReference, FunctionEntry *entry) {
-    entry->params.insert(entry->params.begin(), {FunctionEntryParameter(selfName, this, isReference)});
+FunctionEntry *TypeEntry::addOperator(const std::string &selfName, bool asReference, FunctionEntry *entry) {
+    addSelf(selfName, asReference, entry);
 
     return operators.add(entry);
 }
 
-FunctionEntry *TypeEntry::addPrefix(const std::string &selfName, bool isReference, FunctionEntry *entry) {
-    entry->params.insert(entry->params.begin(), {FunctionEntryParameter(selfName, this, isReference)});
+FunctionEntry *TypeEntry::addPrefix(const std::string &selfName, bool asReference, FunctionEntry *entry) {
+    addSelf(selfName, asReference, entry);
 
     return prefixes.add(entry);
 }

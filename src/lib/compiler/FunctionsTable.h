@@ -10,39 +10,29 @@
 #include <lib/parser/nodes/ParameterDefinition.h>
 #include <lib/vm/value.h>
 #include "ByteResolver.h"
+#include "lib/compiler/TypeReference.h"
 
 class TypeEntry;
-
-class TypesEntries: public std::vector<TypeEntry *> {
-public:
-    TypesEntries(TypeEntry *entry);
-
-    bool single();
-
-    using std::vector<TypeEntry *>::vector;
-
-    TypesEntries onlyFunctions();
-};
 
 class FunctionEntryParameter {
 public:
     std::string name;
-    TypeEntry *type;
-    bool isReference;
+    TypeReference type;
+    bool asReference;
 
-    FunctionEntryParameter(std::string name, TypeEntry *type);
-    FunctionEntryParameter(std::string name, TypeEntry *type, bool isReference);
+    FunctionEntryParameter(std::string name, TypeReference type);
+    FunctionEntryParameter(std::string name, TypeReference type, bool asReference);
 };
 
 class FunctionTypeEntry;
 
 class FunctionEntry {
 public:
-    FunctionEntry(std::string name, std::vector<FunctionEntryParameter> params, TypesEntries returnTypes);
+    FunctionEntry(std::string name, std::vector<FunctionEntryParameter> params, TypeReferences returnTypes);
 
     std::string name;
     std::vector<FunctionEntryParameter> params;
-    TypesEntries returnTypes;
+    TypeReferences returnTypes;
     FunctionTypeEntry *typeEntry = nullptr;
 
     ByteResolver *firstByte = nullptr;
@@ -54,14 +44,14 @@ class NativeFunctionEntry: public FunctionEntry {
 public:
     NativeFunctionReturn (*fun)(Value[], int);
 
-    NativeFunctionEntry(std::string name, std::vector<FunctionEntryParameter> params, TypesEntries returnTypes, NativeFunctionReturn (*fun)(Value[], int));
+    NativeFunctionEntry(std::string name, std::vector<FunctionEntryParameter> params, TypeReferences returnTypes, NativeFunctionReturn (*fun)(Value[], int));
 };
 
 class FunctionsTable {
 private:
     std::vector<FunctionEntry *> entries;
 public:
-    FunctionEntry *find(const std::string &name, const std::vector<TypeEntry *>& argsTypes);
+    FunctionEntry *find(const std::string &name, const std::vector<TypeReference>& argsTypes);
     std::vector<FunctionEntry *> findCandidates(const std::string &name);
 
     FunctionEntry * add(FunctionEntry *entry);

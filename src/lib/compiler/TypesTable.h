@@ -20,14 +20,18 @@ public:
 
     bool canReceiveType(TypeEntry *type);
 
-    FunctionEntry *addFunction(const std::string& selfName, bool isReference, FunctionEntry *entry);
-    FunctionEntry *addOperator(const std::string& selfName, bool isReference, FunctionEntry *entry);
-    FunctionEntry *addPrefix(const std::string& selfName, bool isReference, FunctionEntry *entry);
+    FunctionEntry *addFunction(const std::string& selfName, bool asReference, FunctionEntry *entry);
+    FunctionEntry *addOperator(const std::string& selfName, bool asReference, FunctionEntry *entry);
+    FunctionEntry *addPrefix(const std::string& selfName, bool asReference, FunctionEntry *entry);
 
     virtual bool isFunction();
     virtual FunctionTypeEntry *asFunctionTypeEntry();
 
     virtual ~TypeEntry() = default;
+
+    void addSelf(FunctionEntry *entry);
+
+    void addSelf(const std::string &selfName, bool asReference, FunctionEntry *entry);
 };
 
 class FunctionTypeEntry: public TypeEntry {

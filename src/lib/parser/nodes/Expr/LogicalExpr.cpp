@@ -8,6 +8,7 @@ extern "C" {
 #include <lib/compiler/Compiler.h>
 #include <lib/compiler/CompilerError.h>
 #include "LogicalExpr.h"
+#include "lib/compiler/TypeReference.h"
 
 LogicalExpr::LogicalExpr(Expr *left, Token *op, Expr *right): left(left), op(op), right(right) {
 
@@ -85,6 +86,6 @@ std::vector<ByteResolver *> LogicalExpr::compile(Compiler *compiler) {
     throw CompilerError("Unhandled logical operator", op->position);
 }
 
-TypesEntries LogicalExpr::computeReturnType(Compiler *compiler) {
+TypeReferences LogicalExpr::computeReturnType(Compiler *compiler) {
     return compiler->frame->types.find("bool");
 }

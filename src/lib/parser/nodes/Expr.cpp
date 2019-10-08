@@ -3,8 +3,9 @@
 //
 
 #include "Expr.h"
+#include "lib/compiler/TypeReference.h"
 
-TypesEntries Expr::getReturnType(Compiler *compiler) {
+TypeReferences Expr::getReturnType(Compiler *compiler) {
     if (_isReturnTypesInit) {
         return _returnTypes;
     }

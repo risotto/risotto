@@ -10,6 +10,7 @@
 #include <lib/tokenizer/Token.h>
 #include <lib/parser/nodes/Expr.h>
 #include <lib/compiler/CompilerError.h>
+#include "lib/compiler/TypeReference.h"
 
 class CallExpr: public Expr {
 public:
@@ -26,13 +27,13 @@ public:
     std::vector<ByteResolver *> compile(Compiler *compiler) override;
 
 protected:
-    TypesEntries computeReturnType(Compiler *compiler) override;
+    TypeReferences computeReturnType(Compiler *compiler) override;
 
-    std::vector<TypeEntry *> getArgumentsTypes(Compiler *compiler);
+    std::vector<TypeReference> getArgumentsTypes(Compiler *compiler);
 
     virtual FunctionNotFoundError getFunctionNotFoundError(Compiler *compiler);
 
-    TypesEntries getCalleeEntry(Compiler *compiler);
+    TypeReferences getCalleeEntry(Compiler *compiler);
 };
 
 

@@ -8,6 +8,7 @@
 
 #include <lib/tokenizer/Token.h>
 #include <lib/parser/nodes/Expr.h>
+#include "lib/compiler/TypeReference.h"
 
 class LiteralExpr: public Expr {
 public:
@@ -18,7 +19,7 @@ public:
     std::vector<ByteResolver *> compile(Compiler *compiler) override;
 
 protected:
-    TypesEntries computeReturnType(Compiler *compiler) override;
+    TypeReferences computeReturnType(Compiler *compiler) override;
 };
 
 

@@ -6,6 +6,7 @@ extern "C" {
 #include <lib/vm/chunk.h>
 }
 #include "SetExpr.h"
+#include "lib/compiler/TypeReference.h"
 
 SetExpr::SetExpr(Expr *left, Token *op, Expr *right): left(left), op(op), right(right) {
 
@@ -25,6 +26,6 @@ std::vector<ByteResolver *> SetExpr::compile(Compiler *compiler) {
     return bytes;
 }
 
-TypesEntries SetExpr::computeReturnType(Compiler *compiler) {
+TypeReferences SetExpr::computeReturnType(Compiler *compiler) {
     return left->getReturnType(compiler);
 }
