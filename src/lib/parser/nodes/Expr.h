@@ -9,18 +9,19 @@
 #include <lib/compiler/TypesTable.h>
 #include "Node.h"
 #include "lib/compiler/TypeReference.h"
+#include "lib/compiler/ReturnTypes.h"
 #include <vector>
 
 class Expr : public Node {
 private:
     bool _isReturnTypesInit = false;
-    TypeReferences _returnTypes;
+    ReturnTypes _returnTypes;
 
 protected:
-    virtual TypeReferences computeReturnType(Compiler *compiler) = 0;
+    virtual ReturnTypes computeReturnType(Compiler *compiler) = 0;
 
 public:
-    TypeReferences getReturnType(Compiler *compiler);
+    ReturnTypes getReturnType(Compiler *compiler);
 };
 
 

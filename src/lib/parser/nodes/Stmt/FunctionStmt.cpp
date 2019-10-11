@@ -9,6 +9,7 @@
 #include "FunctionStmt.h"
 #include "BlockStmt.h"
 #include "lib/compiler/TypeReference.h"
+#include "lib/compiler/ReturnTypes.h"
 
 FunctionStmt::FunctionStmt(
         Token *type,
@@ -30,7 +31,7 @@ FunctionEntry *FunctionStmt::getFunctionEntry(Compiler *compiler) {
     }
 
     // Get return type
-    auto returnTypeReferences = TypeReferences();
+    auto returnTypeReferences = ReturnTypes();
     for (auto returnType : returnTypes) {
         returnTypeReferences.push_back(returnType->toTypeReference(compiler));
     }
@@ -59,7 +60,7 @@ FunctionEntry *FunctionStmt::getFunctionEntry(Compiler *compiler) {
                 throw CompilerError("Type must be concrete");
             }
 
-            auto receiverType = compiler->frame->findType(concrete->name->lexeme);
+            auto receiverType = compiler->frame->findNamedType(concrete->name->lexeme);
 
             if (receiverType == nullptr) {
                 throw CompilerError("Cannot find type for " + concrete->name->lexeme);

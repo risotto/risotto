@@ -10,6 +10,7 @@ extern "C" {
 #include "IdentifierExpr.h"
 #include "GetExpr.h"
 #include "lib/compiler/TypeReference.h"
+#include "lib/compiler/ReturnTypes.h"
 
 #include <utility>
 #include <lib/compiler/Compiler.h>
@@ -87,7 +88,7 @@ std::vector<TypeReference *> CallExpr::getArgumentsTypes(Compiler *compiler) {
     return Utils::getTypes(arguments, compiler);
 }
 
-TypeReferences CallExpr::getCalleeEntry(Compiler *compiler) {
+ReturnTypes CallExpr::getCalleeEntry(Compiler *compiler) {
     try {
         return callee->getReturnType(compiler);
     } catch (CompilerError &e) {
@@ -103,8 +104,8 @@ FunctionEntry *CallExpr::getFunctionEntry(Compiler *compiler) {
     auto functions = std::vector<FunctionEntry *>();
 
     for (auto returnType : calleeReturnTypes.onlyFunctions()) {
-        if (auto concrete = dynamic_cast<ConcreteTypeReference *>(returnType)) {
-            functions.push_back(concrete->entry->asFunctionTypeEntry()->function);
+        if (auto functionTypeRef = dynamic_cast<FunctionTypeReference *>(returnType)) {
+            functions.push_back(functionTypeRef->entry->function);
         }
     }
 
@@ -143,7 +144,7 @@ FunctionNotFoundError CallExpr::getFunctionNotFoundError(Compiler *compiler) {
     throw FunctionNotFoundError("", "", argumentsTypes, rParen);
 }
 
-TypeReferences CallExpr::computeReturnType(Compiler *compiler) {
+ReturnTypes CallExpr::computeReturnType(Compiler *compiler) {
     auto functionEntry = getFunctionEntry(compiler);
 
     if (functionEntry == nullptr) {

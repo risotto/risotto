@@ -9,6 +9,7 @@
 #include <string>
 
 class TypeEntry;
+class FunctionTypeEntry;
 
 class FunctionEntry;
 
@@ -17,6 +18,9 @@ class Compiler;
 class TypeReference {
 public:
     virtual FunctionEntry *
+    findFunction(Compiler *compiler, const std::string &name, const std::vector<TypeReference *> &types) = 0;
+
+    virtual FunctionEntry *
     findOperator(Compiler *compiler, const std::string &name, const std::vector<TypeReference *> &types) = 0;
 
     virtual FunctionEntry *
@@ -24,7 +28,7 @@ public:
 
     virtual bool canReceiveType(TypeReference *other) = 0;
 
-    virtual bool isFunction() = 0;
+    virtual bool isFunction();
 
     virtual std::string toString() = 0;
 };
@@ -34,6 +38,29 @@ public:
     TypeReference *element;
 
     explicit ArrayTypeReference(TypeReference *element);
+
+    FunctionEntry *
+    findFunction(Compiler *compiler, const std::string &name, const std::vector<TypeReference *> &types) override;
+
+    FunctionEntry *
+    findOperator(Compiler *compiler, const std::string &name, const std::vector<TypeReference *> &types) override;
+
+    FunctionEntry *
+    findPrefix(Compiler *compiler, const std::string &name, const std::vector<TypeReference *> &types) override;
+
+    bool canReceiveType(TypeReference *other) override;
+
+    std::string toString() override;
+};
+
+class FunctionTypeReference : public TypeReference {
+public:
+    FunctionTypeEntry *entry;
+
+    explicit FunctionTypeReference(FunctionTypeEntry *entry);
+
+    FunctionEntry *
+    findFunction(Compiler *compiler, const std::string &name, const std::vector<TypeReference *> &types) override;
 
     FunctionEntry *
     findOperator(Compiler *compiler, const std::string &name, const std::vector<TypeReference *> &types) override;
@@ -66,25 +93,29 @@ public:
     bool canReceiveType(TypeReference *other) override;
 
     FunctionEntry *
+    findFunction(Compiler *compiler, const std::string &name, const std::vector<TypeReference *> &types) override;
+
+    FunctionEntry *
     findOperator(Compiler *compiler, const std::string &name, const std::vector<TypeReference *> &types) override;
 
     FunctionEntry *
     findPrefix(Compiler *compiler, const std::string &name, const std::vector<TypeReference *> &types) override;
 
-    bool isFunction() override;
-
     std::string toString() override;
 };
 
-class ConcreteTypeReference : public TypeReference {
+class NamedTypeReference : public TypeReference {
 public:
     TypeEntry *entry;
 
-    explicit ConcreteTypeReference(TypeEntry *entry);
+    explicit NamedTypeReference(TypeEntry *entry);
 
     bool canReceiveType(TypeReference *other) override;
 
     FunctionEntry *
+    findFunction(Compiler *compiler, const std::string &name, const std::vector<TypeReference *> &types) override;
+
+    FunctionEntry *
     findOperator(Compiler *compiler, const std::string &name, const std::vector<TypeReference *> &types) override;
 
     FunctionEntry *
@@ -93,20 +124,6 @@ public:
     bool isFunction() override;
 
     std::string toString() override;
-};
-
-
-class TypeReferences : public std::vector<TypeReference *> {
-public:
-    using std::vector<TypeReference *>::vector;
-
-    TypeReferences(TypeEntry *entry);
-
-    TypeReferences(TypeReference *ref);
-
-    bool single();
-
-    TypeReferences onlyFunctions();
 };
 
 #endif //RISOTTOV2_TYPEREFERENCE_H

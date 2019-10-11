@@ -7,6 +7,7 @@ extern "C" {
 }
 #include "SetExpr.h"
 #include "lib/compiler/TypeReference.h"
+#include "lib/compiler/ReturnTypes.h"
 
 SetExpr::SetExpr(Expr *left, Token *op, Expr *right): left(left), op(op), right(right) {
 
@@ -26,6 +27,6 @@ std::vector<ByteResolver *> SetExpr::compile(Compiler *compiler) {
     return bytes;
 }
 
-TypeReferences SetExpr::computeReturnType(Compiler *compiler) {
+ReturnTypes SetExpr::computeReturnType(Compiler *compiler) {
     return left->getReturnType(compiler);
 }

@@ -6,50 +6,33 @@
 
 #include <utility>
 #include "TypesTable.h"
+#include "lib/compiler/ReturnTypes.h"
 
-TypeReferences::TypeReferences(TypeEntry *entry) : TypeReferences(new ConcreteTypeReference(entry)) {
+NamedTypeReference::NamedTypeReference(TypeEntry *entry) : entry(entry) {}
 
-}
-
-TypeReferences::TypeReferences(TypeReference *ref) : TypeReferences({ref}) {
-}
-
-TypeReferences TypeReferences::onlyFunctions() {
-    auto onlyFunctions = TypeReferences();
-
-    for (auto ref : *this) {
-        if (ref->isFunction()) {
-            onlyFunctions.push_back(ref);
-        }
-    }
-
-    return onlyFunctions;
-}
-
-ConcreteTypeReference::ConcreteTypeReference(TypeEntry *entry) : entry(entry) {}
-
-bool ConcreteTypeReference::canReceiveType(TypeReference *other) {
-    if (auto concrete = dynamic_cast<ConcreteTypeReference *>(other)) {
+bool NamedTypeReference::canReceiveType(TypeReference *other) {
+    if (auto concrete = dynamic_cast<NamedTypeReference *>(other)) {
         return entry->canReceiveType(concrete->entry);
     }
 
     return false;
 }
 
-bool ConcreteTypeReference::isFunction() {
-    return entry->isFunction();
-}
-
-FunctionEntry *ConcreteTypeReference::findOperator(Compiler *compiler, const std::string &name, const std::vector<TypeReference *> &types) {
+FunctionEntry *NamedTypeReference::findOperator(Compiler *compiler, const std::string &name, const std::vector<TypeReference *> &types) {
     return entry->operators.find(name, types);
 }
 
-FunctionEntry *ConcreteTypeReference::findPrefix(Compiler *compiler, const std::string &name, const std::vector<TypeReference *> &types) {
+FunctionEntry *NamedTypeReference::findPrefix(Compiler *compiler, const std::string &name, const std::vector<TypeReference *> &types) {
     return entry->prefixes.find(name, types);
 }
 
-std::string ConcreteTypeReference::toString() {
+std::string NamedTypeReference::toString() {
     return entry->name;
+}
+
+FunctionEntry *NamedTypeReference::findFunction(Compiler *compiler, const std::string &name,
+                                                   const std::vector<TypeReference *> &types) {
+    throw std::logic_error("Unimplemented");
 }
 
 ArrayTypeReference::ArrayTypeReference(TypeReference *element): element(element) {
@@ -80,12 +63,9 @@ std::string ArrayTypeReference::toString() {
     return "[]" + element->toString();
 }
 
-bool ArrayTypeReference::isFunction() {
-    return false;
-}
-
-bool TypeReferences::single() {
-    return size() == 1;
+FunctionEntry *ArrayTypeReference::findFunction(Compiler *compiler, const std::string &name,
+                                                const std::vector<TypeReference *> &types) {
+    throw std::logic_error("Unimplemented");
 }
 
 InterfaceTypeReference::Function::Function(std::string name, std::vector<TypeReference *> arguments,
@@ -110,10 +90,51 @@ FunctionEntry *InterfaceTypeReference::findPrefix(Compiler *compiler, const std:
     return nullptr;
 }
 
-bool InterfaceTypeReference::isFunction() {
+std::string InterfaceTypeReference::toString() {
+    return "func...";
+}
+
+FunctionEntry *InterfaceTypeReference::findFunction(Compiler *compiler, const std::string &name,
+                                                    const std::vector<TypeReference *> &types) {
+    throw std::logic_error("Unimplemented");
+}
+
+bool TypeReference::isFunction() {
     return false;
 }
 
-std::string InterfaceTypeReference::toString() {
-    return "func...";
+bool NamedTypeReference::isFunction() {
+    return TypeReference::isFunction();
+}
+
+FunctionTypeReference::FunctionTypeReference(FunctionTypeEntry *entry): entry(entry)  {
+
+}
+
+FunctionEntry *FunctionTypeReference::findFunction(Compiler *compiler, const std::string &name,
+                                                   const std::vector<TypeReference *> &types) {
+    throw std::logic_error("Unimplemented");
+}
+
+FunctionEntry *FunctionTypeReference::findOperator(Compiler *compiler, const std::string &name,
+                                                   const std::vector<TypeReference *> &types) {
+    throw std::logic_error("Unimplemented");
+}
+
+FunctionEntry *FunctionTypeReference::findPrefix(Compiler *compiler, const std::string &name,
+                                                 const std::vector<TypeReference *> &types) {
+    throw std::logic_error("Unimplemented");
+}
+
+bool FunctionTypeReference::canReceiveType(TypeReference *other) {
+    throw std::logic_error("Unimplemented");
+
+}
+
+bool FunctionTypeReference::isFunction() {
+    return true;
+}
+
+std::string FunctionTypeReference::toString() {
+    return "func () ... { ... }";
 }

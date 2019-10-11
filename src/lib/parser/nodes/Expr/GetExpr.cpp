@@ -11,6 +11,7 @@ extern "C" {
 #include <lib/compiler/utils/Utils.h>
 #include "lib/compiler/Compiler.h"
 #include "lib/compiler/TypeReference.h"
+#include "lib/compiler/ReturnTypes.h"
 
 GetExpr::GetExpr(Expr *callee, Token *identifier) : callee(callee), identifier(identifier) {
 
@@ -25,12 +26,10 @@ std::vector<ByteResolver *> GetExpr::compile(Compiler *compiler) {
         throw CompilerError("Must resolve to a single symbol");
     }
 
-    if (auto concrete = dynamic_cast<ConcreteTypeReference *>(returnType[0])) {
-        if (concrete->isFunction()) {
-            Utils::loadFunctionEntryAddr(compiler, concrete->entry->asFunctionTypeEntry()->function, bytes);
+    if (auto functionTypeRef = dynamic_cast<FunctionTypeReference *>(returnType[0])) {
+        Utils::loadFunctionEntryAddr(compiler, functionTypeRef->entry->function, bytes);
 
-            return bytes;
-        }
+        return bytes;
     }
 
     throw CompilerError("Not implemented");
@@ -38,26 +37,24 @@ std::vector<ByteResolver *> GetExpr::compile(Compiler *compiler) {
     return bytes;
 }
 
-TypeReferences GetExpr::computeReturnType(Compiler *compiler) {
+ReturnTypes GetExpr::computeReturnType(Compiler *compiler) {
     auto calleeType = callee->getReturnType(compiler);
 
     if (!calleeType.single()) {
         throw CompilerError("Return type has to be single", identifier->position);
     }
 
-    auto concrete = dynamic_cast<ConcreteTypeReference *>(calleeType[0]);
+    auto returnTypes = ReturnTypes();
 
-    if (concrete == nullptr) {
-        throw CompilerError("Return type has to be concrete", identifier->position);
+    if (auto namedTypeRef = dynamic_cast<NamedTypeReference *>(calleeType[0])) {
+        auto functionsCandidates = namedTypeRef->entry->functions.findCandidates(identifier->lexeme);
+
+        for (auto candidate : functionsCandidates) {
+            returnTypes.push_back(new FunctionTypeReference(candidate->typeEntry));
+        }
     }
 
-    auto candidates = concrete->entry->functions.findCandidates(identifier->lexeme);
+    // TODO: struct fields
 
-    auto candidateTypes = TypeReferences();
-
-    for (auto candidate : candidates) {
-        candidateTypes.push_back(new ConcreteTypeReference(candidate->typeEntry));
-    }
-
-    return candidateTypes;
+    return returnTypes;
 }

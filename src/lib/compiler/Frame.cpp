@@ -2,6 +2,7 @@
 // Created by rvigee on 10/3/19.
 //
 
+#include <lib/parser/nodes/TypeDescriptor.h>
 #include "Frame.h"
 
 VariableFindResponse::VariableFindResponse(VariableEntry *variable, int distance) : variable(variable),
@@ -19,15 +20,15 @@ Frame::Frame(Frame *parent, FrameType type) : parent(parent), type(type) {
 
 }
 
-TypeEntry *Frame::findType(const std::string &name) {
-    auto entry = types.find(name);
+TypeEntry *Frame::findNamedType(const std::string& name) {
+    auto entry = types.findNamed(name);
 
     if (entry != nullptr) {
         return entry;
     }
 
     if (parent != nullptr) {
-        return parent->findType(name);
+        return parent->findNamedType(name);
     }
 
     return nullptr;
@@ -76,8 +77,8 @@ std::vector<FunctionEntry *> Frame::findFunctionsCandidates(const std::string &n
         auto var = current->variables.find(name);
         if (var != nullptr) {
             if (var->typeRef->isFunction()) {
-                if (auto concrete = dynamic_cast<ConcreteTypeReference *>(var->typeRef)) {
-                    allCandidates.push_back(concrete->entry->asFunctionTypeEntry()->function);
+                if (auto functionTypeRef = dynamic_cast<FunctionTypeReference *>(var->typeRef)) {
+                    allCandidates.push_back(functionTypeRef->entry->function);
                 }
             }
         }

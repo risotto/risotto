@@ -16,8 +16,8 @@ extern "C" {
         true, \
         new NativeFunctionEntry( \
             #op, \
-            {FunctionEntryParameter("right", new ConcreteTypeReference(param##Entry))}, \
-            {new ConcreteTypeReference(return##Entry)}, \
+            {FunctionEntryParameter("right", new NamedTypeReference(param##Entry))}, \
+            {new NamedTypeReference(return##Entry)}, \
             functionName \
         ) \
     );
@@ -53,7 +53,7 @@ NATIVE_BINARY_OPERATOR_DECLARATION(string, +=, type, string, add_equal)
         new NativeFunctionEntry( \
             #op, \
             {}, \
-            {return##Entry}, \
+            {new NamedTypeReference(return##Entry)}, \
             functionName \
         ) \
     );
@@ -65,6 +65,16 @@ NATIVE_UNARY_OPERATOR_DECLARATION(target, op, return, unary_prefix_##target##_##
 NATIVE_UNARY_PREFIX_OPERATOR_DECLARATION(target, -, return, negate) \
 NATIVE_UNARY_PREFIX_OPERATOR_DECLARATION(target, ++, return, increment) \
 NATIVE_UNARY_PREFIX_OPERATOR_DECLARATION(target, --, return, decrement) \
+
+#define NATIVE_PRINT(type) \
+    frame->functions.add( \
+        new NativeFunctionEntry( \
+            "println", \
+            {FunctionEntryParameter("e",  new NamedTypeReference(type##Entry))}, \
+            {}, \
+            println_##type \
+        ) \
+    );
 
 Compiler::Compiler(std::vector<Stmt *> stmts) : stmts(std::move(stmts)) {
     frame = new Frame();
@@ -100,46 +110,15 @@ Compiler::Compiler(std::vector<Stmt *> stmts) : stmts(std::move(stmts)) {
             new NativeFunctionEntry(
                     "!",
                     {},
-                    {boolEntry},
+                    {new NamedTypeReference(boolEntry)},
                     unary_prefix_bool_invert
             )
     );
 
-    frame->functions.add(
-            new NativeFunctionEntry(
-                    "println",
-                    {FunctionEntryParameter("e",  new ConcreteTypeReference(intEntry))},
-                    {},
-                    println_int
-            )
-    );
-
-    frame->functions.add(
-            new NativeFunctionEntry(
-                    "println",
-                    {FunctionEntryParameter("e",  new ConcreteTypeReference(doubleEntry))},
-                    {},
-                    println_double
-            )
-    );
-
-    frame->functions.add(
-            new NativeFunctionEntry(
-                    "println",
-                    {FunctionEntryParameter("e",  new ConcreteTypeReference(boolEntry))},
-                    {},
-                    println_bool
-            )
-    );
-
-    frame->functions.add(
-            new NativeFunctionEntry(
-                    "println",
-                    {FunctionEntryParameter("e",  new ConcreteTypeReference(stringEntry))},
-                    {},
-                    println_string
-            )
-    );
+    NATIVE_PRINT(int)
+    NATIVE_PRINT(double)
+    NATIVE_PRINT(bool)
+    NATIVE_PRINT(string)
 }
 
 Chunk Compiler::compile() {

@@ -11,13 +11,13 @@
 IdentifierTypeDescriptor::IdentifierTypeDescriptor(Token *name) : name(name) {}
 
 TypeReference *IdentifierTypeDescriptor::toTypeReference(Compiler *compiler) {
-    auto paramType = compiler->frame->types.find(name->lexeme);
+    auto paramType = compiler->frame->findNamedType(name->lexeme);
 
     if (paramType == nullptr) {
         throw CompilerError("Cannot find type for " + name->lexeme);
     }
 
-    return new ConcreteTypeReference(paramType);
+    return new NamedTypeReference(paramType);
 }
 
 std::string IdentifierTypeDescriptor::toString() {
@@ -49,6 +49,7 @@ std::string InterfaceTypeDescriptor::toString() {
 }
 
 TypeReference *InterfaceTypeDescriptor::toTypeReference(Compiler *compiler) {
+    // TODO: implement interface functions
     return new InterfaceTypeReference({});
 }
 

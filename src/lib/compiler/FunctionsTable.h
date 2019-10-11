@@ -10,9 +10,10 @@
 #include <lib/parser/nodes/ParameterDefinition.h>
 #include <lib/vm/value.h>
 #include "ByteResolver.h"
-#include "lib/compiler/TypeReference.h"
+#include "lib/compiler/ReturnTypes.h"
 
 class TypeEntry;
+class TypeReference;
 
 class FunctionEntryParameter {
 public:
@@ -28,11 +29,11 @@ class FunctionTypeEntry;
 
 class FunctionEntry {
 public:
-    FunctionEntry(std::string name, std::vector<FunctionEntryParameter> params, TypeReferences returnTypes);
+    FunctionEntry(std::string name, std::vector<FunctionEntryParameter> params, ReturnTypes returnTypes);
 
     std::string name;
     std::vector<FunctionEntryParameter> params;
-    TypeReferences returnTypes;
+    ReturnTypes returnTypes;
     FunctionTypeEntry *typeEntry = nullptr;
 
     ByteResolver *firstByte = nullptr;
@@ -44,7 +45,7 @@ class NativeFunctionEntry: public FunctionEntry {
 public:
     NativeFunctionReturn (*fun)(Value[], int);
 
-    NativeFunctionEntry(std::string name, std::vector<FunctionEntryParameter> params, TypeReferences returnTypes, NativeFunctionReturn (*fun)(Value[], int));
+    NativeFunctionEntry(std::string name, std::vector<FunctionEntryParameter> params, ReturnTypes returnTypes, NativeFunctionReturn (*fun)(Value[], int));
 };
 
 class FunctionsTable {

@@ -8,6 +8,7 @@
 
 #include <lib/parser/nodes/Expr.h>
 #include "lib/compiler/TypeReference.h"
+#include "lib/compiler/ReturnTypes.h"
 
 class GetExpr: public Expr {
 public:
@@ -18,7 +19,7 @@ public:
 
     std::vector<ByteResolver *> compile(Compiler *compiler) override;
 protected:
-    TypeReferences computeReturnType(Compiler *compiler) override;
+    ReturnTypes computeReturnType(Compiler *compiler) override;
 };
 
 

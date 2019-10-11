@@ -5,13 +5,14 @@
 #include "FunctionsTable.h"
 #include "TypesTable.h"
 #include "lib/compiler/utils/Utils.h"
+#include "lib/compiler/ReturnTypes.h"
 
 #include <utility>
 
 FunctionEntryParameter::FunctionEntryParameter(std::string name, TypeReference * type) : FunctionEntryParameter(std::move(name), type, false) {}
 FunctionEntryParameter::FunctionEntryParameter(std::string name, TypeReference * type, bool asReference) : name(std::move(name)), type(type), asReference(asReference) {}
 
-FunctionEntry::FunctionEntry(std::string name, std::vector<FunctionEntryParameter> params, TypeReferences returnTypes) :
+FunctionEntry::FunctionEntry(std::string name, std::vector<FunctionEntryParameter> params, ReturnTypes returnTypes) :
         name(std::move(name)), params(std::move(params)), returnTypes(std::move(returnTypes)) {
     typeEntry = new FunctionTypeEntry(name, this);
 }
@@ -19,7 +20,7 @@ FunctionEntry::FunctionEntry(std::string name, std::vector<FunctionEntryParamete
 NativeFunctionEntry::NativeFunctionEntry(
         std::string name,
         std::vector<FunctionEntryParameter> params,
-        TypeReferences returnTypes,
+        ReturnTypes returnTypes,
         NativeFunctionReturn (*fun)(Value[], int)
 ) : FunctionEntry(std::move(name), std::move(params), std::move(returnTypes)), fun(fun) {
 

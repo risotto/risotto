@@ -9,6 +9,7 @@ extern "C" {
 #include <utility>
 #include <lib/compiler/Compiler.h>
 #include "lib/parser/nodes/TypeDescriptor.h"
+#include "lib/compiler/ReturnTypes.h"
 
 ArrayExpr::ArrayExpr(TypeDescriptor *type, std::vector<Expr *> elements) : type(type), elements(std::move(elements)) {
 
@@ -28,6 +29,6 @@ std::vector<ByteResolver *> ArrayExpr::compile(Compiler *compiler) {
     return bytes;
 }
 
-TypeReferences ArrayExpr::computeReturnType(Compiler *compiler) {
+ReturnTypes ArrayExpr::computeReturnType(Compiler *compiler) {
     return type->toTypeReference(compiler);
 }

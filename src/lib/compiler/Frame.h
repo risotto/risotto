@@ -39,7 +39,7 @@ public:
 
     explicit Frame(Frame *parent, FrameType type);
 
-    TypeEntry *findType(const std::string &name);
+    TypeEntry *findNamedType(const std::string& name);
 
     VariableFindResponse *findVariable(const std::string &name);
 

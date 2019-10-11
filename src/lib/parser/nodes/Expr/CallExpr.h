@@ -11,6 +11,7 @@
 #include <lib/parser/nodes/Expr.h>
 #include <lib/compiler/CompilerError.h>
 #include "lib/compiler/TypeReference.h"
+#include "lib/compiler/ReturnTypes.h"
 
 class CallExpr: public Expr {
 public:
@@ -27,13 +28,13 @@ public:
     std::vector<ByteResolver *> compile(Compiler *compiler) override;
 
 protected:
-    TypeReferences computeReturnType(Compiler *compiler) override;
+    ReturnTypes computeReturnType(Compiler *compiler) override;
 
     std::vector<TypeReference *> getArgumentsTypes(Compiler *compiler);
 
     virtual FunctionNotFoundError getFunctionNotFoundError(Compiler *compiler);
 
-    TypeReferences getCalleeEntry(Compiler *compiler);
+    ReturnTypes getCalleeEntry(Compiler *compiler);
 };
 
 
