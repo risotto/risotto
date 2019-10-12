@@ -47,12 +47,9 @@ ReturnTypes GetExpr::computeReturnType(Compiler *compiler) {
 
     auto returnTypes = ReturnTypes();
 
+    std::vector<FunctionEntry *> functionsCandidates;
     if (auto concrete = dynamic_cast<ConcreteTypeReference *>(calleeType[0])) {
-        auto functionsCandidates = concrete->entry->functions.findCandidates(identifier->lexeme);
-
-        for (auto candidate : functionsCandidates) {
-            returnTypes.push_back(new FunctionTypeReference(candidate->typeDefinition));
-        }
+        functionsCandidates = concrete->entry->functions.findCandidates(identifier->lexeme);
     } else {
         auto descriptorTypeRef = compiler->frame->findVirtualType(calleeType[0]);
 
@@ -60,11 +57,11 @@ ReturnTypes GetExpr::computeReturnType(Compiler *compiler) {
             throw CompilerError("descriptorTypeRef is null", identifier->position);
         }
 
-        auto functionsCandidates = descriptorTypeRef->functions.findCandidates(identifier->lexeme);
+        functionsCandidates = descriptorTypeRef->functions.findCandidates(identifier->lexeme);
+    }
 
-        for (auto candidate : functionsCandidates) {
-            returnTypes.push_back(new FunctionTypeReference(candidate->typeDefinition));
-        }
+    for (auto candidate : functionsCandidates) {
+        returnTypes.push_back(new FunctionTypeReference(candidate->typeDefinition));
     }
 
     // TODO: struct fields
