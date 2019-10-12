@@ -21,13 +21,13 @@ std::vector<Expr *> UnaryExpr::getArguments(Compiler *compiler) {
 }
 
 FunctionEntry *UnaryExpr::getFunctionEntry(Compiler *compiler) {
-    auto leftTypeEntry = right()->getReturnType(compiler);
+    auto leftTypes = right()->getReturnType(compiler);
 
-    if (!leftTypeEntry.single()) {
+    if (!leftTypes.single()) {
         throw CompilerError("RHS of unary operation must be a single value", op()->position);
     }
 
-    return leftTypeEntry[0]->findPrefix(compiler, op()->lexeme, getArgumentsTypes(compiler));
+    return leftTypes[0]->findPrefix(compiler, op()->lexeme, getArgumentsTypes(compiler));
 }
 
 FunctionNotFoundError UnaryExpr::getFunctionNotFoundError(Compiler *compiler) {

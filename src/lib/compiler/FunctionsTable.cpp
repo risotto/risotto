@@ -3,9 +3,9 @@
 //
 
 #include "FunctionsTable.h"
-#include "TypesTable.h"
 #include "lib/compiler/utils/Utils.h"
 #include "lib/compiler/ReturnTypes.h"
+#include "TypeDefinition.h"
 
 #include <utility>
 
@@ -14,7 +14,7 @@ FunctionEntryParameter::FunctionEntryParameter(std::string name, TypeReference *
 
 FunctionEntry::FunctionEntry(std::string name, std::vector<FunctionEntryParameter> params, ReturnTypes returnTypes) :
         name(std::move(name)), params(std::move(params)), returnTypes(std::move(returnTypes)) {
-    typeEntry = new FunctionTypeEntry(name, this);
+    typeDefinition = new FunctionTypeDefinition(this);
 }
 
 NativeFunctionEntry::NativeFunctionEntry(

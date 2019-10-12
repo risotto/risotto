@@ -5,45 +5,27 @@
 #include "lib/compiler/TypeReference.h"
 
 #include <utility>
-#include "TypesTable.h"
-#include "lib/compiler/ReturnTypes.h"
+#include <sstream>
+#include "TypeDefinition.h"
+#include "Compiler.h"
 
-NamedTypeReference::NamedTypeReference(TypeEntry *entry) : entry(entry) {}
-
-bool NamedTypeReference::canReceiveType(TypeReference *other) {
-    if (auto concrete = dynamic_cast<NamedTypeReference *>(other)) {
-        return entry->canReceiveType(concrete->entry);
-    }
-
-    return false;
-}
-
-FunctionEntry *NamedTypeReference::findOperator(Compiler *compiler, const std::string &name, const std::vector<TypeReference *> &types) {
-    return entry->operators.find(name, types);
-}
-
-FunctionEntry *NamedTypeReference::findPrefix(Compiler *compiler, const std::string &name, const std::vector<TypeReference *> &types) {
-    return entry->prefixes.find(name, types);
-}
+NamedTypeReference::NamedTypeReference(std::string name, TypeDefinition *entry) : ConcreteTypeReference(entry), name(std::move(name)) {}
 
 std::string NamedTypeReference::toString() {
-    return entry->name;
+    return name;
 }
 
-FunctionEntry *NamedTypeReference::findFunction(Compiler *compiler, const std::string &name,
-                                                   const std::vector<TypeReference *> &types) {
+ArrayTypeReference::ArrayTypeReference(TypeReference *element) : element(element) {
+
+}
+
+FunctionEntry *ArrayTypeReference::findOperator(Compiler *compiler, const std::string &name,
+                                                const std::vector<TypeReference *> &types) {
     throw std::logic_error("Unimplemented");
 }
 
-ArrayTypeReference::ArrayTypeReference(TypeReference *element): element(element) {
-
-}
-
-FunctionEntry *ArrayTypeReference::findOperator(Compiler *compiler, const std::string &name, const std::vector<TypeReference *> &types) {
-    throw std::logic_error("Unimplemented");
-}
-
-FunctionEntry *ArrayTypeReference::findPrefix(Compiler *compiler, const std::string &name, const std::vector<TypeReference *> &types) {
+FunctionEntry *
+ArrayTypeReference::findPrefix(Compiler *compiler, const std::string &name, const std::vector<TypeReference *> &types) {
     throw std::logic_error("Unimplemented");
 }
 
@@ -68,11 +50,16 @@ FunctionEntry *ArrayTypeReference::findFunction(Compiler *compiler, const std::s
     throw std::logic_error("Unimplemented");
 }
 
+TypeDefinition *ArrayTypeReference::toTypeDefinition(Compiler *compiler) {
+    return new ArrayTypeDefinition(element->toTypeDefinition(compiler));
+}
+
 InterfaceTypeReference::Function::Function(std::string name, std::vector<TypeReference *> arguments,
-                                           TypeReference *returnType) : name(std::move(name)), arguments(std::move(arguments)),
+                                           TypeReference *returnType) : name(std::move(name)),
+                                                                        arguments(std::move(arguments)),
                                                                         returnType(returnType) {}
 
-InterfaceTypeReference::InterfaceTypeReference(std::vector<Function *> functions): functions(std::move(functions)) {
+InterfaceTypeReference::InterfaceTypeReference(std::vector<Function *> functions) : functions(std::move(functions)) {
 
 }
 
@@ -82,16 +69,12 @@ bool InterfaceTypeReference::canReceiveType(TypeReference *other) {
 
 FunctionEntry *InterfaceTypeReference::findOperator(Compiler *compiler, const std::string &name,
                                                     const std::vector<TypeReference *> &types) {
-    return nullptr;
+    throw std::logic_error("Unimplemented");
 }
 
 FunctionEntry *InterfaceTypeReference::findPrefix(Compiler *compiler, const std::string &name,
                                                   const std::vector<TypeReference *> &types) {
-    return nullptr;
-}
-
-std::string InterfaceTypeReference::toString() {
-    return "func...";
+    throw std::logic_error("Unimplemented");
 }
 
 FunctionEntry *InterfaceTypeReference::findFunction(Compiler *compiler, const std::string &name,
@@ -99,31 +82,35 @@ FunctionEntry *InterfaceTypeReference::findFunction(Compiler *compiler, const st
     throw std::logic_error("Unimplemented");
 }
 
+std::string InterfaceTypeReference::toString() {
+    return "interface { ... }";
+}
+
+TypeDefinition *InterfaceTypeReference::toTypeDefinition(Compiler *compiler) {
+    return new InterfaceTypeDefinition();
+}
+
 bool TypeReference::isFunction() {
     return false;
 }
 
-bool NamedTypeReference::isFunction() {
-    return TypeReference::isFunction();
-}
-
-FunctionTypeReference::FunctionTypeReference(FunctionTypeEntry *entry): entry(entry)  {
+FunctionTypeReference::FunctionTypeReference(FunctionTypeDefinition *entry) : entry(entry) {
 
 }
 
 FunctionEntry *FunctionTypeReference::findFunction(Compiler *compiler, const std::string &name,
                                                    const std::vector<TypeReference *> &types) {
-    throw std::logic_error("Unimplemented");
+    return nullptr;
 }
 
 FunctionEntry *FunctionTypeReference::findOperator(Compiler *compiler, const std::string &name,
                                                    const std::vector<TypeReference *> &types) {
-    throw std::logic_error("Unimplemented");
+    return nullptr;
 }
 
 FunctionEntry *FunctionTypeReference::findPrefix(Compiler *compiler, const std::string &name,
                                                  const std::vector<TypeReference *> &types) {
-    throw std::logic_error("Unimplemented");
+    return nullptr;
 }
 
 bool FunctionTypeReference::canReceiveType(TypeReference *other) {
@@ -137,4 +124,56 @@ bool FunctionTypeReference::isFunction() {
 
 std::string FunctionTypeReference::toString() {
     return "func () ... { ... }";
+}
+
+TypeDefinition *FunctionTypeReference::toTypeDefinition(Compiler *compiler) {
+    return entry;
+}
+
+ConcreteTypeReference::ConcreteTypeReference(TypeDefinition *entry) : entry(entry) {
+    if (dynamic_cast<ConcreteTypeDefinition *>(entry) == nullptr) {
+        throw std::logic_error("entry should be ConcreteTypeDefinition");
+    }
+}
+
+FunctionEntry *ConcreteTypeReference::findFunction(Compiler *compiler, const std::string &name,
+                                                   const std::vector<TypeReference *> &types) {
+    return entry->functions.find(name, types);
+}
+
+FunctionEntry *ConcreteTypeReference::findOperator(Compiler *compiler, const std::string &name,
+                                                   const std::vector<TypeReference *> &types) {
+   return entry->operators.find(name, types);
+}
+
+FunctionEntry *ConcreteTypeReference::findPrefix(Compiler *compiler, const std::string &name,
+                                                 const std::vector<TypeReference *> &types) {
+    return entry->prefixes.find(name, types);
+}
+
+bool ConcreteTypeReference::canReceiveType(TypeReference *other) {
+    if (auto concrete = dynamic_cast<ConcreteTypeReference *>(other)) {
+        return concrete->entry == entry;
+    }
+
+    if (auto named = dynamic_cast<NamedTypeReference *>(other)) {
+        return named->entry == entry;
+    }
+
+    return false;
+}
+
+std::string ConcreteTypeReference::toString() {
+    if (auto concrete = dynamic_cast<ConcreteTypeDefinition *>(entry)) {
+        return concrete->name;
+    }
+
+    std::stringstream ss;
+    ss << entry;
+
+    return ss.str();
+}
+
+TypeDefinition *ConcreteTypeReference::toTypeDefinition(Compiler *compiler) {
+    return entry;
 }

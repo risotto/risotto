@@ -12,6 +12,7 @@ extern "C" {
 #include "lib/compiler/Compiler.h"
 #include "lib/compiler/TypeReference.h"
 #include "lib/compiler/ReturnTypes.h"
+#include "lib/compiler/TypeDefinition.h"
 
 GetExpr::GetExpr(Expr *callee, Token *identifier) : callee(callee), identifier(identifier) {
 
@@ -46,11 +47,23 @@ ReturnTypes GetExpr::computeReturnType(Compiler *compiler) {
 
     auto returnTypes = ReturnTypes();
 
-    if (auto namedTypeRef = dynamic_cast<NamedTypeReference *>(calleeType[0])) {
-        auto functionsCandidates = namedTypeRef->entry->functions.findCandidates(identifier->lexeme);
+    if (auto concrete = dynamic_cast<ConcreteTypeReference *>(calleeType[0])) {
+        auto functionsCandidates = concrete->entry->functions.findCandidates(identifier->lexeme);
 
         for (auto candidate : functionsCandidates) {
-            returnTypes.push_back(new FunctionTypeReference(candidate->typeEntry));
+            returnTypes.push_back(new FunctionTypeReference(candidate->typeDefinition));
+        }
+    } else {
+        auto descriptorTypeRef = compiler->frame->findVirtualType(calleeType[0]);
+
+        if (descriptorTypeRef == nullptr) {
+            throw CompilerError("descriptorTypeRef is null", identifier->position);
+        }
+
+        auto functionsCandidates = descriptorTypeRef->functions.findCandidates(identifier->lexeme);
+
+        for (auto candidate : functionsCandidates) {
+            returnTypes.push_back(new FunctionTypeReference(candidate->typeDefinition));
         }
     }
 

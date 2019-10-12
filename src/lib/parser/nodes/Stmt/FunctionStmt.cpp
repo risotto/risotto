@@ -9,6 +9,7 @@
 #include "FunctionStmt.h"
 #include "BlockStmt.h"
 #include "lib/compiler/TypeReference.h"
+#include "lib/compiler/TypeDefinition.h"
 #include "lib/compiler/ReturnTypes.h"
 
 FunctionStmt::FunctionStmt(
@@ -37,6 +38,13 @@ FunctionEntry *FunctionStmt::getFunctionEntry(Compiler *compiler) {
     }
 
     auto entryParameters = std::vector<FunctionEntryParameter>();
+//    if (receiver != nullptr) {
+//        entryParameters.insert(
+//                entryParameters.begin(),
+//                FunctionEntryParameter(receiver->name->lexeme, receiver->type->toTypeReference(compiler))
+//        );
+//    }
+
     for (auto parameter : parameters) {
         entryParameters.emplace_back(parameter.name->lexeme, parameter.type->toTypeReference(compiler));
     }
@@ -55,15 +63,16 @@ FunctionEntry *FunctionStmt::getFunctionEntry(Compiler *compiler) {
 
     if (autoRegister) {
         if (receiver != nullptr) {
-            auto concrete = dynamic_cast<IdentifierTypeDescriptor *>(receiver->type);
-            if (concrete == nullptr) {
-                throw CompilerError("Type must be concrete");
+            TypeDefinition *receiverType;
+            if (auto identifierTypeDesc = dynamic_cast<IdentifierTypeDescriptor *>(receiver->type)) {
+                receiverType = compiler->frame->findNamedType(identifierTypeDesc->name->lexeme);
+            } else {
+                receiverType = compiler->frame->findOrCreateVirtualType(receiver->type->toTypeReference(compiler),
+                                                                        compiler);
             }
 
-            auto receiverType = compiler->frame->findNamedType(concrete->name->lexeme);
-
             if (receiverType == nullptr) {
-                throw CompilerError("Cannot find type for " + concrete->name->lexeme);
+                throw CompilerError("Cannot find type for " + receiver->type->toString());
             }
 
             switch (type->type) {

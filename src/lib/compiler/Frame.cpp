@@ -4,6 +4,7 @@
 
 #include <lib/parser/nodes/TypeDescriptor.h>
 #include "Frame.h"
+#include "TypeDefinition.h"
 
 VariableFindResponse::VariableFindResponse(VariableEntry *variable, int distance) : variable(variable),
                                                                                     distance(distance) {}
@@ -20,15 +21,29 @@ Frame::Frame(Frame *parent, FrameType type) : parent(parent), type(type) {
 
 }
 
-TypeEntry *Frame::findNamedType(const std::string& name) {
+TypeDefinition *Frame::findNamedType(const std::string &name) {
     auto entry = types.findNamed(name);
+
+    if (entry != nullptr) {
+        return entry->definition;
+    }
+
+    if (parent != nullptr) {
+        return parent->findNamedType(name);
+    }
+
+    return nullptr;
+}
+
+TypeDefinition *Frame::findVirtualType(const std::string &name) {
+    auto entry = types.findVirtual(name);
 
     if (entry != nullptr) {
         return entry;
     }
 
     if (parent != nullptr) {
-        return parent->findNamedType(name);
+        return parent->findVirtualType(name);
     }
 
     return nullptr;
@@ -87,4 +102,25 @@ std::vector<FunctionEntry *> Frame::findFunctionsCandidates(const std::string &n
     }
 
     return allCandidates;
+}
+
+TypeDefinition *Frame::findOrCreateVirtualType(TypeReference *typeReference, Compiler *compiler) {
+    auto typeDefinition = findVirtualType(typeReference);
+
+    if (typeDefinition != nullptr) {
+        return typeDefinition;
+    }
+
+    auto id = typeReference->toString();
+
+    typeDefinition = typeReference->toTypeDefinition(compiler);
+    typeDefinition = types.addVirtual(id, typeDefinition);
+
+    return typeDefinition;
+}
+
+TypeDefinition *Frame::findVirtualType(TypeReference *typeReference) {
+    auto id = typeReference->toString();
+
+    return findVirtualType(id);
 }

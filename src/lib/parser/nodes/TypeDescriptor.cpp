@@ -17,7 +17,7 @@ TypeReference *IdentifierTypeDescriptor::toTypeReference(Compiler *compiler) {
         throw CompilerError("Cannot find type for " + name->lexeme);
     }
 
-    return new NamedTypeReference(paramType);
+    return new NamedTypeReference(name->lexeme, paramType);
 }
 
 std::string IdentifierTypeDescriptor::toString() {

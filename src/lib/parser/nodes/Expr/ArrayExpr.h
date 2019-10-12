@@ -7,6 +7,7 @@
 
 
 #include <lib/parser/nodes/Expr.h>
+#include <lib/parser/nodes/TypeDescriptor.h>
 #include "lib/compiler/ReturnTypes.h"
 
 class ArrayExpr: public Expr {

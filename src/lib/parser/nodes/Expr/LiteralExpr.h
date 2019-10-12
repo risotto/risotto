@@ -15,12 +15,12 @@ class LiteralExpr: public Expr {
 public:
     Token *value;
 
-    LiteralExpr(Token *value);
+    explicit LiteralExpr(Token *value);
 
     std::vector<ByteResolver *> compile(Compiler *compiler) override;
 
 protected:
-    TypeEntry *computeReturnTypeEntry(Compiler *compiler);
+    TypeDefinition *computeReturnTypeDefinition(Compiler *compiler);
     ReturnTypes computeReturnType(Compiler *compiler) override;
 };
 

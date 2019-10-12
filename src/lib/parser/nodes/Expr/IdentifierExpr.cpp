@@ -8,6 +8,7 @@
 #include "IdentifierExpr.h"
 #include "lib/compiler/TypeReference.h"
 #include "lib/compiler/ReturnTypes.h"
+#include "lib/compiler/TypeDefinition.h"
 
 IdentifierExpr::IdentifierExpr(Token *name) : name(name) {
 
@@ -49,7 +50,7 @@ ReturnTypes IdentifierExpr::computeReturnType(Compiler *compiler) {
     auto candidateTypes = ReturnTypes();
 
     for (auto candidate : candidates) {
-        candidateTypes.push_back(new FunctionTypeReference(candidate->typeEntry));
+        candidateTypes.push_back(new FunctionTypeReference(candidate->typeDefinition));
     }
 
     auto response = compiler->frame->findVariable(name->lexeme);

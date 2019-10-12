@@ -3,6 +3,7 @@
 //
 
 #include "Compiler.h"
+#include "TypeDefinition.h"
 
 #include <utility>
 
@@ -10,14 +11,16 @@ extern "C" {
 #include <lib/vm/native_functions.h>
 }
 
+#define TYPE_REF(type) new ConcreteTypeReference(type##Entry->definition)
+
 #define NATIVE_BINARY_DECLARATION_NAMED(target, op, param, return, functionName) \
-    target##Entry->addOperator( \
+    target##Entry->definition->addOperator( \
         "self", \
         true, \
         new NativeFunctionEntry( \
             #op, \
-            {FunctionEntryParameter("right", new NamedTypeReference(param##Entry))}, \
-            {new NamedTypeReference(return##Entry)}, \
+            {FunctionEntryParameter("right", TYPE_REF(param))}, \
+            {TYPE_REF(return)}, \
             functionName \
         ) \
     );
@@ -47,13 +50,13 @@ NATIVE_BINARY_OPERATOR_DECLARATION(type, +, string, string, add) \
 NATIVE_BINARY_OPERATOR_DECLARATION(string, +=, type, string, add_equal)
 
 #define NATIVE_UNARY_OPERATOR_DECLARATION(target, op, return, functionName) \
-    target##Entry->addPrefix( \
+    target##Entry->definition->addPrefix( \
         "self", \
         true, \
         new NativeFunctionEntry( \
             #op, \
             {}, \
-            {new NamedTypeReference(return##Entry)}, \
+            {TYPE_REF(return)}, \
             functionName \
         ) \
     );
@@ -70,7 +73,7 @@ NATIVE_UNARY_PREFIX_OPERATOR_DECLARATION(target, --, return, decrement) \
     frame->functions.add( \
         new NativeFunctionEntry( \
             "println", \
-            {FunctionEntryParameter("e",  new NamedTypeReference(type##Entry))}, \
+            {FunctionEntryParameter("e", TYPE_REF(type))}, \
             {}, \
             println_##type \
         ) \
@@ -104,13 +107,13 @@ Compiler::Compiler(std::vector<Stmt *> stmts) : stmts(std::move(stmts)) {
     NATIVE_BINARY_OPERATOR_DECLARATION(string, +, string, string, add)
     NATIVE_BINARY_OPERATOR_DECLARATION(string, +=, string, string, add_equal)
 
-    boolEntry->addPrefix(
+    boolEntry->definition->addPrefix(
             "self",
             true,
             new NativeFunctionEntry(
                     "!",
                     {},
-                    {new NamedTypeReference(boolEntry)},
+                    {TYPE_REF(bool)},
                     unary_prefix_bool_invert
             )
     );

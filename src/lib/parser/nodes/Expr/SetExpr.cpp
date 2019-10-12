@@ -8,6 +8,7 @@ extern "C" {
 #include "SetExpr.h"
 #include "lib/compiler/TypeReference.h"
 #include "lib/compiler/ReturnTypes.h"
+#include "lib/compiler/ByteResolver.h"
 
 SetExpr::SetExpr(Expr *left, Token *op, Expr *right): left(left), op(op), right(right) {
 

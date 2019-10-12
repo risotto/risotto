@@ -12,7 +12,7 @@
 #include "ByteResolver.h"
 #include "lib/compiler/ReturnTypes.h"
 
-class TypeEntry;
+class TypeDefinition;
 class TypeReference;
 
 class FunctionEntryParameter {
@@ -25,7 +25,7 @@ public:
     FunctionEntryParameter(std::string name, TypeReference * type, bool asReference);
 };
 
-class FunctionTypeEntry;
+class FunctionTypeDefinition;
 
 class FunctionEntry {
 public:
@@ -34,7 +34,7 @@ public:
     std::string name;
     std::vector<FunctionEntryParameter> params;
     ReturnTypes returnTypes;
-    FunctionTypeEntry *typeEntry = nullptr;
+    FunctionTypeDefinition *typeDefinition = nullptr;
 
     ByteResolver *firstByte = nullptr;
 

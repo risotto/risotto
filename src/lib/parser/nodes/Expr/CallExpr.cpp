@@ -10,6 +10,7 @@ extern "C" {
 #include "IdentifierExpr.h"
 #include "GetExpr.h"
 #include "lib/compiler/TypeReference.h"
+#include "lib/compiler/TypeDefinition.h"
 #include "lib/compiler/ReturnTypes.h"
 
 #include <utility>
@@ -40,6 +41,10 @@ std::vector<Expr *> CallExpr::getArguments(Compiler *compiler) {
 
 std::vector<ByteResolver *> CallExpr::compile(Compiler *compiler) {
     auto functionEntry = getFunctionEntry(compiler);
+
+    if (functionEntry == nullptr) {
+        throw getFunctionNotFoundError(compiler);
+    }
 
     auto bytes = std::vector<ByteResolver *>();
 
@@ -109,13 +114,7 @@ FunctionEntry *CallExpr::getFunctionEntry(Compiler *compiler) {
         }
     }
 
-    auto entry = Utils::findMatchingFunctions(functions, argumentsTypes);
-
-    if (entry != nullptr) {
-        return entry;
-    }
-
-    throw getFunctionNotFoundError(compiler);
+    return Utils::findMatchingFunctions(functions, argumentsTypes);
 }
 
 FunctionNotFoundError CallExpr::getFunctionNotFoundError(Compiler *compiler) {

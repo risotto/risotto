@@ -7,7 +7,9 @@
 
 #include <exception>
 #include <string>
+#include <lib/tokenizer/Token.h>
 #include "TypesTable.h"
+#include "TypeReference.h"
 
 class CompilerError : public std::exception {
 public:

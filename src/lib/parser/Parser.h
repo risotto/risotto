@@ -6,12 +6,11 @@
 #define RISOTTOV2_PARSER_H
 
 #include <map>
-#include <lib/tokenizer/Token.h>
 #include <vector>
-#include <lib/parser/nodes/Node.h>
-#include <lib/parser/nodes/Stmt.h>
-#include <lib/parser/nodes/Expr.h>
+#include "lib/parser/nodes/ParameterDefinition.h"
 #include "ParseError.h"
+#include "lib/parser/nodes/Stmt.h"
+#include "lib/parser/nodes/Expr.h"
 #include "lib/parser/nodes/TypeDescriptor.h"
 
 class Parser {
