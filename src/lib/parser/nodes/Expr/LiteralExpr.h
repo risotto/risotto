@@ -9,17 +9,19 @@
 #include <lib/tokenizer/Token.h>
 #include <lib/parser/nodes/Expr.h>
 #include "lib/compiler/TypeReference.h"
+#include "lib/compiler/ReturnTypes.h"
 
 class LiteralExpr: public Expr {
 public:
     Token *value;
 
-    LiteralExpr(Token *value);
+    explicit LiteralExpr(Token *value);
 
     std::vector<ByteResolver *> compile(Compiler *compiler) override;
 
 protected:
-    TypeReferences computeReturnType(Compiler *compiler) override;
+    TypeDefinition *computeReturnTypeDefinition(Compiler *compiler);
+    ReturnTypes computeReturnType(Compiler *compiler) override;
 };
 
 

@@ -7,15 +7,16 @@
 
 
 #include <lib/tokenizer/Token.h>
-#include "TypeDescriptor.h"
+
+class TypeDescriptor;
 
 class ParameterDefinition {
 public:
     Token *name;
-    TypeDescriptor type;
+    TypeDescriptor *type;
     bool asReference;
 
-    ParameterDefinition(Token *name, TypeDescriptor type, bool asReference);
+    ParameterDefinition(Token *name, TypeDescriptor *type, bool asReference);
 };
 
 

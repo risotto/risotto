@@ -43,7 +43,7 @@ void Utils::loadFunctionEntryAddr(Compiler *compiler, FunctionEntry *entry, std:
 
 FunctionEntry *Utils::findMatchingFunctions(
         const std::vector<FunctionEntry *> &functions,
-        std::vector<TypeReference> argsTypes
+        std::vector<TypeReference *> argsTypes
 ) {
     for (auto entry : functions) {
         if (entry->params.size() == argsTypes.size()) {
@@ -52,7 +52,7 @@ FunctionEntry *Utils::findMatchingFunctions(
                 auto paramType = entry->params[i].type;
                 auto argType = argsTypes[i];
 
-                if (!paramType.canReceiveType(argType)) {
+                if (!paramType->canReceiveType(argType)) {
                     compatible = false;
                     break;
                 }
@@ -67,8 +67,8 @@ FunctionEntry *Utils::findMatchingFunctions(
     return nullptr;
 }
 
-std::vector<TypeReference> Utils::getTypes(const std::vector<Expr *>& exprs, Compiler *compiler) {
-    auto exprsTypes = std::vector<TypeReference>();
+std::vector<TypeReference *> Utils::getTypes(const std::vector<Expr *>& exprs, Compiler *compiler) {
+    auto exprsTypes = std::vector<TypeReference *>();
 
     for (auto expr : exprs) {
         auto types = expr->getReturnType(compiler);

@@ -9,12 +9,14 @@
 #include "FunctionStmt.h"
 #include "BlockStmt.h"
 #include "lib/compiler/TypeReference.h"
+#include "lib/compiler/TypeDefinition.h"
+#include "lib/compiler/ReturnTypes.h"
 
 FunctionStmt::FunctionStmt(
         Token *type,
         ParameterDefinition *receiver,
         Token *name,
-        std::vector<TypeDescriptor> returnTypes,
+        std::vector<TypeDescriptor *> returnTypes,
         std::vector<ParameterDefinition> parameters,
         std::vector<Stmt *> body,
         Token *closeBlock
@@ -30,14 +32,21 @@ FunctionEntry *FunctionStmt::getFunctionEntry(Compiler *compiler) {
     }
 
     // Get return type
-    auto returnTypeReferences = TypeReferences();
+    auto returnTypeReferences = ReturnTypes();
     for (auto returnType : returnTypes) {
-        returnTypeReferences.push_back(returnType.toTypeReference(compiler));
+        returnTypeReferences.push_back(returnType->toTypeReference(compiler));
     }
 
     auto entryParameters = std::vector<FunctionEntryParameter>();
+//    if (receiver != nullptr) {
+//        entryParameters.insert(
+//                entryParameters.begin(),
+//                FunctionEntryParameter(receiver->name->lexeme, receiver->type->toTypeReference(compiler))
+//        );
+//    }
+
     for (auto parameter : parameters) {
-        entryParameters.emplace_back(parameter.name->lexeme, parameter.type.toTypeReference(compiler));
+        entryParameters.emplace_back(parameter.name->lexeme, parameter.type->toTypeReference(compiler));
     }
 
     std::string nameStr;
@@ -54,14 +63,16 @@ FunctionEntry *FunctionStmt::getFunctionEntry(Compiler *compiler) {
 
     if (autoRegister) {
         if (receiver != nullptr) {
-            auto receiverType = compiler->frame->findType(receiver->type.name->lexeme);
-
-            if (receiverType == nullptr) {
-                throw CompilerError("Cannot find type for " + receiver->type.name->lexeme);
+            TypeDefinition *receiverType;
+            if (auto identifierTypeDesc = dynamic_cast<IdentifierTypeDescriptor *>(receiver->type)) {
+                receiverType = compiler->frame->findNamedType(identifierTypeDesc->name->lexeme);
+            } else {
+                receiverType = compiler->frame->findOrCreateVirtualType(receiver->type->toTypeReference(compiler),
+                                                                        compiler);
             }
 
-            if (receiver->type.isArray) {
-                throw CompilerError("Unhandled array");
+            if (receiverType == nullptr) {
+                throw CompilerError("Cannot find type for " + receiver->type->toString());
             }
 
             switch (type->type) {

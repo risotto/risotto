@@ -4,13 +4,15 @@
 
 #include "FunctionExpr.h"
 #include "lib/compiler/TypeReference.h"
+#include "lib/compiler/ReturnTypes.h"
+#include "lib/compiler/TypeDefinition.h"
 
 FunctionExpr::FunctionExpr(FunctionStmt *functionStmt) : functionStmt(functionStmt) {}
 
-TypeReferences FunctionExpr::computeReturnType(Compiler *compiler) {
+ReturnTypes FunctionExpr::computeReturnType(Compiler *compiler) {
     auto functionEntry = functionStmt->getFunctionEntry(compiler);
 
-    return new FunctionTypeEntry("", functionEntry);
+    return new FunctionTypeReference(new FunctionTypeDefinition(functionEntry));
 }
 
 std::vector<ByteResolver *> FunctionExpr::compile(Compiler *compiler) {

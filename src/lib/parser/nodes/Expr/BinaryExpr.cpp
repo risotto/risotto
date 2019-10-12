@@ -26,15 +26,18 @@ std::vector<Expr *> BinaryExpr::getArguments(Compiler *compiler) {
 }
 
 FunctionEntry *BinaryExpr::getFunctionEntry(Compiler *compiler) {
-    auto leftTypeEntry = left()->getReturnType(compiler);
+    auto leftTypeDefinition = left()->getReturnType(compiler);
 
-    if (!leftTypeEntry.single()) {
+    if (!leftTypeDefinition.single()) {
         throw CompilerError("LHS of binary operation must be a single value", op()->position);
     }
 
-    return leftTypeEntry[0].findOperator(op()->lexeme, getArgumentsTypes(compiler));
+    return leftTypeDefinition[0]->findOperator(compiler, op()->lexeme, getArgumentsTypes(compiler));
 }
 
 FunctionNotFoundError BinaryExpr::getFunctionNotFoundError(Compiler *compiler) {
-    return FunctionNotFoundError(op()->lexeme, left()->getReturnType(compiler)[0].entry->name, getArgumentsTypes(compiler), op());
+    auto leftReturnType = left()->getReturnType(compiler);
+    auto args = getArgumentsTypes(compiler);
+
+    return FunctionNotFoundError(op()->lexeme, leftReturnType[0]->toString(), args, op());
 }

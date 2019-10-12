@@ -38,7 +38,7 @@ typedef union {
 } ValueData;
 
 typedef struct {
-    ValueData data;
+    ValueData data; // TODO: should be a pointer
     ValueType type;
 } Value;
 

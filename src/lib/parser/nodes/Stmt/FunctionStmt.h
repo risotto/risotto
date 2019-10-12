@@ -18,14 +18,14 @@ public:
     Token *type;
     ParameterDefinition *receiver;
     Token *name;
-    std::vector<TypeDescriptor> returnTypes;
+    std::vector<TypeDescriptor *> returnTypes;
     std::vector<ParameterDefinition> parameters;
     std::vector<Stmt *> body;
     Token *closeBlock;
 
     bool autoRegister = true;
 
-    FunctionStmt(Token *type, ParameterDefinition *receiver, Token *name, std::vector<TypeDescriptor> returnTypes,
+    FunctionStmt(Token *type, ParameterDefinition *receiver, Token *name, std::vector<TypeDescriptor *> returnTypes,
                  std::vector<ParameterDefinition> parameters, std::vector<Stmt *> body,
                  Token *closeBlock);
 

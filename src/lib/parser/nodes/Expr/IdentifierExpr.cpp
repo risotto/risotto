@@ -7,6 +7,8 @@
 #include <lib/compiler/utils/Utils.h>
 #include "IdentifierExpr.h"
 #include "lib/compiler/TypeReference.h"
+#include "lib/compiler/ReturnTypes.h"
+#include "lib/compiler/TypeDefinition.h"
 
 IdentifierExpr::IdentifierExpr(Token *name) : name(name) {
 
@@ -21,8 +23,8 @@ std::vector<ByteResolver *> IdentifierExpr::compile(Compiler *compiler) {
         throw CompilerError("Must resolve to a single symbol");
     }
 
-    if (returnType[0].isFunction()) {
-        auto functionEntry = returnType[0].entry->asFunctionTypeEntry()->function;
+    if (auto functionTypeRef = dynamic_cast<FunctionTypeReference *>(returnType[0])) {
+        auto functionEntry = functionTypeRef->entry->function;
 
         Utils::loadFunctionEntryAddr(compiler, functionEntry, bytes);
 
@@ -42,13 +44,13 @@ std::vector<ByteResolver *> IdentifierExpr::compile(Compiler *compiler) {
     return bytes;
 }
 
-TypeReferences IdentifierExpr::computeReturnType(Compiler *compiler) {
+ReturnTypes IdentifierExpr::computeReturnType(Compiler *compiler) {
     auto candidates = compiler->frame->findFunctionsCandidates(name->lexeme);
 
-    auto candidateTypes = TypeReferences();
+    auto candidateTypes = ReturnTypes();
 
     for (auto candidate : candidates) {
-        candidateTypes.push_back(TypeReference(candidate->typeEntry, false));
+        candidateTypes.push_back(new FunctionTypeReference(candidate->typeDefinition));
     }
 
     auto response = compiler->frame->findVariable(name->lexeme);

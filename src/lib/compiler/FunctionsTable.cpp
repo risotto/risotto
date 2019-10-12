@@ -3,36 +3,37 @@
 //
 
 #include "FunctionsTable.h"
-#include "TypesTable.h"
 #include "lib/compiler/utils/Utils.h"
+#include "lib/compiler/ReturnTypes.h"
+#include "TypeDefinition.h"
 
 #include <utility>
 
-FunctionEntryParameter::FunctionEntryParameter(std::string name, TypeReference type) : FunctionEntryParameter(std::move(name), type, false) {}
-FunctionEntryParameter::FunctionEntryParameter(std::string name, TypeReference type, bool asReference) : name(std::move(name)), type(type), asReference(asReference) {}
+FunctionEntryParameter::FunctionEntryParameter(std::string name, TypeReference * type) : FunctionEntryParameter(std::move(name), type, false) {}
+FunctionEntryParameter::FunctionEntryParameter(std::string name, TypeReference * type, bool asReference) : name(std::move(name)), type(type), asReference(asReference) {}
 
-FunctionEntry::FunctionEntry(std::string name, std::vector<FunctionEntryParameter> params, TypeReferences returnTypes) :
+FunctionEntry::FunctionEntry(std::string name, std::vector<FunctionEntryParameter> params, ReturnTypes returnTypes) :
         name(std::move(name)), params(std::move(params)), returnTypes(std::move(returnTypes)) {
-    typeEntry = new FunctionTypeEntry(name, this);
+    typeDefinition = new FunctionTypeDefinition(this);
 }
 
 NativeFunctionEntry::NativeFunctionEntry(
         std::string name,
         std::vector<FunctionEntryParameter> params,
-        TypeReferences returnTypes,
+        ReturnTypes returnTypes,
         NativeFunctionReturn (*fun)(Value[], int)
 ) : FunctionEntry(std::move(name), std::move(params), std::move(returnTypes)), fun(fun) {
 
 }
 
-FunctionEntry *FunctionsTable::find(const std::string &name, const std::vector<TypeReference > &argsTypes) {
+FunctionEntry *FunctionsTable::find(const std::string &name, const std::vector<TypeReference * > &argsTypes) {
     auto functionsWithName = findCandidates(name);
 
     return Utils::findMatchingFunctions(functionsWithName, argsTypes);
 }
 
 FunctionEntry *FunctionsTable::add(FunctionEntry *entry) {
-    auto paramsTypes = std::vector<TypeReference>();
+    auto paramsTypes = std::vector<TypeReference *>();
     for (const auto& param: entry->params) {
         paramsTypes.push_back(param.type);
     }

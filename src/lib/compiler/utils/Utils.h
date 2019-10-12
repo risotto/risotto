@@ -17,11 +17,11 @@ class Compiler;
 class Utils {
 public:
     static std::vector<FunctionEntry *> findCandidatesFunctions(const std::vector<FunctionEntry *>& functions, const std::string& name);
-    static FunctionEntry * findMatchingFunctions(const std::vector<FunctionEntry *>& functions, std::vector<TypeReference> argsTypes);
+    static FunctionEntry * findMatchingFunctions(const std::vector<FunctionEntry *>& functions, std::vector<TypeReference *> argsTypes);
 
     static void loadFunctionEntryAddr(Compiler *compiler, FunctionEntry *entry, std::vector<ByteResolver *> &bytes);
 
-    static std::vector<TypeReference> getTypes(const std::vector<Expr *>&, Compiler *compiler);
+    static std::vector<TypeReference *> getTypes(const std::vector<Expr *>&, Compiler *compiler);
 };
 
 #endif //RISOTTOV2_UTILS_H

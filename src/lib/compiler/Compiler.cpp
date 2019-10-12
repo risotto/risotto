@@ -3,6 +3,7 @@
 //
 
 #include "Compiler.h"
+#include "TypeDefinition.h"
 
 #include <utility>
 
@@ -10,14 +11,16 @@ extern "C" {
 #include <lib/vm/native_functions.h>
 }
 
+#define TYPE_REF(type) new ConcreteTypeReference(type##Entry->definition)
+
 #define NATIVE_BINARY_DECLARATION_NAMED(target, op, param, return, functionName) \
-    target##Entry->addOperator( \
+    target##Entry->definition->addOperator( \
         "self", \
         true, \
         new NativeFunctionEntry( \
             #op, \
-            {FunctionEntryParameter("right", TypeReference(param##Entry, false))}, \
-            {TypeReference(return##Entry, false)}, \
+            {FunctionEntryParameter("right", TYPE_REF(param))}, \
+            {TYPE_REF(return)}, \
             functionName \
         ) \
     );
@@ -47,13 +50,13 @@ NATIVE_BINARY_OPERATOR_DECLARATION(type, +, string, string, add) \
 NATIVE_BINARY_OPERATOR_DECLARATION(string, +=, type, string, add_equal)
 
 #define NATIVE_UNARY_OPERATOR_DECLARATION(target, op, return, functionName) \
-    target##Entry->addPrefix( \
+    target##Entry->definition->addPrefix( \
         "self", \
         true, \
         new NativeFunctionEntry( \
             #op, \
             {}, \
-            {return##Entry}, \
+            {TYPE_REF(return)}, \
             functionName \
         ) \
     );
@@ -65,6 +68,16 @@ NATIVE_UNARY_OPERATOR_DECLARATION(target, op, return, unary_prefix_##target##_##
 NATIVE_UNARY_PREFIX_OPERATOR_DECLARATION(target, -, return, negate) \
 NATIVE_UNARY_PREFIX_OPERATOR_DECLARATION(target, ++, return, increment) \
 NATIVE_UNARY_PREFIX_OPERATOR_DECLARATION(target, --, return, decrement) \
+
+#define NATIVE_PRINT(type) \
+    frame->functions.add( \
+        new NativeFunctionEntry( \
+            "println", \
+            {FunctionEntryParameter("e", TYPE_REF(type))}, \
+            {}, \
+            println_##type \
+        ) \
+    );
 
 Compiler::Compiler(std::vector<Stmt *> stmts) : stmts(std::move(stmts)) {
     frame = new Frame();
@@ -94,52 +107,21 @@ Compiler::Compiler(std::vector<Stmt *> stmts) : stmts(std::move(stmts)) {
     NATIVE_BINARY_OPERATOR_DECLARATION(string, +, string, string, add)
     NATIVE_BINARY_OPERATOR_DECLARATION(string, +=, string, string, add_equal)
 
-    boolEntry->addPrefix(
+    boolEntry->definition->addPrefix(
             "self",
             true,
             new NativeFunctionEntry(
                     "!",
                     {},
-                    {boolEntry},
+                    {TYPE_REF(bool)},
                     unary_prefix_bool_invert
             )
     );
 
-    frame->functions.add(
-            new NativeFunctionEntry(
-                    "println",
-                    {FunctionEntryParameter("e",  TypeReference(intEntry,  false))},
-                    {},
-                    println_int
-            )
-    );
-
-    frame->functions.add(
-            new NativeFunctionEntry(
-                    "println",
-                    {FunctionEntryParameter("e",  TypeReference(doubleEntry, false))},
-                    {},
-                    println_double
-            )
-    );
-
-    frame->functions.add(
-            new NativeFunctionEntry(
-                    "println",
-                    {FunctionEntryParameter("e",  TypeReference(boolEntry, false))},
-                    {},
-                    println_bool
-            )
-    );
-
-    frame->functions.add(
-            new NativeFunctionEntry(
-                    "println",
-                    {FunctionEntryParameter("e",  TypeReference(stringEntry, false))},
-                    {},
-                    println_string
-            )
-    );
+    NATIVE_PRINT(int)
+    NATIVE_PRINT(double)
+    NATIVE_PRINT(bool)
+    NATIVE_PRINT(string)
 }
 
 Chunk Compiler::compile() {

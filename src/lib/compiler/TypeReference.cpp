@@ -3,54 +3,137 @@
 //
 
 #include "lib/compiler/TypeReference.h"
-#include "TypesTable.h"
 
-TypeReference::TypeReference(TypeEntry *entry, bool isArray) : entry(entry), isArray(isArray) {}
+#include <utility>
+#include <sstream>
+#include "TypeDefinition.h"
+#include "Compiler.h"
 
+NamedTypeReference::NamedTypeReference(std::string name, TypeDefinition *entry) : ConcreteTypeReference(entry), name(std::move(name)) {}
 
-FunctionEntry *TypeReference::findOperator(const std::string& name, const std::vector<TypeReference>& types) {
-    if (isArray) {
-        throw std::logic_error("array not handled");
-    }
-
-    return entry->operators.find(name, types);
+std::string NamedTypeReference::toString() {
+    return name;
 }
 
-FunctionEntry *TypeReference::findPrefix(const std::string& name, const std::vector<TypeReference>& types) {
-    if (isArray) {
-        throw std::logic_error("array not handled");
-    }
+ArrayTypeReference::ArrayTypeReference(TypeReference *element) : element(element) {
 
-    return entry->prefixes.find(name, types);
 }
 
-bool TypeReference::canReceiveType(TypeReference other) {
-    return entry->canReceiveType(other.entry) && isArray == other.isArray;
+FunctionEntry *ArrayTypeReference::findOperator(Compiler *compiler, const std::string &name,
+                                                const std::vector<TypeReference *> &types) {
+    throw std::logic_error("Unimplemented");
+}
+
+FunctionEntry *
+ArrayTypeReference::findPrefix(Compiler *compiler, const std::string &name, const std::vector<TypeReference *> &types) {
+    throw std::logic_error("Unimplemented");
+}
+
+bool ArrayTypeReference::canReceiveType(TypeReference *other) {
+    if (auto otherArray = dynamic_cast<ArrayTypeReference *>(other)) {
+        return element->canReceiveType(otherArray->element);
+    }
+
+    return false;
+}
+
+std::string ArrayTypeReference::toString() {
+    return "[]" + element->toString();
+}
+
+FunctionEntry *ArrayTypeReference::findFunction(Compiler *compiler, const std::string &name,
+                                                const std::vector<TypeReference *> &types) {
+    throw std::logic_error("Unimplemented");
+}
+
+TypeDefinition *ArrayTypeReference::toTypeDefinition(Compiler *compiler) {
+    return new ArrayTypeDefinition(element->toTypeDefinition(compiler));
 }
 
 bool TypeReference::isFunction() {
-    return !isArray && entry->isFunction();
+    return false;
 }
 
-bool TypeReferences::single() {
-    return size() == 1;
-}
-
-TypeReferences::TypeReferences(TypeEntry *entry): TypeReferences(TypeReference(entry, false)) {
+FunctionTypeReference::FunctionTypeReference(FunctionTypeDefinition *entry) : entry(entry) {
 
 }
 
-TypeReferences::TypeReferences(TypeReference ref) : vector<TypeReference>({ref}) {
+FunctionEntry *FunctionTypeReference::findFunction(Compiler *compiler, const std::string &name,
+                                                   const std::vector<TypeReference *> &types) {
+    return nullptr;
 }
 
-TypeReferences TypeReferences::onlyFunctions() {
-    auto onlyFunctions = TypeReferences();
+FunctionEntry *FunctionTypeReference::findOperator(Compiler *compiler, const std::string &name,
+                                                   const std::vector<TypeReference *> &types) {
+    return nullptr;
+}
 
-    for (auto ref : *this) {
-        if (ref.entry->isFunction()) {
-            onlyFunctions.push_back(ref);
-        }
+FunctionEntry *FunctionTypeReference::findPrefix(Compiler *compiler, const std::string &name,
+                                                 const std::vector<TypeReference *> &types) {
+    return nullptr;
+}
+
+bool FunctionTypeReference::canReceiveType(TypeReference *other) {
+    throw std::logic_error("Unimplemented");
+
+}
+
+bool FunctionTypeReference::isFunction() {
+    return true;
+}
+
+std::string FunctionTypeReference::toString() {
+    return "func () ... { ... }";
+}
+
+TypeDefinition *FunctionTypeReference::toTypeDefinition(Compiler *compiler) {
+    return entry;
+}
+
+ConcreteTypeReference::ConcreteTypeReference(TypeDefinition *entry) : entry(entry) {
+    if (dynamic_cast<ConcreteTypeDefinition *>(entry) == nullptr) {
+        throw std::logic_error("entry should be ConcreteTypeDefinition");
+    }
+}
+
+FunctionEntry *ConcreteTypeReference::findFunction(Compiler *compiler, const std::string &name,
+                                                   const std::vector<TypeReference *> &types) {
+    return entry->functions.find(name, types);
+}
+
+FunctionEntry *ConcreteTypeReference::findOperator(Compiler *compiler, const std::string &name,
+                                                   const std::vector<TypeReference *> &types) {
+   return entry->operators.find(name, types);
+}
+
+FunctionEntry *ConcreteTypeReference::findPrefix(Compiler *compiler, const std::string &name,
+                                                 const std::vector<TypeReference *> &types) {
+    return entry->prefixes.find(name, types);
+}
+
+bool ConcreteTypeReference::canReceiveType(TypeReference *other) {
+    if (auto concrete = dynamic_cast<ConcreteTypeReference *>(other)) {
+        return concrete->entry == entry;
     }
 
-    return onlyFunctions;
+    if (auto named = dynamic_cast<NamedTypeReference *>(other)) {
+        return named->entry == entry;
+    }
+
+    return false;
+}
+
+std::string ConcreteTypeReference::toString() {
+    if (auto concrete = dynamic_cast<ConcreteTypeDefinition *>(entry)) {
+        return concrete->name;
+    }
+
+    std::stringstream ss;
+    ss << entry;
+
+    return ss.str();
+}
+
+TypeDefinition *ConcreteTypeReference::toTypeDefinition(Compiler *compiler) {
+    return entry;
 }

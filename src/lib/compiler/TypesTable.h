@@ -7,50 +7,36 @@
 
 #include <string>
 #include <vector>
-#include "FunctionsTable.h"
+#include <map>
+
+class TypeDefinition;
 
 class TypeEntry {
 public:
-    TypeEntry(std::string name);
-
     std::string name;
-    FunctionsTable functions;
-    FunctionsTable operators;
-    FunctionsTable prefixes;
+    TypeDefinition *definition;
 
-    bool canReceiveType(TypeEntry *type);
-
-    FunctionEntry *addFunction(const std::string& selfName, bool asReference, FunctionEntry *entry);
-    FunctionEntry *addOperator(const std::string& selfName, bool asReference, FunctionEntry *entry);
-    FunctionEntry *addPrefix(const std::string& selfName, bool asReference, FunctionEntry *entry);
-
-    virtual bool isFunction();
-    virtual FunctionTypeEntry *asFunctionTypeEntry();
-
-    virtual ~TypeEntry() = default;
-
-    void addSelf(FunctionEntry *entry);
-
-    void addSelf(const std::string &selfName, bool asReference, FunctionEntry *entry);
-};
-
-class FunctionTypeEntry: public TypeEntry {
-public:
-    FunctionEntry *function;
-
-    FunctionTypeEntry(std::string name, FunctionEntry *function);
-
-    bool isFunction() override;
-
-    FunctionTypeEntry *asFunctionTypeEntry() override;
+    explicit TypeEntry(std::string name, TypeDefinition *definition);
 };
 
 class TypesTable {
 private:
+    std::vector<TypeDefinition *> definitions;
     std::vector<TypeEntry *> entries;
+    std::map<std::string, TypeDefinition *> virtualEntries;
+
 public:
-    TypeEntry *find(const std::string& name);
-    TypeEntry *add(std::string name);
+    TypeEntry *findNamed(const std::string &name);
+
+    TypeDefinition *add(TypeDefinition *typeDefinition);
+
+    TypeEntry *add(const std::string &name);
+
+    TypeEntry *add(const std::string &name, TypeDefinition *typeDefinition);
+
+    TypeDefinition *findVirtual(const std::string &name);
+
+    TypeDefinition *addVirtual(const std::string &id, TypeDefinition *typeDefinition);
 };
 
 

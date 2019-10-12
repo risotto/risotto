@@ -10,6 +10,7 @@ extern "C" {
 #include "LiteralExpr.h"
 #include "lib/compiler/Compiler.h"
 #include "lib/compiler/TypeReference.h"
+#include "lib/compiler/ReturnTypes.h"
 
 LiteralExpr::LiteralExpr(Token *value) : value(value) {
 
@@ -52,20 +53,24 @@ std::vector<ByteResolver *> LiteralExpr::compile(Compiler *compiler) {
     return bytes;
 }
 
-TypeReferences LiteralExpr::computeReturnType(Compiler *compiler) {
+TypeDefinition *LiteralExpr::computeReturnTypeDefinition(Compiler *compiler) {
     switch (value->type) {
         case Token::Type::FALSE:
         case Token::Type::TRUE:
-            return compiler->frame->findType("bool");
+            return compiler->frame->findNamedType("bool");
         case Token::Type::NIL:
             throw CompilerError("Cannot get type of nil ");
         case Token::Type::INT:
-            return compiler->frame->findType("int");
+            return compiler->frame->findNamedType("int");
         case Token::Type::DOUBLE:
-            return compiler->frame->findType("double");
+            return compiler->frame->findNamedType("double");
         case Token::Type::STRING:
-            return compiler->frame->findType("string");
+            return compiler->frame->findNamedType("string");
         default:
             throw CompilerError("Unhandled type " + std::string(value->type._to_string()));
     }
+}
+
+ReturnTypes LiteralExpr::computeReturnType(Compiler *compiler) {
+    return new ConcreteTypeReference(computeReturnTypeDefinition(compiler));
 }

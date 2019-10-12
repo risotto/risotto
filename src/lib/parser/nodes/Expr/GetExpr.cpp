@@ -11,6 +11,8 @@ extern "C" {
 #include <lib/compiler/utils/Utils.h>
 #include "lib/compiler/Compiler.h"
 #include "lib/compiler/TypeReference.h"
+#include "lib/compiler/ReturnTypes.h"
+#include "lib/compiler/TypeDefinition.h"
 
 GetExpr::GetExpr(Expr *callee, Token *identifier) : callee(callee), identifier(identifier) {
 
@@ -25,8 +27,8 @@ std::vector<ByteResolver *> GetExpr::compile(Compiler *compiler) {
         throw CompilerError("Must resolve to a single symbol");
     }
 
-    if (returnType[0].isFunction()) {
-        Utils::loadFunctionEntryAddr(compiler, returnType[0].entry->asFunctionTypeEntry()->function, bytes);
+    if (auto functionTypeRef = dynamic_cast<FunctionTypeReference *>(returnType[0])) {
+        Utils::loadFunctionEntryAddr(compiler, functionTypeRef->entry->function, bytes);
 
         return bytes;
     }
@@ -36,20 +38,33 @@ std::vector<ByteResolver *> GetExpr::compile(Compiler *compiler) {
     return bytes;
 }
 
-TypeReferences GetExpr::computeReturnType(Compiler *compiler) {
+ReturnTypes GetExpr::computeReturnType(Compiler *compiler) {
     auto calleeType = callee->getReturnType(compiler);
 
     if (!calleeType.single()) {
         throw CompilerError("Return type has to be single", identifier->position);
     }
 
-    auto candidates = calleeType[0].entry->functions.findCandidates(identifier->lexeme);
+    auto returnTypes = ReturnTypes();
 
-    auto candidateTypes = TypeReferences();
+    std::vector<FunctionEntry *> functionsCandidates;
+    if (auto concrete = dynamic_cast<ConcreteTypeReference *>(calleeType[0])) {
+        functionsCandidates = concrete->entry->functions.findCandidates(identifier->lexeme);
+    } else {
+        auto descriptorTypeRef = compiler->frame->findVirtualType(calleeType[0]);
 
-    for (auto candidate : candidates) {
-        candidateTypes.push_back(TypeReference(candidate->typeEntry, false));
+        if (descriptorTypeRef == nullptr) {
+            throw CompilerError("descriptorTypeRef is null", identifier->position);
+        }
+
+        functionsCandidates = descriptorTypeRef->functions.findCandidates(identifier->lexeme);
     }
 
-    return candidateTypes;
+    for (auto candidate : functionsCandidates) {
+        returnTypes.push_back(new FunctionTypeReference(candidate->typeDefinition));
+    }
+
+    // TODO: struct fields
+
+    return returnTypes;
 }

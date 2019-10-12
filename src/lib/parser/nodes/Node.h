@@ -6,8 +6,8 @@
 #define RISOTTOV2_NODE_H
 
 #include <vector>
-
-class ByteResolver;
+#include "lib/tokenizer/Token.h"
+#include "lib/compiler/ByteResolver.h"
 
 class Compiler;
 

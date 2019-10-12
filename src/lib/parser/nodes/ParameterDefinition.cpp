@@ -4,7 +4,7 @@
 
 #include "ParameterDefinition.h"
 
-ParameterDefinition::ParameterDefinition(Token *name, TypeDescriptor type, bool asReference)
+ParameterDefinition::ParameterDefinition(Token *name, TypeDescriptor *type, bool asReference)
         : name(name), type(type), asReference(asReference) {
 
 }

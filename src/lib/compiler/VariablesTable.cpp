@@ -6,7 +6,7 @@
 
 #include <utility>
 
-VariableEntry::VariableEntry(std::string name, TypeReference typeRef, int index) : name(std::move(name)),
+VariableEntry::VariableEntry(std::string name, TypeReference * typeRef, int index) : name(std::move(name)),
                                                                                    typeRef(typeRef), index(index) {
 
 }
@@ -21,7 +21,7 @@ VariableEntry *VariablesTable::find(const std::string &name) {
     return nullptr;
 }
 
-VariableEntry *VariablesTable::add(std::string name, TypeReference typeRef) {
+VariableEntry *VariablesTable::add(std::string name, TypeReference * typeRef) {
     auto entry = new VariableEntry(std::move(name), typeRef, entries.size());
 
     entries.push_back(entry);

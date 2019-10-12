@@ -8,6 +8,7 @@
 #include <lib/parser/nodes/Expr/VarDeclStmt.h>
 #include <lib/parser/nodes/Stmt/ForStmt.h>
 #include <lib/parser/nodes/Expr/FunctionExpr.h>
+#include <lib/parser/nodes/Expr/ArrayExpr.h>
 #include "Parser.h"
 #include "ParseError.h"
 #include "lib/parser/nodes/Stmt/ExpressionStmt.h"
@@ -84,16 +85,16 @@ ParseError Parser::error(Token *token, const std::string &message) {
     return ParseError(message, token);
 }
 
-TypeDescriptor Parser::typeRef() {
-    auto isArray = false;
-
+TypeDescriptor *Parser::typeRef() {
     if (match(Token::Type::LEFT_SQUARED)) {
-        consume(Token::Type::RIGHT_SQUARED, "Expect '['");
+        consume(Token::Type::RIGHT_SQUARED, "Expect ']'");
+
+        return new ArrayTypeDescriptor(typeRef());
     }
 
     auto name = consume(Token::Type::IDENTIFIER, "Expect type");
 
-    return TypeDescriptor(name, isArray);
+    return new IdentifierTypeDescriptor(name);
 }
 
 std::vector<Stmt *> Parser::program() {
@@ -191,7 +192,7 @@ Stmt *Parser::function(bool isNamed) {
 
     consume(Token::Type::RIGHT_PAREN, "Expect ')' after parameters.");
 
-    auto returnTypes = std::vector<TypeDescriptor>();
+    auto returnTypes = std::vector<TypeDescriptor *>();
     while (!check(Token::Type::LEFT_CURLY) && !isAtEnd()) {
         auto returnType = typeRef();
         returnTypes.push_back(returnType);
@@ -363,6 +364,20 @@ Expr *Parser::expression() {
         functionStmt->autoRegister = false;
 
         return new FunctionExpr(functionStmt);
+    }
+
+    if (check(Token::Type::LEFT_SQUARED)) {
+        auto type = typeRef();
+
+        consume(Token::Type::LEFT_CURLY, "Expect '{'");
+
+        auto elements = enumeration<Expr *>([this]() {
+            return expression();
+        }, Token::Type::COMMA);
+
+        consume(Token::Type::RIGHT_CURLY, "Expect '}'");
+
+        return new ArrayExpr(type, elements);
     }
 
     return assignment();
