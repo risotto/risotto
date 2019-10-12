@@ -97,8 +97,6 @@ private:
     Stmt *varDecl();
 
     TypeDescriptor *typeRef();
-
-    InterfaceTypeDescriptor *interface();
 };
 
 

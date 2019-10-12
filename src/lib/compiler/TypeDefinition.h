@@ -37,12 +37,6 @@ public:
 
 };
 
-class InterfaceTypeDefinition : public TypeDefinition {
-};
-
-class StructTypeDefinition : public TypeDefinition {
-};
-
 class ConcreteTypeDefinition : public TypeDefinition {
 public:
     std::string name;

@@ -35,24 +35,3 @@ TypeReference *ArrayTypeDescriptor::toTypeReference(Compiler *compiler) {
 std::string ArrayTypeDescriptor::toString() {
     return "[]" + element->toString();
 }
-
-//FunctionTypeDescriptor::FunctionTypeDescriptor(std::vector<TypeDescriptor *> parameters, TypeDescriptor *returnType): parameters(std::move(parameters)), returnType(returnType) {
-//
-//}
-
-InterfaceTypeDescriptor::InterfaceTypeDescriptor(std::vector<Function *> functions): functions(std::move(functions)) {
-
-}
-
-std::string InterfaceTypeDescriptor::toString() {
-    return "interface { ... }";
-}
-
-TypeReference *InterfaceTypeDescriptor::toTypeReference(Compiler *compiler) {
-    // TODO: implement interface functions
-    return new InterfaceTypeReference({});
-}
-
-InterfaceTypeDescriptor::Function::Function(std::string name, std::vector<TypeDescriptor *> arguments,
-                                            TypeDescriptor *returnType) : name(std::move(name)), arguments(std::move(arguments)),
-                                                                          returnType(returnType) {}

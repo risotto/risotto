@@ -34,10 +34,6 @@ bool ArrayTypeReference::canReceiveType(TypeReference *other) {
         return element->canReceiveType(otherArray->element);
     }
 
-    if (auto otherInterface = dynamic_cast<InterfaceTypeReference *>(other)) {
-        return otherInterface->functions.empty();
-    }
-
     return false;
 }
 
@@ -52,42 +48,6 @@ FunctionEntry *ArrayTypeReference::findFunction(Compiler *compiler, const std::s
 
 TypeDefinition *ArrayTypeReference::toTypeDefinition(Compiler *compiler) {
     return new ArrayTypeDefinition(element->toTypeDefinition(compiler));
-}
-
-InterfaceTypeReference::Function::Function(std::string name, std::vector<TypeReference *> arguments,
-                                           TypeReference *returnType) : name(std::move(name)),
-                                                                        arguments(std::move(arguments)),
-                                                                        returnType(returnType) {}
-
-InterfaceTypeReference::InterfaceTypeReference(std::vector<Function *> functions) : functions(std::move(functions)) {
-
-}
-
-bool InterfaceTypeReference::canReceiveType(TypeReference *other) {
-    return functions.empty();
-}
-
-FunctionEntry *InterfaceTypeReference::findOperator(Compiler *compiler, const std::string &name,
-                                                    const std::vector<TypeReference *> &types) {
-    throw std::logic_error("Unimplemented");
-}
-
-FunctionEntry *InterfaceTypeReference::findPrefix(Compiler *compiler, const std::string &name,
-                                                  const std::vector<TypeReference *> &types) {
-    throw std::logic_error("Unimplemented");
-}
-
-FunctionEntry *InterfaceTypeReference::findFunction(Compiler *compiler, const std::string &name,
-                                                    const std::vector<TypeReference *> &types) {
-    throw std::logic_error("Unimplemented");
-}
-
-std::string InterfaceTypeReference::toString() {
-    return "interface { ... }";
-}
-
-TypeDefinition *InterfaceTypeReference::toTypeDefinition(Compiler *compiler) {
-    return new InterfaceTypeDefinition();
 }
 
 bool TypeReference::isFunction() {

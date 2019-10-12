@@ -92,24 +92,9 @@ TypeDescriptor *Parser::typeRef() {
         return new ArrayTypeDescriptor(typeRef());
     }
 
-    if (match(Token::Type::INTERFACE)) {
-        return interface();
-    }
-
     auto name = consume(Token::Type::IDENTIFIER, "Expect type");
 
     return new IdentifierTypeDescriptor(name);
-}
-
-InterfaceTypeDescriptor *Parser::interface() {
-    consume(Token::Type::LEFT_CURLY, "Expect '{'");
-    consume(Token::Type::RIGHT_CURLY, "Expect '}' as interface declarations aren't supported yet");
-
-//    auto functions = enumeration<InterfaceTypeDescriptor::Function *>([]() {
-//        throw CompilerError("Not implemented");
-//    }, Token::Type::RIGHT_CURLY);
-
-    return new InterfaceTypeDescriptor({});
 }
 
 std::vector<Stmt *> Parser::program() {

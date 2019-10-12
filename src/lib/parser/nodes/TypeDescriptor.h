@@ -29,38 +29,6 @@ public:
     std::string toString() override;
 };
 
-//class FunctionTypeDescriptor : public TypeDescriptor {
-//public:
-//    std::vector<TypeDescriptor *> parameters;
-//    TypeDescriptor *returnType;
-//
-//    explicit FunctionTypeDescriptor(std::vector<TypeDescriptor *> parameters, TypeDescriptor *returnType);
-//
-//    TypeReference *toTypeReference(Compiler *compiler) override;
-//
-//    std::string toString() override;
-//};
-
-class InterfaceTypeDescriptor : public TypeDescriptor {
-public:
-    class Function {
-    public:
-        std::string name;
-        std::vector<TypeDescriptor *> arguments;
-        TypeDescriptor *returnType;
-
-        Function(std::string name, std::vector<TypeDescriptor *> arguments, TypeDescriptor *returnType);
-    };
-
-    std::vector<Function *> functions;
-
-    explicit InterfaceTypeDescriptor(std::vector<Function *> functions);
-
-    TypeReference *toTypeReference(Compiler *compiler) override;
-
-    std::string toString() override;
-};
-
 class IdentifierTypeDescriptor : public TypeDescriptor {
 public:
     Token *name;

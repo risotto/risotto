@@ -103,37 +103,6 @@ public:
     TypeDefinition *toTypeDefinition(Compiler *compiler) override;
 };
 
-class InterfaceTypeReference : public TypeReference {
-public:
-    class Function {
-        std::string name;
-        std::vector<TypeReference *> arguments;
-        TypeReference *returnType;
-
-    public:
-        Function(std::string name, std::vector<TypeReference *> arguments, TypeReference *returnType);
-    };
-
-    std::vector<Function *> functions;
-
-    explicit InterfaceTypeReference(std::vector<Function *> functions);
-
-    bool canReceiveType(TypeReference *other) override;
-
-    FunctionEntry *
-    findFunction(Compiler *compiler, const std::string &name, const std::vector<TypeReference *> &types) override;
-
-    FunctionEntry *
-    findOperator(Compiler *compiler, const std::string &name, const std::vector<TypeReference *> &types) override;
-
-    FunctionEntry *
-    findPrefix(Compiler *compiler, const std::string &name, const std::vector<TypeReference *> &types) override;
-
-    TypeDefinition *toTypeDefinition(Compiler *compiler) override;
-
-    std::string toString() override;
-};
-
 class NamedTypeReference : public ConcreteTypeReference {
 public:
     std::string name;
