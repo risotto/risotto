@@ -38,13 +38,6 @@ FunctionEntry *FunctionStmt::getFunctionEntry(Compiler *compiler) {
     }
 
     auto entryParameters = std::vector<FunctionEntryParameter>();
-//    if (receiver != nullptr) {
-//        entryParameters.insert(
-//                entryParameters.begin(),
-//                FunctionEntryParameter(receiver->name->lexeme, receiver->type->toTypeReference(compiler))
-//        );
-//    }
-
     for (auto parameter : parameters) {
         entryParameters.emplace_back(parameter.name->lexeme, parameter.type->toTypeReference(compiler));
     }
@@ -67,12 +60,14 @@ FunctionEntry *FunctionStmt::getFunctionEntry(Compiler *compiler) {
             if (auto identifierTypeDesc = dynamic_cast<IdentifierTypeDescriptor *>(receiver->type)) {
                 receiverType = compiler->frame->findNamedType(identifierTypeDesc->name->lexeme);
             } else {
-                receiverType = compiler->frame->findOrCreateVirtualType(receiver->type->toTypeReference(compiler),
-                                                                        compiler);
+                receiverType = compiler->frame->findOrCreateVirtualType(
+                        receiver->type->toTypeReference(compiler),
+                        compiler
+                );
             }
 
             if (receiverType == nullptr) {
-                throw CompilerError("Cannot find type for " + receiver->type->toString());
+                throw CompilerError("Cannot find type for " + receiver->type->toString(), receiver->name->position);
             }
 
             switch (type->type) {
@@ -90,6 +85,19 @@ FunctionEntry *FunctionStmt::getFunctionEntry(Compiler *compiler) {
                             functionEntry
                     );
                     break;
+                case Token::Type::NEW: {
+                    auto structType = dynamic_cast<StructTypeDefinition *>(receiverType);
+                    if (structType == nullptr) {
+                        throw CompilerError("Receiver must be a struct", receiver->name->position);
+                    }
+
+                    functionEntry = structType->addConstructor(
+                            receiver->name->lexeme,
+                            receiver->asReference,
+                            functionEntry
+                    );
+                    break;
+                }
                 default:
                     throw CompilerError("Unhandled function type");
             }

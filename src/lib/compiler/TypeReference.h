@@ -9,7 +9,10 @@
 #include <string>
 
 class TypeDefinition;
+
 class FunctionTypeDefinition;
+
+class StructTypeDefinition;
 
 class FunctionEntry;
 
@@ -28,8 +31,7 @@ public:
 
 class ReceiverTypeReference {
 public:
-    virtual FunctionEntry *
-    findFunction(Compiler *compiler, const std::string &name, const std::vector<TypeReference *> &types) = 0;
+    virtual std::vector<FunctionEntry *> findFunctionsCandidates(Compiler *compiler, const std::string &name) = 0;
 
     virtual FunctionEntry *
     findOperator(Compiler *compiler, const std::string &name, const std::vector<TypeReference *> &types) = 0;
@@ -44,8 +46,7 @@ public:
 
     explicit ArrayTypeReference(TypeReference *element);
 
-    FunctionEntry *
-    findFunction(Compiler *compiler, const std::string &name, const std::vector<TypeReference *> &types) override;
+    std::vector<FunctionEntry *> findFunctionsCandidates(Compiler *compiler, const std::string &name) override;
 
     FunctionEntry *
     findOperator(Compiler *compiler, const std::string &name, const std::vector<TypeReference *> &types) override;
@@ -62,6 +63,7 @@ public:
 
 class FunctionTypeReference : public TypeReference {
 public:
+    // TODO: rename to definition
     FunctionTypeDefinition *entry;
 
     explicit FunctionTypeReference(FunctionTypeDefinition *entry);
@@ -77,12 +79,12 @@ public:
 
 class ConcreteTypeReference : public TypeReference, public ReceiverTypeReference {
 public:
+    // TODO: Rename to definition
     TypeDefinition *entry;
 
     explicit ConcreteTypeReference(TypeDefinition *entry);
 
-    FunctionEntry *
-    findFunction(Compiler *compiler, const std::string &name, const std::vector<TypeReference *> &types) override;
+    std::vector<FunctionEntry *> findFunctionsCandidates(Compiler *compiler, const std::string &name) override;
 
     FunctionEntry *
     findOperator(Compiler *compiler, const std::string &name, const std::vector<TypeReference *> &types) override;
@@ -108,16 +110,9 @@ public:
 
 class StructTypeReference : public TypeReference {
 public:
-    class Field {
-    public:
-        std::string name;
-        TypeReference *type;
+    StructTypeDefinition *entry;
 
-        Field(std::string name, TypeReference *type);
-    };
-    std::vector<Field> fields;
-
-    explicit StructTypeReference(std::vector<Field> fields);
+    explicit StructTypeReference(StructTypeDefinition *entry);
 
     bool canReceiveType(TypeReference *other) override;
 

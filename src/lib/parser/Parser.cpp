@@ -10,6 +10,7 @@
 #include <lib/parser/nodes/Expr/FunctionExpr.h>
 #include <lib/parser/nodes/Expr/ArrayExpr.h>
 #include <lib/parser/nodes/Stmt/TypeStmt.h>
+#include <lib/parser/nodes/Expr/NewExpr.h>
 #include "Parser.h"
 #include "ParseError.h"
 #include "lib/parser/nodes/Stmt/ExpressionStmt.h"
@@ -135,8 +136,37 @@ Stmt *Parser::declaration() {
         return type();
     }
 
-    if (match(Token::Type::FUNC, Token::Type::OP)) {
-        return function(true);
+    if (match(Token::Type::FUNC, Token::Type::OP, Token::Type::NEW)) {
+        auto type = previous();
+        auto isConstructor = type->type._value == Token::Type::NEW;
+
+        auto isNamed = !isConstructor;
+
+        return function<FunctionStmt *>(true, isNamed, [isConstructor](FUNCTION_NODE_ARGS) {
+            if (isConstructor) {
+                if (returnTypes.size() != 1) {
+                    throw CompilerError("Constructors must return the object");
+                }
+
+                if (receiver == nullptr) {
+                    throw CompilerError("Constructors must have receiver");
+                }
+
+                if (returnTypes[0]->toString() != receiver->type->toString()) {
+                    throw CompilerError("Constructors must return the object");
+                }
+            }
+
+            return new FunctionStmt(
+                    type,
+                    receiver,
+                    name,
+                    std::move(returnTypes),
+                    std::move(parameters),
+                    std::move(body),
+                    closeBlock
+            );
+        });
     }
 
     auto varDeclStmt = varDecl();
@@ -178,16 +208,15 @@ Stmt *Parser::varDecl() {
     return nullptr;
 }
 
-Stmt *Parser::function(bool isNamed) {
+template<typename T>
+T Parser::function(bool canHaveReceiver, bool isNamed, const FunctionNodeType<T> &f) {
     auto type = previous();
 
     ParameterDefinition *receiver = nullptr;
-    if (isNamed) {
-        if (match(Token::Type::LEFT_PAREN)) {
-            receiver = parameter();
+    if (canHaveReceiver && match(Token::Type::LEFT_PAREN)) {
+        receiver = parameter();
 
-            consume(Token::Type::RIGHT_PAREN, "Expect ')' after receiver declaration.");
-        }
+        consume(Token::Type::RIGHT_PAREN, "Expect ')' after receiver declaration.");
     }
 
     Token *name = nullptr;
@@ -220,7 +249,7 @@ Stmt *Parser::function(bool isNamed) {
 
     std::vector<Stmt *> body = block();
 
-    return new FunctionStmt(type, receiver, name, returnTypes, parameters, body, closeBlock);
+    return f(type, receiver, name, returnTypes, parameters, body, closeBlock);
 }
 
 ParameterDefinition *Parser::parameter() {
@@ -374,7 +403,17 @@ Stmt *Parser::expressionStatement() {
 
 Expr *Parser::expression() {
     if (match(Token::Type::FUNC)) {
-        auto functionStmt = (FunctionStmt *) function(false);
+        auto functionStmt = function<FunctionStmt *>(false, false, [](FUNCTION_NODE_ARGS) {
+            return new FunctionStmt(
+                    type,
+                    receiver,
+                    name,
+                    std::move(returnTypes),
+                    std::move(parameters),
+                    std::move(body),
+                    closeBlock
+            );
+        });
         functionStmt->autoRegister = false;
 
         return new FunctionExpr(functionStmt);
@@ -392,6 +431,19 @@ Expr *Parser::expression() {
         consume(Token::Type::RIGHT_CURLY, "Expect '}'");
 
         return new ArrayExpr(type, elements);
+    }
+
+    if (match(Token::Type::NEW)) {
+        auto identifier = consume(Token::Type::IDENTIFIER, "Expect identifier");
+        auto identifierDesc = new IdentifierTypeDescriptor(identifier);
+
+        consume(Token::Type::LEFT_PAREN, "Expect '('");
+
+        auto args = arguments();
+
+        Token *rParen = consume(Token::Type::RIGHT_PAREN, "Expect ')' after parameters.");
+
+        return new CallExpr(new NewExpr(identifierDesc), rParen, args);
     }
 
     return assignment();

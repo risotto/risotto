@@ -14,6 +14,20 @@ extern "C" {
 #include "lib/compiler/ReturnTypes.h"
 #include "lib/compiler/TypeDefinition.h"
 
+StructTypeDefinition *getStructTypeDefinition(TypeReference *typeRef) {
+    if (auto structRef = dynamic_cast<StructTypeReference *>(typeRef)) {
+        return structRef->entry;
+    }
+
+    if (auto concreteRef = dynamic_cast<ConcreteTypeReference *>(typeRef)) {
+        if (auto structRef = dynamic_cast<StructTypeDefinition *>(concreteRef->entry)) {
+            return structRef;
+        }
+    }
+
+    return nullptr;
+}
+
 GetExpr::GetExpr(Expr *callee, Token *identifier) : callee(callee), identifier(identifier) {
 
 }
@@ -33,9 +47,21 @@ std::vector<ByteResolver *> GetExpr::compile(Compiler *compiler) {
         return bytes;
     }
 
-    throw CompilerError("Not implemented");
+    auto calleeReturnType = callee->getReturnType(compiler);
 
-    return bytes;
+    if (auto structDef = getStructTypeDefinition(calleeReturnType[0])) {
+        auto typeDef = callee->getReturnType(compiler);
+
+        auto calleeBytes = callee->compile(compiler);
+        bytes.insert(bytes.begin(), calleeBytes.begin(), calleeBytes.end());
+
+        bytes.push_back(new ByteResolver(OP_LOAD_INSTANCE, &identifier->position));
+        bytes.push_back(new ByteResolver(structDef->getFieldIndex(structDef->fields.find(identifier->lexeme)), nullptr));
+
+        return bytes;
+    }
+
+    throw CompilerError("Unhandled type");
 }
 
 ReturnTypes GetExpr::computeReturnType(Compiler *compiler) {
@@ -48,23 +74,27 @@ ReturnTypes GetExpr::computeReturnType(Compiler *compiler) {
     auto returnTypes = ReturnTypes();
 
     std::vector<FunctionEntry *> functionsCandidates;
-    if (auto concrete = dynamic_cast<ConcreteTypeReference *>(calleeType[0])) {
-        functionsCandidates = concrete->entry->functions.findCandidates(identifier->lexeme);
+    if (auto receiver = dynamic_cast<ReceiverTypeReference *>(calleeType[0])) {
+        functionsCandidates = receiver->findFunctionsCandidates(compiler, identifier->lexeme);
     } else {
-        auto descriptorTypeRef = compiler->frame->findVirtualType(calleeType[0]);
+        auto virtualType = compiler->frame->findVirtualType(calleeType[0]);
 
-        if (descriptorTypeRef == nullptr) {
-            throw CompilerError("descriptorTypeRef is null", identifier->position);
+        if (virtualType != nullptr) {
+            functionsCandidates = virtualType->functions.findCandidates(identifier->lexeme);
         }
-
-        functionsCandidates = descriptorTypeRef->functions.findCandidates(identifier->lexeme);
     }
 
     for (auto candidate : functionsCandidates) {
         returnTypes.push_back(new FunctionTypeReference(candidate->typeDefinition));
     }
 
-    // TODO: struct fields
+    if (auto structDef = getStructTypeDefinition(calleeType[0])) {
+        auto field = structDef->fields.find(identifier->lexeme);
+
+        if (field != nullptr) {
+            returnTypes.push_back(field->typeRef);
+        }
+    }
 
     return returnTypes;
 }

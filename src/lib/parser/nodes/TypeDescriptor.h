@@ -46,6 +46,8 @@ public:
     TypeReference *toTypeReference(Compiler *compiler) override;
 
     std::string toString() override;
+private:
+    StructTypeDefinition *typeDefinition = nullptr;
 };
 
 class IdentifierTypeDescriptor : public TypeDescriptor {

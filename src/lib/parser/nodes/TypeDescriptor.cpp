@@ -8,6 +8,7 @@
 #include <sstream>
 #include "TypeDescriptor.h"
 #include "lib/compiler/Compiler.h"
+#include "lib/compiler/TypeDefinition.h"
 
 IdentifierTypeDescriptor::IdentifierTypeDescriptor(Token *name) : name(name) {}
 
@@ -40,13 +41,18 @@ std::string ArrayTypeDescriptor::toString() {
 StructTypeDescriptor::StructTypeDescriptor(std::vector<Field> fields) : fields(std::move(fields)) {}
 
 TypeReference *StructTypeDescriptor::toTypeReference(Compiler *compiler) {
-    auto fieldRefs = std::vector<StructTypeReference::Field>();
+    if (typeDefinition == nullptr) {
+        auto fieldDefs = VariablesTable();
+        for (auto field : fields) {
+            auto fieldTypeRef = field.type->toTypeReference(compiler);
+            fieldDefs.add(field.name->lexeme, fieldTypeRef);
+        }
+        auto typeDef = new StructTypeDefinition(fieldDefs);
 
-    for (auto ref : fields) {
-        fieldRefs.emplace_back(ref.name->lexeme, ref.type->toTypeReference(compiler));
+        typeDefinition = dynamic_cast<StructTypeDefinition *>(compiler->frame->types.add(typeDef));
     }
 
-    return new StructTypeReference(fieldRefs);
+    return new StructTypeReference(typeDefinition);
 }
 
 std::string StructTypeDescriptor::toString() {
@@ -63,4 +69,4 @@ std::string StructTypeDescriptor::toString() {
     return ss.str();
 }
 
-StructTypeDescriptor::Field::Field(Token * name, TypeDescriptor *type) : name(name), type(type) {}
+StructTypeDescriptor::Field::Field(Token *name, TypeDescriptor *type) : name(name), type(type) {}

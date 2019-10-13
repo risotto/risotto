@@ -42,13 +42,18 @@ std::string ArrayTypeReference::toString() {
     return "[]" + element->toString();
 }
 
-FunctionEntry *ArrayTypeReference::findFunction(Compiler *compiler, const std::string &name,
-                                                const std::vector<TypeReference *> &types) {
-    throw std::logic_error("Unimplemented");
-}
-
 TypeDefinition *ArrayTypeReference::toTypeDefinition(Compiler *compiler) {
     return new ArrayTypeDefinition(element->toTypeDefinition(compiler));
+}
+
+std::vector<FunctionEntry *> ArrayTypeReference::findFunctionsCandidates(Compiler *compiler, const std::string &name) {
+    auto def = compiler->frame->findVirtualType(this);
+
+    if (def == nullptr) {
+        return std::vector<FunctionEntry *>();
+    }
+
+    return def->functions.findCandidates(name);
 }
 
 bool TypeReference::isFunction() {
@@ -77,14 +82,6 @@ TypeDefinition *FunctionTypeReference::toTypeDefinition(Compiler *compiler) {
 }
 
 ConcreteTypeReference::ConcreteTypeReference(TypeDefinition *entry) : entry(entry) {
-    if (dynamic_cast<ConcreteTypeDefinition *>(entry) == nullptr) {
-        throw std::logic_error("entry should be ConcreteTypeDefinition");
-    }
-}
-
-FunctionEntry *ConcreteTypeReference::findFunction(Compiler *compiler, const std::string &name,
-                                                   const std::vector<TypeReference *> &types) {
-    return entry->functions.find(name, types);
 }
 
 FunctionEntry *ConcreteTypeReference::findOperator(Compiler *compiler, const std::string &name,
@@ -124,18 +121,19 @@ TypeDefinition *ConcreteTypeReference::toTypeDefinition(Compiler *compiler) {
     return entry;
 }
 
-StructTypeReference::Field::Field(std::string name, TypeReference *type) : name(std::move(name)), type(type) {}
-
-StructTypeReference::StructTypeReference(std::vector<Field> fields) : fields(std::move(fields)) {}
+std::vector<FunctionEntry *>
+ConcreteTypeReference::findFunctionsCandidates(Compiler *compiler, const std::string &name) {
+    return entry->functions.findCandidates(name);
+}
 
 bool StructTypeReference::canReceiveType(TypeReference *other) {
     if (auto otherStruct = dynamic_cast<StructTypeReference *>(other)) {
-        for (auto field:fields) {
+        for (auto field:entry->fields) {
             auto has = false;
 
-            for (const auto& otherField : otherStruct->fields) {
-                if (field.name == otherField.name) {
-                    if (field.type->canReceiveType(otherField.type)) {
+            for (const auto &otherField : otherStruct->entry->fields) {
+                if (field->name == otherField->name) {
+                    if (field->typeRef->canReceiveType(otherField->typeRef)) {
                         has = true;
                         break;
                     }
@@ -148,6 +146,10 @@ bool StructTypeReference::canReceiveType(TypeReference *other) {
         }
     }
 
+    if (auto otherConcrete = dynamic_cast<ConcreteTypeReference *>(other)) {
+        return entry == otherConcrete->entry;
+    }
+
     return false;
 }
 
@@ -156,8 +158,8 @@ std::string StructTypeReference::toString() {
 
     ss << "struct { ";
 
-    for (auto field:fields) {
-        ss << field.name << " " << field.type->toString() << "; ";
+    for (const auto &field : entry->fields) {
+        ss << field->name << "; ";
     }
 
     ss << "}";
@@ -166,5 +168,7 @@ std::string StructTypeReference::toString() {
 }
 
 TypeDefinition *StructTypeReference::toTypeDefinition(Compiler *compiler) {
-    return nullptr;
+    return entry;
 }
+
+StructTypeReference::StructTypeReference(StructTypeDefinition *entry) : entry(entry) {}

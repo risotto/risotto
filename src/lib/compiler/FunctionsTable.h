@@ -34,6 +34,7 @@ public:
     std::string name;
     std::vector<FunctionEntryParameter> params;
     ReturnTypes returnTypes;
+    // TODO: rename to definition
     FunctionTypeDefinition *typeDefinition = nullptr;
 
     ByteResolver *firstByte = nullptr;

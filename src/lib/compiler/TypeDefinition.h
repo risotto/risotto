@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 #include "FunctionsTable.h"
+#include "VariablesTable.h"
 
 class TypeDefinition {
 public:
@@ -25,7 +26,7 @@ public:
 
     virtual ~TypeDefinition() = default;
 
-private:
+protected:
     void addSelf(const std::string &selfName, bool asReference, FunctionEntry *entry);
 };
 
@@ -34,7 +35,6 @@ public:
     TypeDefinition *element;
 
     explicit ArrayTypeDefinition(TypeDefinition *element);
-
 };
 
 class ConcreteTypeDefinition : public TypeDefinition {
@@ -50,6 +50,19 @@ public:
 
     explicit FunctionTypeDefinition(FunctionEntry *function);
 };
+
+class StructTypeDefinition : public TypeDefinition {
+public:
+    VariablesTable fields;
+    std::vector<FunctionEntry *> constructors;
+
+    explicit StructTypeDefinition(VariablesTable fields);
+
+    FunctionEntry *addConstructor(const std::string &selfName, bool asReference, FunctionEntry *entry);
+
+    int getFieldIndex(VariableEntry *entry);
+};
+
 
 
 #endif //RISOTTOV2_TypeDefinition_H
