@@ -21,7 +21,7 @@ jobs:
     - name: Run tests
       run: cmake --build build --target gtest_coverage
     - name: Send report to Codecov
-      run: cd build/coverage && bash <(curl -s https://codecov.io/bash) || echo "Codecov did not collect coverage reports"
+      run: cd build/coverage && bash <(curl -s https://codecov.io/bash) -v || echo "Codecov did not collect coverage reports"
       if: success()
       env:
         CODECOV_TOKEN: ${{secrets.CODECOV_TOKEN}}
