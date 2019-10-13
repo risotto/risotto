@@ -2,3 +2,5 @@ ignore:
   - "tests"
   - "lib"
   - "src/lib/vm/debug.c"
+  -  "src/lib/parser/ASTPrinter.cpp"
+  -  "src/lib/tokenizer/TokensPrinter.cpp"
