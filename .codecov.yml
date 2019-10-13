@@ -4,3 +4,5 @@ ignore:
   - "src/lib/vm/debug"
   - "src/lib/parser/ASTPrinter"
   - "src/lib/tokenizer/TokensPrinter"
+  - "src/cmd"
+  - "src/debugcmd"
