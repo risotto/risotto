@@ -7,6 +7,9 @@
 
 #include "value.h"
 
+NativeFunctionReturn vm_stats(Value args[], int argc);
+NativeFunctionReturn run_gc(Value args[], int argc);
+
 // String
 
 NativeFunctionReturn binary_string_add_string(Value args[], int argc);

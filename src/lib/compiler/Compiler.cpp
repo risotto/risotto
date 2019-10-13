@@ -122,6 +122,24 @@ Compiler::Compiler(std::vector<Stmt *> stmts) : stmts(std::move(stmts)) {
     NATIVE_PRINT(double)
     NATIVE_PRINT(bool)
     NATIVE_PRINT(string)
+
+    frame->functions.add(
+        new NativeFunctionEntry(
+            "vm_stats",
+            {},
+            {},
+            vm_stats
+        )
+    );
+
+    frame->functions.add(
+        new NativeFunctionEntry(
+            "gc",
+            {},
+            {},
+            run_gc
+        )
+    );
 }
 
 Chunk Compiler::compile() {

@@ -6,21 +6,21 @@
 #include "value.h"
 #include "vm.c"
 
-Value vm_stats(Value args[], int argc) {
+#define str_t const char *
+#define ret(n, ...) Value __values[] = {__VA_ARGS__}; NativeFunctionReturn __r = {__values, n}; return __r;
+
+NativeFunctionReturn vm_stats(Value args[], int argc) {
     printf("Objects count: %i\n", vm.numObjects);
     printf("Max Objects: %i\n", vm.maxObjects);
 
-    return n2v();
+    ret(0)
 }
 
-Value run_gc(Value args[], int argc) {
+NativeFunctionReturn run_gc(Value args[], int argc) {
     gc();
 
-    return n2v();
+    ret(0)
 }
-
-#define str_t const char *
-#define ret(n, ...) Value __values[] = {__VA_ARGS__}; NativeFunctionReturn __r = {__values, n}; return __r;
 
 #define NATIVE_BINARY_FUNCTION_NAME(leftType, opName, rightType) binary_##leftType##_##opName##_##rightType
 
