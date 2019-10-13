@@ -426,7 +426,7 @@ Expr *Parser::expression() {
 
         auto elements = enumeration<Expr *>([this]() {
             return expression();
-        }, Token::Type::COMMA);
+        }, Token::Type::RIGHT_CURLY);
 
         consume(Token::Type::RIGHT_CURLY, "Expect '}'");
 
@@ -454,7 +454,7 @@ Expr *Parser::assignment() {
 
     if (match(Token::Type::EQUAL)) {
         Token *op = previous();
-        Expr *value = assignment();
+        Expr *value = expression();
 
         return new SetExpr(expr, op, value);
     }
@@ -466,7 +466,7 @@ Expr *Parser::assignment() {
             Token::Type::SLASH_EQUAL
     )) {
         Token *op = previous();
-        Expr *value = assignment();
+        Expr *value = expression();
 
         return new BinaryExpr(expr, op, value);
     }

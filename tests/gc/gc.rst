@@ -8,6 +8,7 @@ type Person struct {
 
 new (p Person) () Person {
     p.Name = "TEST"
+    p.Pets = []Pet{}
 
     return p
 }
