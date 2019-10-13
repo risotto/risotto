@@ -9,6 +9,7 @@
 #include <lib/parser/nodes/Stmt/ForStmt.h>
 #include <lib/parser/nodes/Expr/FunctionExpr.h>
 #include <lib/parser/nodes/Expr/ArrayExpr.h>
+#include <lib/parser/nodes/Stmt/TypeStmt.h>
 #include "Parser.h"
 #include "ParseError.h"
 #include "lib/parser/nodes/Stmt/ExpressionStmt.h"
@@ -85,11 +86,26 @@ ParseError Parser::error(Token *token, const std::string &message) {
     return ParseError(message, token);
 }
 
-TypeDescriptor *Parser::typeRef() {
+TypeDescriptor *Parser::typeDesc() {
     if (match(Token::Type::LEFT_SQUARED)) {
         consume(Token::Type::RIGHT_SQUARED, "Expect ']'");
 
-        return new ArrayTypeDescriptor(typeRef());
+        return new ArrayTypeDescriptor(typeDesc());
+    }
+
+    if (match(Token::Type::STRUCT)) {
+        consume(Token::Type::LEFT_CURLY, "Expect '{'");
+
+        auto fields = enumeration<StructTypeDescriptor::Field>([this]() {
+            auto name = consume(Token::Type::IDENTIFIER, "Expect field name");
+            auto type = typeDesc();
+
+            return StructTypeDescriptor::Field(name, type);
+        }, Token::Type::SEMICOLON, Token::Type::RIGHT_CURLY);
+
+        consume(Token::Type::RIGHT_CURLY, "Expect '}'");
+
+        return new StructTypeDescriptor(fields);
     }
 
     auto name = consume(Token::Type::IDENTIFIER, "Expect type");
@@ -116,15 +132,11 @@ std::vector<Stmt *> Parser::program() {
 
 Stmt *Parser::declaration() {
     if (match(Token::Type::TYPE)) {
-        throw error(previous(), "TODO TYPE");
+        return type();
     }
 
     if (match(Token::Type::FUNC, Token::Type::OP)) {
         return function(true);
-    }
-
-    if (match(Token::Type::STRUCT)) {
-        throw error(previous(), "TODO STRUCT");
     }
 
     auto varDeclStmt = varDecl();
@@ -133,6 +145,14 @@ Stmt *Parser::declaration() {
     }
 
     return statement();
+}
+
+Stmt *Parser::type() {
+    auto identifier = consume(Token::Type::IDENTIFIER, "Expect type name.");
+
+    auto desc = typeDesc();
+
+    return new TypeStmt(identifier, desc);
 }
 
 Stmt *Parser::varDecl() {
@@ -192,15 +212,9 @@ Stmt *Parser::function(bool isNamed) {
 
     consume(Token::Type::RIGHT_PAREN, "Expect ')' after parameters.");
 
-    auto returnTypes = std::vector<TypeDescriptor *>();
-    while (!check(Token::Type::LEFT_CURLY) && !isAtEnd()) {
-        auto returnType = typeRef();
-        returnTypes.push_back(returnType);
-
-        if (!match(Token::Type::COMMA)) {
-            break;
-        }
-    }
+    auto returnTypes = enumeration<TypeDescriptor *>([this]() {
+        return typeDesc();
+    }, Token::Type::LEFT_CURLY);
 
     auto closeBlock = consume(Token::Type::LEFT_CURLY, "Expect '}'.");
 
@@ -217,7 +231,7 @@ ParameterDefinition *Parser::parameter() {
         asReference = true;
     }
 
-    auto type = typeRef();
+    auto type = typeDesc();
 
     return new ParameterDefinition(name, type, asReference);
 }
@@ -367,7 +381,7 @@ Expr *Parser::expression() {
     }
 
     if (check(Token::Type::LEFT_SQUARED)) {
-        auto type = typeRef();
+        auto type = typeDesc();
 
         consume(Token::Type::LEFT_CURLY, "Expect '{'");
 
@@ -548,12 +562,20 @@ std::vector<Expr *> Parser::arguments() {
 
 template<typename T>
 std::vector<T> Parser::enumeration(std::function<T()> of, Token::Type end) {
+    return enumeration(of, Token::Type::COMMA, end);
+}
+
+template<typename T>
+std::vector<T> Parser::enumeration(std::function<T()> of, Token::Type separator, Token::Type end) {
     std::vector<T> elements;
-    if (!check(end)) {
-        do {
-            elements.push_back(of());
-        } while (match(Token::Type::COMMA));
-    }
+
+    do {
+        if (check(end)) {
+            break;
+        }
+
+        elements.push_back(of());
+    } while (match(separator));
 
     return elements;
 }

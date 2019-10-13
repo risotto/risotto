@@ -29,6 +29,25 @@ public:
     std::string toString() override;
 };
 
+class StructTypeDescriptor : public TypeDescriptor {
+public:
+    class Field {
+    public:
+        Token * name;
+        TypeDescriptor *type;
+
+        Field(Token * name, TypeDescriptor *type);
+    };
+
+    std::vector<Field> fields;
+
+    explicit StructTypeDescriptor(std::vector<Field> fields);
+
+    TypeReference *toTypeReference(Compiler *compiler) override;
+
+    std::string toString() override;
+};
+
 class IdentifierTypeDescriptor : public TypeDescriptor {
 public:
     Token *name;

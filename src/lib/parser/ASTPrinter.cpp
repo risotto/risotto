@@ -74,6 +74,7 @@ if (auto V = dynamic_cast<T *>(stmt)) { \
         DC(ExpressionStmt)
         DC(VarDeclStmt)
         DC(WhileStmt)
+        DC(TypeStmt)
 
         return print(dynamic_cast<Node *>(stmt));
     }
@@ -310,9 +311,21 @@ if (auto V = dynamic_cast<T *>(stmt)) { \
         std::stringstream ss;
 
         ss << "ArrayExpr" << std::endl;
-        ss << indent("+Type:", 1) + stmt->type->toString() << std::endl;
+        ss << indent("+Type: ", 1) + stmt->type->toString() << std::endl;
         ss << indent("+Elements:", 1) << std::endl;
         ss << indent(print(stmt->elements), 2);
+
+        return ss.str();
+    }
+
+    template<>
+    std::string print<TypeStmt *>(TypeStmt *stmt) {
+        std::stringstream ss;
+
+        ss << "TypeStmt" << std::endl;
+        ss << indent("+Name: ", 1) + stmt->name->lexeme << std::endl;
+        ss << indent("+Descriptor:", 1) << std::endl;
+        ss << indent(stmt->typeDescriptor->toString(), 2) << "\n";
 
         return ss.str();
     }

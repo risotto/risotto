@@ -21,13 +21,17 @@ std::vector<Expr *> UnaryExpr::getArguments(Compiler *compiler) {
 }
 
 FunctionEntry *UnaryExpr::getFunctionEntry(Compiler *compiler) {
-    auto leftTypes = right()->getReturnType(compiler);
+    auto rightTypes = right()->getReturnType(compiler);
 
-    if (!leftTypes.single()) {
+    if (!rightTypes.single()) {
         throw CompilerError("RHS of unary operation must be a single value", op()->position);
     }
 
-    return leftTypes[0]->findPrefix(compiler, op()->lexeme, getArgumentsTypes(compiler));
+    if (auto receiver = dynamic_cast<ReceiverTypeReference *>(rightTypes[0])) {
+        return receiver->findPrefix(compiler, op()->lexeme, getArgumentsTypes(compiler));
+    }
+
+    throw CompilerError("RHS must be a receiver", op()->position);
 }
 
 FunctionNotFoundError UnaryExpr::getFunctionNotFoundError(Compiler *compiler) {

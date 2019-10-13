@@ -9,7 +9,8 @@
 #include "TypeDefinition.h"
 #include "Compiler.h"
 
-NamedTypeReference::NamedTypeReference(std::string name, TypeDefinition *entry) : ConcreteTypeReference(entry), name(std::move(name)) {}
+NamedTypeReference::NamedTypeReference(std::string name, TypeDefinition *entry) : ConcreteTypeReference(entry),
+                                                                                  name(std::move(name)) {}
 
 std::string NamedTypeReference::toString() {
     return name;
@@ -58,21 +59,6 @@ FunctionTypeReference::FunctionTypeReference(FunctionTypeDefinition *entry) : en
 
 }
 
-FunctionEntry *FunctionTypeReference::findFunction(Compiler *compiler, const std::string &name,
-                                                   const std::vector<TypeReference *> &types) {
-    return nullptr;
-}
-
-FunctionEntry *FunctionTypeReference::findOperator(Compiler *compiler, const std::string &name,
-                                                   const std::vector<TypeReference *> &types) {
-    return nullptr;
-}
-
-FunctionEntry *FunctionTypeReference::findPrefix(Compiler *compiler, const std::string &name,
-                                                 const std::vector<TypeReference *> &types) {
-    return nullptr;
-}
-
 bool FunctionTypeReference::canReceiveType(TypeReference *other) {
     throw std::logic_error("Unimplemented");
 
@@ -103,7 +89,7 @@ FunctionEntry *ConcreteTypeReference::findFunction(Compiler *compiler, const std
 
 FunctionEntry *ConcreteTypeReference::findOperator(Compiler *compiler, const std::string &name,
                                                    const std::vector<TypeReference *> &types) {
-   return entry->operators.find(name, types);
+    return entry->operators.find(name, types);
 }
 
 FunctionEntry *ConcreteTypeReference::findPrefix(Compiler *compiler, const std::string &name,
@@ -136,4 +122,49 @@ std::string ConcreteTypeReference::toString() {
 
 TypeDefinition *ConcreteTypeReference::toTypeDefinition(Compiler *compiler) {
     return entry;
+}
+
+StructTypeReference::Field::Field(std::string name, TypeReference *type) : name(std::move(name)), type(type) {}
+
+StructTypeReference::StructTypeReference(std::vector<Field> fields) : fields(std::move(fields)) {}
+
+bool StructTypeReference::canReceiveType(TypeReference *other) {
+    if (auto otherStruct = dynamic_cast<StructTypeReference *>(other)) {
+        for (auto field:fields) {
+            auto has = false;
+
+            for (const auto& otherField : otherStruct->fields) {
+                if (field.name == otherField.name) {
+                    if (field.type->canReceiveType(otherField.type)) {
+                        has = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!has) {
+                return false;
+            }
+        }
+    }
+
+    return false;
+}
+
+std::string StructTypeReference::toString() {
+    std::stringstream ss;
+
+    ss << "struct { ";
+
+    for (auto field:fields) {
+        ss << field.name << " " << field.type->toString() << "; ";
+    }
+
+    ss << "}";
+
+    return ss.str();
+}
+
+TypeDefinition *StructTypeReference::toTypeDefinition(Compiler *compiler) {
+    return nullptr;
 }

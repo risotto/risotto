@@ -26,13 +26,17 @@ std::vector<Expr *> BinaryExpr::getArguments(Compiler *compiler) {
 }
 
 FunctionEntry *BinaryExpr::getFunctionEntry(Compiler *compiler) {
-    auto leftTypeDefinition = left()->getReturnType(compiler);
+    auto leftReturnType = left()->getReturnType(compiler);
 
-    if (!leftTypeDefinition.single()) {
+    if (!leftReturnType.single()) {
         throw CompilerError("LHS of binary operation must be a single value", op()->position);
     }
 
-    return leftTypeDefinition[0]->findOperator(compiler, op()->lexeme, getArgumentsTypes(compiler));
+    if (auto receiver = dynamic_cast<ReceiverTypeReference *>(leftReturnType[0])) {
+        return receiver->findOperator(compiler, op()->lexeme, getArgumentsTypes(compiler));
+    }
+
+    throw CompilerError("LHS must be a receiver", op()->position);
 }
 
 FunctionNotFoundError BinaryExpr::getFunctionNotFoundError(Compiler *compiler) {
