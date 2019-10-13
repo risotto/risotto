@@ -1,6 +1,6 @@
 ignore:
   - "tests"
   - "lib"
-  - "src/lib/vm/debug.c"
-  - "src/lib/parser/ASTPrinter.cpp"
-  - "src/lib/tokenizer/TokensPrinter.cpp"
+  - "src/lib/vm/debug"
+  - "src/lib/parser/ASTPrinter"
+  - "src/lib/tokenizer/TokensPrinter"
