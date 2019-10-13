@@ -11,7 +11,9 @@ extern "C" {
 #include "GetExpr.h"
 #include "lib/compiler/TypeReference.h"
 #include "lib/compiler/TypeDefinition.h"
+#include "lib/parser/nodes/TypeDescriptor.h"
 #include "lib/compiler/ReturnTypes.h"
+#include "NewExpr.h"
 
 #include <utility>
 #include <lib/compiler/Compiler.h>
@@ -54,6 +56,11 @@ std::vector<ByteResolver *> CallExpr::compile(Compiler *compiler) {
         bytes.insert(bytes.end(), argBytes.begin(), argBytes.end());
     }
 
+    if (auto newExpr = dynamic_cast<NewExpr *>(callee)) {
+        auto argBytes = newExpr->compile(compiler);
+        bytes.insert(bytes.end(), argBytes.begin(), argBytes.end());
+    }
+
     Utils::loadFunctionEntryAddr(compiler, functionEntry, bytes);
 
     auto isNative = dynamic_cast<NativeFunctionEntry *>(functionEntry) != nullptr;
@@ -90,7 +97,13 @@ std::vector<TypeReference *> CallExpr::getArgumentsTypes(Compiler *compiler) {
         }
     }
 
-    return Utils::getTypes(arguments, compiler);
+    auto types = Utils::getTypes(arguments, compiler);
+
+    if (auto newExpr = dynamic_cast<NewExpr *>(callee)) {
+        types.insert(types.begin(), newExpr->identifier->toTypeReference(compiler));
+    }
+
+    return types;
 }
 
 ReturnTypes CallExpr::getCalleeEntry(Compiler *compiler) {
@@ -133,6 +146,15 @@ FunctionNotFoundError CallExpr::getFunctionNotFoundError(Compiler *compiler) {
         throw FunctionNotFoundError(
                 identifierExpr->name->lexeme,
                 "",
+                actualArgumentsTypes,
+                rParen
+        );
+    }
+
+    if (auto newExpr = dynamic_cast<NewExpr *>(callee)) {
+        throw FunctionNotFoundError(
+                "",
+                newExpr->identifier->toString(),
                 actualArgumentsTypes,
                 rParen
         );

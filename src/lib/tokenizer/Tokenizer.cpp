@@ -290,6 +290,8 @@ std::map<std::string, Token::Type> Tokenizer::keywords = {
         {"new",    Token::Type::NEW},
         {"true",   Token::Type::TRUE},
         {"while",  Token::Type::WHILE},
+        {"type",   Token::Type::TYPE},
+        {"struct", Token::Type::STRUCT},
 };
 
 void Tokenizer::identifier() {

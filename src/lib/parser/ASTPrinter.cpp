@@ -74,6 +74,7 @@ if (auto V = dynamic_cast<T *>(stmt)) { \
         DC(ExpressionStmt)
         DC(VarDeclStmt)
         DC(WhileStmt)
+        DC(TypeStmt)
 
         return print(dynamic_cast<Node *>(stmt));
     }
@@ -88,6 +89,7 @@ if (auto V = dynamic_cast<T *>(stmt)) { \
         DC(GetExpr)
         DC(SetExpr)
         DC(ArrayExpr)
+        DC(NewExpr)
 
         DC(CallExpr)
 
@@ -132,7 +134,9 @@ if (auto V = dynamic_cast<T *>(stmt)) { \
         if (stmt->receiver) {
             ss << indent("+Receiver: " + stmt->receiver->type->toString(), 1) << std::endl;
         }
-        ss << indent("+Name: " + stmt->name->lexeme, 1) << std::endl;
+        if (stmt->name) {
+            ss << indent("+Name: " + stmt->name->lexeme, 1) << std::endl;
+        }
         ss << indent("+Body: ", 1) << std::endl;
         ss << indent(print(stmt->body), 2);
 
@@ -310,9 +314,31 @@ if (auto V = dynamic_cast<T *>(stmt)) { \
         std::stringstream ss;
 
         ss << "ArrayExpr" << std::endl;
-        ss << indent("+Type:", 1) + stmt->type->toString() << std::endl;
+        ss << indent("+Type: ", 1) + stmt->type->toString() << std::endl;
         ss << indent("+Elements:", 1) << std::endl;
         ss << indent(print(stmt->elements), 2);
+
+        return ss.str();
+    }
+
+    template<>
+    std::string print<TypeStmt *>(TypeStmt *stmt) {
+        std::stringstream ss;
+
+        ss << "TypeStmt" << std::endl;
+        ss << indent("+Name: ", 1) + stmt->name->lexeme << std::endl;
+        ss << indent("+Descriptor:", 1) << std::endl;
+        ss << indent(stmt->typeDescriptor->toString(), 2) << "\n";
+
+        return ss.str();
+    }
+
+    template<>
+    std::string print<NewExpr *>(NewExpr *stmt) {
+        std::stringstream ss;
+
+        ss << "NewExpr" << std::endl;
+        ss << indent("+Identifier: ", 1) + stmt->identifier->toString() << std::endl;
 
         return ss.str();
     }

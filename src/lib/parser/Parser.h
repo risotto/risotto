@@ -13,6 +13,18 @@
 #include "lib/parser/nodes/Expr.h"
 #include "lib/parser/nodes/TypeDescriptor.h"
 
+#define FUNCTION_NODE_ARGS \
+    Token *type, \
+    ParameterDefinition *receiver, \
+    Token *name, \
+    std::vector<TypeDescriptor *> returnTypes, \
+    std::vector<ParameterDefinition> parameters, \
+    std::vector<Stmt *> body, \
+    Token *closeBlock
+
+template<typename T>
+using FunctionNodeType = std::function<T(FUNCTION_NODE_ARGS)>;
+
 class Parser {
 private:
     std::vector<Token *> tokens;
@@ -82,6 +94,9 @@ private:
     std::vector<Expr *> arguments();
 
     template<typename T>
+    std::vector<T> enumeration(std::function<T()> of, Token::Type separator, Token::Type end);
+
+    template<typename T>
     std::vector<T> enumeration(std::function<T()> of, Token::Type end);
 
     Token *consume(Token::Type type, const std::string &message);
@@ -90,13 +105,16 @@ private:
 
     std::vector<Stmt *> block();
 
-    Stmt *function(bool isNamed);
+    template<typename T>
+    T function(bool canHaveReceiver, bool isNamed, const FunctionNodeType<T>& f);
 
     ParameterDefinition *parameter();
 
     Stmt *varDecl();
 
-    TypeDescriptor *typeRef();
+    TypeDescriptor *typeDesc();
+
+    Stmt *type();
 };
 
 

@@ -9,6 +9,8 @@
 #include <lib/parser/nodes/Stmt/ForStmt.h>
 #include <lib/parser/nodes/Expr/FunctionExpr.h>
 #include <lib/parser/nodes/Expr/ArrayExpr.h>
+#include <lib/parser/nodes/Stmt/TypeStmt.h>
+#include <lib/parser/nodes/Expr/NewExpr.h>
 #include "Parser.h"
 #include "ParseError.h"
 #include "lib/parser/nodes/Stmt/ExpressionStmt.h"
@@ -85,11 +87,26 @@ ParseError Parser::error(Token *token, const std::string &message) {
     return ParseError(message, token);
 }
 
-TypeDescriptor *Parser::typeRef() {
+TypeDescriptor *Parser::typeDesc() {
     if (match(Token::Type::LEFT_SQUARED)) {
         consume(Token::Type::RIGHT_SQUARED, "Expect ']'");
 
-        return new ArrayTypeDescriptor(typeRef());
+        return new ArrayTypeDescriptor(typeDesc());
+    }
+
+    if (match(Token::Type::STRUCT)) {
+        consume(Token::Type::LEFT_CURLY, "Expect '{'");
+
+        auto fields = enumeration<StructTypeDescriptor::Field>([this]() {
+            auto name = consume(Token::Type::IDENTIFIER, "Expect field name");
+            auto type = typeDesc();
+
+            return StructTypeDescriptor::Field(name, type);
+        }, Token::Type::SEMICOLON, Token::Type::RIGHT_CURLY);
+
+        consume(Token::Type::RIGHT_CURLY, "Expect '}'");
+
+        return new StructTypeDescriptor(fields);
     }
 
     auto name = consume(Token::Type::IDENTIFIER, "Expect type");
@@ -116,15 +133,40 @@ std::vector<Stmt *> Parser::program() {
 
 Stmt *Parser::declaration() {
     if (match(Token::Type::TYPE)) {
-        throw error(previous(), "TODO TYPE");
+        return type();
     }
 
-    if (match(Token::Type::FUNC, Token::Type::OP)) {
-        return function(true);
-    }
+    if (match(Token::Type::FUNC, Token::Type::OP, Token::Type::NEW)) {
+        auto type = previous();
+        auto isConstructor = type->type._value == Token::Type::NEW;
 
-    if (match(Token::Type::STRUCT)) {
-        throw error(previous(), "TODO STRUCT");
+        auto isNamed = !isConstructor;
+
+        return function<FunctionStmt *>(true, isNamed, [isConstructor](FUNCTION_NODE_ARGS) {
+            if (isConstructor) {
+                if (returnTypes.size() != 1) {
+                    throw CompilerError("Constructors must return the object");
+                }
+
+                if (receiver == nullptr) {
+                    throw CompilerError("Constructors must have receiver");
+                }
+
+                if (returnTypes[0]->toString() != receiver->type->toString()) {
+                    throw CompilerError("Constructors must return the object");
+                }
+            }
+
+            return new FunctionStmt(
+                    type,
+                    receiver,
+                    name,
+                    std::move(returnTypes),
+                    std::move(parameters),
+                    std::move(body),
+                    closeBlock
+            );
+        });
     }
 
     auto varDeclStmt = varDecl();
@@ -133,6 +175,14 @@ Stmt *Parser::declaration() {
     }
 
     return statement();
+}
+
+Stmt *Parser::type() {
+    auto identifier = consume(Token::Type::IDENTIFIER, "Expect type name.");
+
+    auto desc = typeDesc();
+
+    return new TypeStmt(identifier, desc);
 }
 
 Stmt *Parser::varDecl() {
@@ -158,16 +208,15 @@ Stmt *Parser::varDecl() {
     return nullptr;
 }
 
-Stmt *Parser::function(bool isNamed) {
+template<typename T>
+T Parser::function(bool canHaveReceiver, bool isNamed, const FunctionNodeType<T> &f) {
     auto type = previous();
 
     ParameterDefinition *receiver = nullptr;
-    if (isNamed) {
-        if (match(Token::Type::LEFT_PAREN)) {
-            receiver = parameter();
+    if (canHaveReceiver && match(Token::Type::LEFT_PAREN)) {
+        receiver = parameter();
 
-            consume(Token::Type::RIGHT_PAREN, "Expect ')' after receiver declaration.");
-        }
+        consume(Token::Type::RIGHT_PAREN, "Expect ')' after receiver declaration.");
     }
 
     Token *name = nullptr;
@@ -192,21 +241,15 @@ Stmt *Parser::function(bool isNamed) {
 
     consume(Token::Type::RIGHT_PAREN, "Expect ')' after parameters.");
 
-    auto returnTypes = std::vector<TypeDescriptor *>();
-    while (!check(Token::Type::LEFT_CURLY) && !isAtEnd()) {
-        auto returnType = typeRef();
-        returnTypes.push_back(returnType);
-
-        if (!match(Token::Type::COMMA)) {
-            break;
-        }
-    }
+    auto returnTypes = enumeration<TypeDescriptor *>([this]() {
+        return typeDesc();
+    }, Token::Type::LEFT_CURLY);
 
     auto closeBlock = consume(Token::Type::LEFT_CURLY, "Expect '}'.");
 
     std::vector<Stmt *> body = block();
 
-    return new FunctionStmt(type, receiver, name, returnTypes, parameters, body, closeBlock);
+    return f(type, receiver, name, returnTypes, parameters, body, closeBlock);
 }
 
 ParameterDefinition *Parser::parameter() {
@@ -217,7 +260,7 @@ ParameterDefinition *Parser::parameter() {
         asReference = true;
     }
 
-    auto type = typeRef();
+    auto type = typeDesc();
 
     return new ParameterDefinition(name, type, asReference);
 }
@@ -360,14 +403,24 @@ Stmt *Parser::expressionStatement() {
 
 Expr *Parser::expression() {
     if (match(Token::Type::FUNC)) {
-        auto functionStmt = (FunctionStmt *) function(false);
+        auto functionStmt = function<FunctionStmt *>(false, false, [](FUNCTION_NODE_ARGS) {
+            return new FunctionStmt(
+                    type,
+                    receiver,
+                    name,
+                    std::move(returnTypes),
+                    std::move(parameters),
+                    std::move(body),
+                    closeBlock
+            );
+        });
         functionStmt->autoRegister = false;
 
         return new FunctionExpr(functionStmt);
     }
 
     if (check(Token::Type::LEFT_SQUARED)) {
-        auto type = typeRef();
+        auto type = typeDesc();
 
         consume(Token::Type::LEFT_CURLY, "Expect '{'");
 
@@ -378,6 +431,19 @@ Expr *Parser::expression() {
         consume(Token::Type::RIGHT_CURLY, "Expect '}'");
 
         return new ArrayExpr(type, elements);
+    }
+
+    if (match(Token::Type::NEW)) {
+        auto identifier = consume(Token::Type::IDENTIFIER, "Expect identifier");
+        auto identifierDesc = new IdentifierTypeDescriptor(identifier);
+
+        consume(Token::Type::LEFT_PAREN, "Expect '('");
+
+        auto args = arguments();
+
+        Token *rParen = consume(Token::Type::RIGHT_PAREN, "Expect ')' after parameters.");
+
+        return new CallExpr(new NewExpr(identifierDesc), rParen, args);
     }
 
     return assignment();
@@ -548,12 +614,20 @@ std::vector<Expr *> Parser::arguments() {
 
 template<typename T>
 std::vector<T> Parser::enumeration(std::function<T()> of, Token::Type end) {
+    return enumeration(of, Token::Type::COMMA, end);
+}
+
+template<typename T>
+std::vector<T> Parser::enumeration(std::function<T()> of, Token::Type separator, Token::Type end) {
     std::vector<T> elements;
-    if (!check(end)) {
-        do {
-            elements.push_back(of());
-        } while (match(Token::Type::COMMA));
-    }
+
+    do {
+        if (check(end)) {
+            break;
+        }
+
+        elements.push_back(of());
+    } while (match(separator));
 
     return elements;
 }

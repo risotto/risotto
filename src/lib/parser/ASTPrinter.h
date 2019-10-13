@@ -25,6 +25,8 @@
 #include <lib/parser/nodes/Stmt/WhileStmt.h>
 #include <lib/parser/nodes/Expr/UnaryExpr.h>
 #include <lib/parser/nodes/Expr/ArrayExpr.h>
+#include <lib/parser/nodes/Stmt/TypeStmt.h>
+#include <lib/parser/nodes/Expr/NewExpr.h>
 
 namespace ASTPrinter {
     std::string indent(std::string str, int n);
@@ -91,6 +93,12 @@ namespace ASTPrinter {
 
     template<>
     std::string print<ArrayExpr *>(ArrayExpr *stmt);
+
+    template<>
+    std::string print<TypeStmt *>(TypeStmt *stmt);
+
+    template<>
+    std::string print<NewExpr *>(NewExpr *stmt);
 };
 
 
