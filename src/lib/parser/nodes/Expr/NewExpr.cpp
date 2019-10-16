@@ -27,7 +27,7 @@ ReturnTypes NewExpr::computeReturnType(Compiler *compiler) {
     ReturnTypes returnTypes;
 
     for (const auto &constructor : structType->constructors) {
-        returnTypes.push_back(new FunctionTypeReference(constructor->typeDefinition));
+        returnTypes.push_back(new ConcreteTypeReference(constructor->typeDefinition));
     }
 
     return returnTypes;
@@ -37,7 +37,7 @@ StructTypeDefinition *NewExpr::getStructDef(Compiler *compiler) {
     auto ref = identifier->toTypeReference(compiler);
 
     if (auto concrete = dynamic_cast<ConcreteTypeReference *>(ref)) {
-        auto structType = dynamic_cast<StructTypeDefinition *>(concrete->entry);
+        auto structType = dynamic_cast<StructTypeDefinition *>(concrete->definition);
 
         if (structType == nullptr) {
             throw CompilerError(identifier->toString() + " is not a struct");

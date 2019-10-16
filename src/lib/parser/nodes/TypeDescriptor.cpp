@@ -70,3 +70,43 @@ std::string StructTypeDescriptor::toString() {
 }
 
 StructTypeDescriptor::Field::Field(Token *name, TypeDescriptor *type) : name(name), type(type) {}
+
+FunctionTypeDescriptor::FunctionTypeDescriptor(std::vector<ParameterDefinition> params,
+                                               std::vector<TypeDescriptor *> returnTypes)
+        : params(std::move(params)), returnTypes(std::move(returnTypes)) {}
+
+TypeReference *FunctionTypeDescriptor::toTypeReference(Compiler *compiler) {
+    auto paramsRefs = std::vector<FunctionTypeReferenceParameter>();
+    for (auto param: params) {
+        paramsRefs.emplace_back(param.name->lexeme, param.type->toTypeReference(compiler), param.asReference);
+    }
+
+    auto returnTypesRefs = std::vector<TypeReference *>();
+    for (auto returnType: returnTypes) {
+        returnTypesRefs.push_back(returnType->toTypeReference(compiler));
+    }
+
+    return new FunctionTypeReference(paramsRefs, returnTypesRefs);
+}
+
+std::string FunctionTypeDescriptor::toString() {
+    std::stringstream ss;
+
+    ss << "func (";
+
+    for (auto param:params) {
+        ss << param.name << " " << param.type->toString() << ", ";
+    }
+
+    ss << " )";
+
+    if (!returnTypes.empty()) {
+        ss << " (";
+        for (auto type : returnTypes) {
+            ss << type->toString() << ", ";
+        }
+        ss << ")";
+    }
+
+    return ss.str();
+}

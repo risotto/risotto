@@ -92,7 +92,7 @@ static int callInstruction(const char *name, Chunk *chunk, int offset) {
     int c = chunk->code[offset + 1];
     printf("%-11s C:%-3d \n", name, c);
 
-    return offset + 2 + c + c;
+    return offset + 2 + c;
 }
 
 static int nativeCallInstruction(const char *name, Chunk *chunk, int offset) {

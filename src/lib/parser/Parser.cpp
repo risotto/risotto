@@ -11,6 +11,10 @@
 #include <lib/parser/nodes/Expr/ArrayExpr.h>
 #include <lib/parser/nodes/Stmt/TypeStmt.h>
 #include <lib/parser/nodes/Expr/NewExpr.h>
+#include <lib/parser/nodes/Expr/MixedCallExpr.h>
+#include <lib/parser/nodes/Expr/GetCallExpr.h>
+#include <lib/parser/nodes/Expr/IdentifierCallExpr.h>
+#include <lib/parser/nodes/Expr/NewCallExpr.h>
 #include "Parser.h"
 #include "ParseError.h"
 #include "lib/parser/nodes/Stmt/ExpressionStmt.h"
@@ -109,9 +113,18 @@ TypeDescriptor *Parser::typeDesc() {
         return new StructTypeDescriptor(fields);
     }
 
-    auto name = consume(Token::Type::IDENTIFIER, "Expect type");
+    if (match(Token::Type::FUNC)) {
+        return functionSignature<FunctionTypeDescriptor *>(false, false, [](FUNCTION_SIGNATURE_FACTORY_ARGS) {
+            return new FunctionTypeDescriptor(std::move(parameters), std::move(returnTypes));
+        });
+    }
 
-    return new IdentifierTypeDescriptor(name);
+    if (match(Token::Type::IDENTIFIER)) {
+        auto name = previous();
+        return new IdentifierTypeDescriptor(name);
+    }
+
+    return nullptr;
 }
 
 std::vector<Stmt *> Parser::program() {
@@ -142,7 +155,7 @@ Stmt *Parser::declaration() {
 
         auto isNamed = !isConstructor;
 
-        return function<FunctionStmt *>(true, isNamed, [isConstructor](FUNCTION_NODE_ARGS) {
+        return function<FunctionStmt *>(true, isNamed, [isConstructor](FUNCTION_FACTORY_ARGS) {
             if (isConstructor) {
                 if (returnTypes.size() != 1) {
                     throw CompilerError("Constructors must return the object");
@@ -209,7 +222,7 @@ Stmt *Parser::varDecl() {
 }
 
 template<typename T>
-T Parser::function(bool canHaveReceiver, bool isNamed, const FunctionNodeType<T> &f) {
+T Parser::functionSignature(bool canHaveReceiver, bool isNamed, const FunctionSignatureFactory<T> &f) {
     auto type = previous();
 
     ParameterDefinition *receiver = nullptr;
@@ -241,15 +254,33 @@ T Parser::function(bool canHaveReceiver, bool isNamed, const FunctionNodeType<T>
 
     consume(Token::Type::RIGHT_PAREN, "Expect ')' after parameters.");
 
-    auto returnTypes = enumeration<TypeDescriptor *>([this]() {
-        return typeDesc();
-    }, Token::Type::LEFT_CURLY);
+    std::vector<TypeDescriptor *> returnTypes;
+    if (match(Token::Type::LEFT_PAREN)) {
+        returnTypes = enumeration<TypeDescriptor *>([this]() {
+            return typeDesc();
+        }, Token::Type::RIGHT_PAREN);
 
-    auto closeBlock = consume(Token::Type::LEFT_CURLY, "Expect '}'.");
+        consume(Token::Type::RIGHT_PAREN, "Expect ')' after return types.");
+    } else {
+        auto returnType = typeDesc();
 
-    std::vector<Stmt *> body = block();
+        if (returnType != nullptr) {
+            returnTypes = std::vector<TypeDescriptor *>({returnType});
+        }
+    }
 
-    return f(type, receiver, name, returnTypes, parameters, body, closeBlock);
+    return f(type, receiver, name, returnTypes, parameters);
+}
+
+template<typename T>
+T Parser::function(bool canHaveReceiver, bool isNamed, const FunctionFactory<T> &f) {
+    return functionSignature<T>(canHaveReceiver, isNamed, [this, f](FUNCTION_SIGNATURE_FACTORY_ARGS) {
+        auto closeBlock = consume(Token::Type::LEFT_CURLY, "Expect '{'.");
+
+        std::vector<Stmt *> body = block();
+
+        return f(type, receiver, name, returnTypes, parameters, body, closeBlock);
+    });
 }
 
 ParameterDefinition *Parser::parameter() {
@@ -403,7 +434,7 @@ Stmt *Parser::expressionStatement() {
 
 Expr *Parser::expression() {
     if (match(Token::Type::FUNC)) {
-        auto functionStmt = function<FunctionStmt *>(false, false, [](FUNCTION_NODE_ARGS) {
+        auto functionStmt = function<FunctionStmt *>(false, false, [](FUNCTION_FACTORY_ARGS) {
             return new FunctionStmt(
                     type,
                     receiver,
@@ -435,7 +466,6 @@ Expr *Parser::expression() {
 
     if (match(Token::Type::NEW)) {
         auto identifier = consume(Token::Type::IDENTIFIER, "Expect identifier");
-        auto identifierDesc = new IdentifierTypeDescriptor(identifier);
 
         consume(Token::Type::LEFT_PAREN, "Expect '('");
 
@@ -443,7 +473,7 @@ Expr *Parser::expression() {
 
         Token *rParen = consume(Token::Type::RIGHT_PAREN, "Expect ')' after parameters.");
 
-        return new CallExpr(new NewExpr(identifierDesc), rParen, args);
+        return new NewCallExpr(identifier, rParen, args);
     }
 
     return assignment();
@@ -565,7 +595,13 @@ Expr *Parser::call() {
 
             Token *rParen = consume(Token::Type::RIGHT_PAREN, "Expect ')' after parameters.");
 
-            expr = new CallExpr(expr, rParen, args);
+            if (auto identifierExpr = dynamic_cast<IdentifierExpr *>(expr)) {
+                expr = new IdentifierCallExpr(identifierExpr->name, rParen, args);
+            } else if (auto getExpr = dynamic_cast<GetExpr *>(expr)) {
+                expr = new GetCallExpr(getExpr->callee, rParen, getExpr->identifier, rParen, args);
+            }  else {
+                expr = new CallExpr(expr, rParen, args);
+            }
         } else if (match(Token::Type::DOT)) {
             auto identifier = consume(Token::Type::IDENTIFIER, "Expect identifier.");
 

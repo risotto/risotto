@@ -178,7 +178,7 @@ static InterpretResult run() {
             }
             case OP_CALL: {
                 // we expect all args to be on the stack
-                int addr = v2i(pop()); // get next instruction as an address of procedure jump ...
+                Value f = followRefV(popp());
                 int argc = READ_BYTE(); // ... and next one as number of arguments to load ...
 
                 bool refs[argc];
@@ -186,36 +186,46 @@ static InterpretResult run() {
                     refs[i] = (bool) READ_BYTE();
                 }
 
-                push(i2v(argc));   // ... save num args ...
-                push(p2v(vm.ip)); // ... save instruction pointer ...
-                cframe();
-                GOTO(addr);
+                switch (f.type) {
+                    case T_INT: { // Function
+                        int addr = v2i(f);
 
-                for (int i = 0; i < argc; ++i) {
-                    Value *a = vm.fp - 4 - i;
+                        push(i2v(argc));   // ... save num args ...
+                        push(p2v(vm.ip)); // ... save instruction pointer ...
+                        cframe();
 
-                    if(refs[i] == true) {
-                        push(vp2v(a));
-                    } else {
-                        push(copy(*a));
+                        GOTO(addr);
+
+                        for (int i = 0; i < argc; ++i) {
+                            Value *a = vm.fp - 4 - i;
+
+                            if (refs[i] == true) {
+                                push(vp2v(a));
+                            } else {
+                                push(copy(*a));
+                            }
+                        }
+
+                        break;
                     }
-                }
+                    case T_P: { //  Native function
+                        Value args[argc];
+                        for (int i = 0; i < argc; ++i) {
+                            args[i] = pop();
+                        }
 
-                break;
-            }
-            case OP_NATIVE_CALL: {
-                NativeFunction fun = v2p(pop());
-                int argc = READ_BYTE(); // ... and next one as number of arguments to load ...
+                        NativeFunction fun = v2p(f);
 
-                Value args[argc];
-                for (int i = 0; i < argc; ++i) {
-                    args[i] = pop();
-                }
+                        NativeFunctionReturn returnValue = fun(args, argc);
 
-                NativeFunctionReturn returnValue = fun(args, argc);
+                        for (int i = 0; i < returnValue.c; ++i) {
+                            push(returnValue.values[i]);
+                        }
 
-                for (int i = 0; i < returnValue.c; ++i) {
-                    push(returnValue.values[i]);
+                        break;
+                    }
+                    default:
+                    ERROR("Unhandled function type")
                 }
 
                 break;

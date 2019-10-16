@@ -8,6 +8,8 @@
 
 #include <lib/tokenizer/Token.h>
 #include <lib/compiler/TypeReference.h>
+#include <lib/compiler/ReturnTypes.h>
+#include "ParameterDefinition.h"
 
 class Compiler;
 
@@ -55,6 +57,18 @@ public:
     Token *name;
 
     explicit IdentifierTypeDescriptor(Token *name);
+
+    TypeReference *toTypeReference(Compiler *compiler) override;
+
+    std::string toString() override;
+};
+
+class FunctionTypeDescriptor : public TypeDescriptor {
+public:
+    std::vector<ParameterDefinition> params;
+    std::vector<TypeDescriptor *> returnTypes;
+
+    FunctionTypeDescriptor(std::vector<ParameterDefinition> params, std::vector<TypeDescriptor *> returnTypes);
 
     TypeReference *toTypeReference(Compiler *compiler) override;
 

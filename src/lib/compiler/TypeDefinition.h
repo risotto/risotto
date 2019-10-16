@@ -46,7 +46,7 @@ public:
 
 class FunctionTypeDefinition : public TypeDefinition {
 public:
-    FunctionEntry *function;
+    FunctionEntry *entry;
 
     explicit FunctionTypeDefinition(FunctionEntry *function);
 };

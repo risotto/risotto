@@ -8,8 +8,9 @@
 
 #include <lib/tokenizer/Token.h>
 #include "CallExpr.h"
+#include "GetCallExpr.h"
 
-class UnaryExpr: public CallExpr {
+class UnaryExpr: public GetCallExpr {
 public:
     Expr *right();
     Token *op();
@@ -17,6 +18,9 @@ public:
     UnaryExpr(Token *op, Expr *right);
 
     FunctionEntry *getFunctionEntry(Compiler *compiler) override;
+
+protected:
+    VariableEntry *getVariableEntry(Compiler *compiler) override;
 
 protected:
     std::vector<Expr *> getArguments(Compiler *compiler) override;

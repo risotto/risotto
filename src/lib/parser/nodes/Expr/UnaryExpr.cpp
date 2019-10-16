@@ -2,9 +2,10 @@
 // Created by rvigee on 10/2/19.
 //
 
+#include <lib/compiler/Compiler.h>
 #include "UnaryExpr.h"
 
-UnaryExpr::UnaryExpr(Token *op, Expr *right): CallExpr(right, op, {}, true) {
+UnaryExpr::UnaryExpr(Token *op, Expr *right): GetCallExpr(right, op, op, op, {}) {
 
 }
 
@@ -28,7 +29,7 @@ FunctionEntry *UnaryExpr::getFunctionEntry(Compiler *compiler) {
     }
 
     if (auto receiver = dynamic_cast<ReceiverTypeReference *>(rightTypes[0])) {
-        return receiver->findPrefix(compiler, op()->lexeme, getArgumentsTypes(compiler));
+        return receiver->findPrefix(compiler->frame, op()->lexeme, getArgumentsTypes(compiler));
     }
 
     throw CompilerError("RHS must be a receiver", op()->position);
@@ -36,4 +37,8 @@ FunctionEntry *UnaryExpr::getFunctionEntry(Compiler *compiler) {
 
 FunctionNotFoundError UnaryExpr::getFunctionNotFoundError(Compiler *compiler) {
     return FunctionNotFoundError(op()->lexeme, "", getArgumentsTypes(compiler), op());
+}
+
+VariableEntry *UnaryExpr::getVariableEntry(Compiler *compiler) {
+    return nullptr;
 }

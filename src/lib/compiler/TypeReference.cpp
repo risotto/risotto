@@ -6,6 +6,7 @@
 
 #include <utility>
 #include <sstream>
+#include <lib/compiler/utils/Utils.h>
 #include "TypeDefinition.h"
 #include "Compiler.h"
 
@@ -20,13 +21,13 @@ ArrayTypeReference::ArrayTypeReference(TypeReference *element) : element(element
 
 }
 
-FunctionEntry *ArrayTypeReference::findOperator(Compiler *compiler, const std::string &name,
+FunctionEntry *ArrayTypeReference::findOperator(Frame *frame, const std::string &name,
                                                 const std::vector<TypeReference *> &types) {
     throw std::logic_error("Unimplemented");
 }
 
 FunctionEntry *
-ArrayTypeReference::findPrefix(Compiler *compiler, const std::string &name, const std::vector<TypeReference *> &types) {
+ArrayTypeReference::findPrefix(Frame *frame, const std::string &name, const std::vector<TypeReference *> &types) {
     throw std::logic_error("Unimplemented");
 }
 
@@ -42,12 +43,12 @@ std::string ArrayTypeReference::toString() {
     return "[]" + element->toString();
 }
 
-TypeDefinition *ArrayTypeReference::toTypeDefinition(Compiler *compiler) {
-    return new ArrayTypeDefinition(element->toTypeDefinition(compiler));
+TypeDefinition *ArrayTypeReference::toTypeDefinition(Frame *frame) {
+    return new ArrayTypeDefinition(element->toTypeDefinition(frame));
 }
 
-std::vector<FunctionEntry *> ArrayTypeReference::findFunctionsCandidates(Compiler *compiler, const std::string &name) {
-    auto def = compiler->frame->findVirtualType(this);
+std::vector<FunctionEntry *> ArrayTypeReference::findFunctionsCandidates(Frame *frame, const std::string &name) {
+    auto def = frame->findVirtualType(this);
 
     if (def == nullptr) {
         return std::vector<FunctionEntry *>();
@@ -56,82 +57,82 @@ std::vector<FunctionEntry *> ArrayTypeReference::findFunctionsCandidates(Compile
     return def->functions.findCandidates(name);
 }
 
-bool TypeReference::isFunction() {
+FunctionTypeReference *TypeReference::asFunction() {
+    return nullptr;
+}
+
+
+bool FunctionTypeReference::canReceiveType(TypeReference *other) {
+    if (auto otherFunction = other->asFunction()) {
+        return Utils::typesMatch(params, otherFunction->params);
+    }
+
     return false;
 }
 
-FunctionTypeReference::FunctionTypeReference(FunctionTypeDefinition *entry) : entry(entry) {
-
-}
-
-bool FunctionTypeReference::canReceiveType(TypeReference *other) {
-    throw std::logic_error("Unimplemented");
-
-}
-
-bool FunctionTypeReference::isFunction() {
-    return true;
+FunctionTypeReference *FunctionTypeReference::asFunction() {
+    return this;
 }
 
 std::string FunctionTypeReference::toString() {
     return "func () ... { ... }";
 }
 
-TypeDefinition *FunctionTypeReference::toTypeDefinition(Compiler *compiler) {
-    return entry;
+FunctionTypeReference::FunctionTypeReference(std::vector<FunctionTypeReferenceParameter> params,
+                                             std::vector<TypeReference *> returnTypes) : params(std::move(params)),
+                                                                                         returnTypes(std::move(returnTypes)) {}
+
+TypeDefinition *FunctionTypeReference::toTypeDefinition(Frame *frame) {
+    throw std::logic_error("Unimplemented");
 }
 
-ConcreteTypeReference::ConcreteTypeReference(TypeDefinition *entry) : entry(entry) {
+ConcreteTypeReference::ConcreteTypeReference(TypeDefinition *entry) : definition(entry) {
 }
 
-FunctionEntry *ConcreteTypeReference::findOperator(Compiler *compiler, const std::string &name,
+FunctionEntry *ConcreteTypeReference::findOperator(Frame *frame, const std::string &name,
                                                    const std::vector<TypeReference *> &types) {
-    return entry->operators.find(name, types);
+    return definition->operators.find(name, types);
 }
 
-FunctionEntry *ConcreteTypeReference::findPrefix(Compiler *compiler, const std::string &name,
+FunctionEntry *ConcreteTypeReference::findPrefix(Frame *frame, const std::string &name,
                                                  const std::vector<TypeReference *> &types) {
-    return entry->prefixes.find(name, types);
+    return definition->prefixes.find(name, types);
 }
 
 bool ConcreteTypeReference::canReceiveType(TypeReference *other) {
     if (auto concrete = dynamic_cast<ConcreteTypeReference *>(other)) {
-        return concrete->entry == entry;
-    }
-
-    if (auto named = dynamic_cast<NamedTypeReference *>(other)) {
-        return named->entry == entry;
+        return concrete->definition == definition;
     }
 
     return false;
 }
 
 std::string ConcreteTypeReference::toString() {
-    if (auto concrete = dynamic_cast<ConcreteTypeDefinition *>(entry)) {
+    if (auto concrete = dynamic_cast<ConcreteTypeDefinition *>(definition)) {
         return concrete->name;
     }
 
     std::stringstream ss;
-    ss << entry;
+    ss << definition;
 
     return ss.str();
 }
 
-TypeDefinition *ConcreteTypeReference::toTypeDefinition(Compiler *compiler) {
-    return entry;
+TypeDefinition *ConcreteTypeReference::toTypeDefinition(Frame *frame) {
+    return definition;
 }
 
 std::vector<FunctionEntry *>
-ConcreteTypeReference::findFunctionsCandidates(Compiler *compiler, const std::string &name) {
-    return entry->functions.findCandidates(name);
+ConcreteTypeReference::findFunctionsCandidates(Frame *frame, const std::string &name) {
+    return definition->functions.findCandidates(name);
 }
 
 bool StructTypeReference::canReceiveType(TypeReference *other) {
     if (auto otherStruct = dynamic_cast<StructTypeReference *>(other)) {
-        for (auto field:entry->fields) {
+        for (auto field:definition->fields) {
             auto has = false;
 
-            for (const auto &otherField : otherStruct->entry->fields) {
+            for (const auto &otherField : otherStruct->definition->fields) {
                 if (field->name == otherField->name) {
                     if (field->typeRef->canReceiveType(otherField->typeRef)) {
                         has = true;
@@ -147,7 +148,7 @@ bool StructTypeReference::canReceiveType(TypeReference *other) {
     }
 
     if (auto otherConcrete = dynamic_cast<ConcreteTypeReference *>(other)) {
-        return entry == otherConcrete->entry;
+        return definition == otherConcrete->definition;
     }
 
     return false;
@@ -158,7 +159,7 @@ std::string StructTypeReference::toString() {
 
     ss << "struct { ";
 
-    for (const auto &field : entry->fields) {
+    for (const auto &field : definition->fields) {
         ss << field->name << "; ";
     }
 
@@ -167,8 +168,12 @@ std::string StructTypeReference::toString() {
     return ss.str();
 }
 
-TypeDefinition *StructTypeReference::toTypeDefinition(Compiler *compiler) {
-    return entry;
+TypeDefinition *StructTypeReference::toTypeDefinition(Frame *frame) {
+    return definition;
 }
 
-StructTypeReference::StructTypeReference(StructTypeDefinition *entry) : entry(entry) {}
+StructTypeReference::StructTypeReference(StructTypeDefinition *entry) : definition(entry) {}
+
+FunctionTypeReferenceParameter::FunctionTypeReferenceParameter(std::string name, TypeReference *type,
+                                                               bool asReference) : name(std::move(name)), type(type),
+                                                                                   asReference(asReference) {}
