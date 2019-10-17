@@ -25,6 +25,8 @@ class Risotto {
 public:
     unsigned int flags;
 
+    Risotto();
+
     explicit Risotto(unsigned int flags);
 
     InterpretResult runFile(const std::string &filename);

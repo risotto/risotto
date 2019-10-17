@@ -18,6 +18,10 @@ extern "C" {
 #include <lib/vm/debug.h>
 }
 
+Risotto::Risotto(unsigned int flags) : flags(flags) {}
+
+Risotto::Risotto() : Risotto(RisottoFlags::None) {}
+
 InterpretResult Risotto::runFile(const std::string &path) {
     std::ifstream ifs(path);
     std::string str((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
@@ -69,8 +73,6 @@ InterpretResult Risotto::doRun(const std::vector<Token *> &tokens) {
 
     return result;
 }
-
-Risotto::Risotto(unsigned int flags) : flags(flags) {}
 
 bool Risotto::hasFlag(RisottoFlags flag) {
     return (flags & flag) == flag;
