@@ -7,7 +7,10 @@
 #include <stdio.h>
 #include <assert.h>
 #include "value.h"
+
+#ifdef DEBUG_TRACE_EXECUTION
 #include "debug.h"
+#endif
 
 #ifdef BENCHMARK_TIMINGS
 #include <time.h>
@@ -17,9 +20,6 @@
 #define READ_CONSTANT() (vm.chunk->constants.object.values[READ_BYTE()])
 #define GOTO(a) vm.ip = vm.chunk->code + (a)
 
-#define RED   "\x1B[31m"
-#define RESET "\x1B[0m"
-
 VM vm;
 
 static void resetStack() {
@@ -27,12 +27,16 @@ static void resetStack() {
     vm.fp = vm.sp;
 }
 
-void initVM() {
+void initVM(unsigned int flags) {
     resetStack();
+    vm.flags = flags;
     vm.numObjects = 0;
     vm.maxObjects = INITIAL_GC_THRESHOLD;
     vm.firstObject = NULL;
-    vm.printf = &printf;
+}
+
+bool hasFlag(VMFlags flag) {
+    return (vm.flags & flag) == flag;
 }
 
 VM *getVM() {
@@ -111,6 +115,7 @@ static InterpretResult run() {
 #ifdef BENCHMARK_TIMINGS
     clock_t timings[Last+1];
     unsigned long timingsc[Last+1];
+    unsigned long opsc = 0;
 
     for (int m = 0; m <= Last; ++m) {
         timings[m] = 0;
@@ -118,28 +123,35 @@ static InterpretResult run() {
     }
 #endif
 
+#ifdef DEBUG_TRACE_EXECUTION
+    bool traceExec = true;
+#endif
+
     for (;;) {
 #ifdef DEBUG_TRACE_EXECUTION
-        printf("          ");
-        for (Value *slot = vm.stack; slot < vm.sp; slot++) {
-            printf("[ ");
-            printValue(*slot);
-            printf(" ]");
+        if (traceExec) {
+            printf("          ");
+            for (Value *slot = vm.stack; slot < vm.sp; slot++) {
+                printf("[ ");
+                printValue(*slot);
+                printf(" ]");
+            }
+            long _ip = vm.ip - vm.chunk->code;
+            long _sp = vm.sp - vm.stack;
+            long _fp = vm.fp - vm.stack;
+
+            printf(" IP: %lu SP: %lu FP: %lu", _ip, _sp, _fp);
+            printf("\n");
+
+            disassembleInstruction(vm.chunk, (int) (vm.ip - vm.chunk->code));
         }
-        auto _ip = vm.ip - vm.chunk->code;
-        auto _sp = vm.sp - vm.stack;
-        auto _fp = vm.fp - vm.stack;
-
-        printf(" IP: %lu SP: %lu FP: %lu", _ip, _sp, _fp);
-        printf("\n");
-
-        disassembleInstruction(vm.chunk, (int) (vm.ip - vm.chunk->code));
 #endif
 
         OP_T instruction = READ_BYTE();
 
 #ifdef BENCHMARK_TIMINGS
         clock_t start = clock();
+        opsc++;
 #endif
 
         switch (instruction) {
@@ -221,6 +233,8 @@ static InterpretResult run() {
                         for (int i = 0; i < returnValue.c; ++i) {
                             push(returnValue.values[i]);
                         }
+
+                        free(returnValue.values);
 
                         break;
                     }
@@ -384,14 +398,6 @@ static InterpretResult run() {
                 push(b2v(!typecheck(v, T_NIL)));
                 break;
             }
-            case OP_PRINT: {
-#ifdef PRINT_CARET
-                printf(RED "> " RESET);
-#endif
-                vm.printf("%s", v2s(pop()));
-                vm.printf("\n");
-                break;
-            }
             case OP_END: {
 #ifdef BENCHMARK_TIMINGS
                 printf("\n======================= TIMINGS =======================\n");
@@ -400,10 +406,12 @@ static InterpretResult run() {
                     unsigned long c = timingsc[k];
 
                     if(c > 0) {
-                        printf("%-3u - %-14s C: %-6lu T: %-6lu AT: %-8Lf TT: %Lf \n", k, getName(k), c, t, ((long double)t)/c/CLOCKS_PER_SEC, ((long double)t)/CLOCKS_PER_SEC);
+                        printf("%-3u - %-14s C: %-9lu T: %-13lu AT: %-13.9Lf TT: %-13.9Lf \n", k, getName(k), c, t, ((long double)t)/c/CLOCKS_PER_SEC, ((long double)t)/CLOCKS_PER_SEC);
                     }
                 }
-                printf("C: Count - T: Ticks - AT: Average Time - TT: Total Time\n");
+                printf("\n");
+                printf("Total ops: %lu\n", opsc);
+                printf("C: Count - T: CPU Ticks - AT: Average Time - TT: Total Time\n");
                 printf("=======================================================\n");
 #endif
                 return INTERPRET_OK;

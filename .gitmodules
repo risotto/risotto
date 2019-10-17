@@ -4,3 +4,6 @@
 [submodule "lib/better-enums"]
 	path = lib/better-enums
 	url = https://github.com/aantron/better-enums.git
+[submodule "lib/cxxopts"]
+	path = lib/cxxopts
+	url = https://github.com/jarro2783/cxxopts.git

@@ -11,7 +11,13 @@
 #define STACK_MAX 256
 #define INITIAL_GC_THRESHOLD 1000
 
+typedef enum {
+    VMNone           = 0,
+    TraceExecution = 1 << 0,
+} VMFlags;
+
 typedef struct {
+    unsigned int flags;
     Chunk* chunk;
     OP_T* ip;
     Value stack[STACK_MAX];
@@ -22,7 +28,6 @@ typedef struct {
     int numObjects;
     /* The number of values required to trigger a GC. */
     int maxObjects;
-    int (*printf)(const char * format, ...);
 } VM;
 
 typedef enum {
@@ -31,7 +36,7 @@ typedef enum {
     INTERPRET_RUNTIME_ERROR
 } InterpretResult;
 
-void initVM();
+void initVM(unsigned int flags);
 VM *getVM();
 void freeVM();
 InterpretResult interpret(Chunk* chunk, long addr);
@@ -47,6 +52,8 @@ void mark(Object* value);
 void markValue(Value *value);
 void sweep();
 void gc();
+
+bool hasFlag(VMFlags flag);
 
 void cframe();
 void dframe();

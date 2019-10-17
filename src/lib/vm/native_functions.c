@@ -3,23 +3,31 @@
 //
 
 #include <stdio.h>
+#include <string.h>
 #include "value.h"
-#include "vm.c"
+#include "vm.h"
 
 #define str_t const char *
-#define ret(n, ...) Value __values[] = {__VA_ARGS__}; NativeFunctionReturn __r = {__values, n}; return __r;
+
+#define ret0 NativeFunctionReturn __r = {.c = 0, .values = NULL}; return __r;
+#define ret(vc, ...) \
+    Value __lvalues[] = {__VA_ARGS__}; \
+    Value *__values = malloc(sizeof(Value)*vc); \
+    memcpy(__values, __lvalues, sizeof(__lvalues)); \
+    NativeFunctionReturn __r = {.c = vc, .values = __values}; \
+    return __r;
 
 NativeFunctionReturn vm_stats(Value args[], int argc) {
-    printf("Objects count: %i\n", vm.numObjects);
-    printf("Max Objects: %i\n", vm.maxObjects);
+    printf("Objects count: %i\n", getVM()->numObjects);
+    printf("Max Objects: %i\n", getVM()->maxObjects);
 
-    ret(0)
+    ret0
 }
 
 NativeFunctionReturn run_gc(Value args[], int argc) {
     gc();
 
-    ret(0)
+    ret0
 }
 
 #define NATIVE_BINARY_FUNCTION_NAME(leftType, opName, rightType) binary_##leftType##_##opName##_##rightType
@@ -209,7 +217,7 @@ NativeFunctionReturn println_int(Value args[], int argc) {
 
     printf("%i\n", v);
 
-    ret(0)
+    ret0
 }
 
 NativeFunctionReturn println_double(Value args[], int argc) {
@@ -217,7 +225,7 @@ NativeFunctionReturn println_double(Value args[], int argc) {
 
     printf("%f\n", v);
 
-    ret(0)
+    ret0
 }
 
 NativeFunctionReturn println_string(Value args[], int argc) {
@@ -225,7 +233,7 @@ NativeFunctionReturn println_string(Value args[], int argc) {
 
     printf("%s\n", v);
 
-    ret(0)
+    ret0
 }
 
 NativeFunctionReturn println_bool(Value args[], int argc) {
@@ -237,5 +245,5 @@ NativeFunctionReturn println_bool(Value args[], int argc) {
         printf("false\n");
     }
 
-    ret(0)
+    ret0
 }
