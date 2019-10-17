@@ -78,9 +78,9 @@ std::vector<ByteResolver *> LogicalExpr::compile(Compiler *compiler) {
     auto rightBytes = right->compile(compiler);
 
     switch(op->type) {
-        case Token::Type::AND:
+        case TokenType::AND:
             return generateAnd(leftBytes, rightBytes, compiler);
-        case Token::Type::OR:
+        case TokenType::OR:
             return generateOr(leftBytes, rightBytes, compiler);
     }
 

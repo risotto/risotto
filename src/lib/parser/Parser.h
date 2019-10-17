@@ -53,9 +53,9 @@ private:
 
     bool isAtEnd();
 
-    bool check(Token::Type tokenType);
+    bool check(TokenType tokenType);
 
-    bool check(Token::Type tokenType, int n);
+    bool check(TokenType tokenType, int n);
 
     Stmt *declaration();
 
@@ -100,12 +100,12 @@ private:
     std::vector<Expr *> arguments();
 
     template<typename T>
-    std::vector<T> enumeration(std::function<T()> of, Token::Type separator, Token::Type end);
+    std::vector<T> enumeration(std::function<T()> of, TokenType separator, TokenType end);
 
     template<typename T>
-    std::vector<T> enumeration(std::function<T()> of, Token::Type end);
+    std::vector<T> enumeration(std::function<T()> of, TokenType end);
 
-    Token *consume(Token::Type type, const std::string &message);
+    Token *consume(TokenType type, const std::string &message);
 
     ParseError error(Token *token, const std::string &message);
 

@@ -18,11 +18,11 @@ LiteralExpr::LiteralExpr(Token *value) : value(value) {
 
 Value literalToValue(Token *value) {
     switch (value->type) {
-        case Token::Type::INT:
+        case TokenType::INT:
             return i2v(value->value._int);
-        case Token::Type::DOUBLE:
+        case TokenType::DOUBLE:
             return d2v(value->value._double);
-        case Token::Type::STRING:
+        case TokenType::STRING:
             return s2v(value->value._str);
         default:
             throw CompilerError("Unhandled type " + std::string(value->type._to_string()));
@@ -33,13 +33,13 @@ std::vector<ByteResolver *> LiteralExpr::compile(Compiler *compiler) {
     auto bytes = std::vector<ByteResolver *>();
 
     switch (value->type) {
-        case Token::Type::NIL:
+        case TokenType::NIL:
             bytes.push_back(new ByteResolver(OP_NIL, nullptr));
             return bytes;
-        case Token::Type::TRUE:
+        case TokenType::TRUE:
             bytes.push_back(new ByteResolver(OP_TRUE, nullptr));
             return bytes;
-        case Token::Type::FALSE:
+        case TokenType::FALSE:
             bytes.push_back(new ByteResolver(OP_FALSE, nullptr));
             return bytes;
     }
@@ -55,16 +55,16 @@ std::vector<ByteResolver *> LiteralExpr::compile(Compiler *compiler) {
 
 TypeDefinition *LiteralExpr::computeReturnTypeDefinition(Compiler *compiler) {
     switch (value->type) {
-        case Token::Type::FALSE:
-        case Token::Type::TRUE:
+        case TokenType::FALSE:
+        case TokenType::TRUE:
             return compiler->frame->findNamedType("bool");
-        case Token::Type::NIL:
+        case TokenType::NIL:
             throw CompilerError("Cannot get type of nil ");
-        case Token::Type::INT:
+        case TokenType::INT:
             return compiler->frame->findNamedType("int");
-        case Token::Type::DOUBLE:
+        case TokenType::DOUBLE:
             return compiler->frame->findNamedType("double");
-        case Token::Type::STRING:
+        case TokenType::STRING:
             return compiler->frame->findNamedType("string");
         default:
             throw CompilerError("Unhandled type " + std::string(value->type._to_string()));

@@ -18,6 +18,6 @@ std::string Position::toString() {
     return ss.str();
 }
 
-Token::Token(Type type, ValueData value, std::string lexeme, Position position): type(type), value(value), lexeme(std::move(lexeme)), position(position) {
+Token::Token(TokenType type, ValueData value, std::string lexeme, Position position): type(type), value(value), lexeme(std::move(lexeme)), position(position) {
 
 }
