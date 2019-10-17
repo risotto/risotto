@@ -43,7 +43,7 @@ jobs:
     - name: Build
       run: cmake --build build
     - name: Test binary
-      run: build/cmd/cmd -h
+      run: build/cmd -h
     - name: Upload binary
       uses: actions/upload-artifact@master
       if: success()
