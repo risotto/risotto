@@ -44,7 +44,8 @@ void BaseCallExpr::loadArgs(Compiler *compiler, std::vector<ByteResolver *> &byt
     auto arguments = getArguments(compiler);
 
     for (auto it = arguments.rbegin(); it != arguments.rend(); ++it) {
-        auto argBytes = (*it)->compile(compiler);
+        auto arg = (*it);
+        auto argBytes = arg->compile(compiler);
         bytes.insert(bytes.end(), argBytes.begin(), argBytes.end());
     }
 }
