@@ -5,8 +5,10 @@
 #ifndef RISOTTOV2_TOKEN_H
 #define RISOTTOV2_TOKEN_H
 
-#include <string>
+extern "C" {
 #include <lib/vm/value.h>
+};
+#include <string>
 #include "../../../lib/better-enums/enum.h"
 
 class Position {
