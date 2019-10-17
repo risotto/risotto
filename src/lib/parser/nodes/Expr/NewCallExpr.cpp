@@ -43,3 +43,12 @@ void NewCallExpr::loadArgs(Compiler *compiler, std::vector<ByteResolver *> &byte
     bytes.push_back(new ByteResolver(OP_NEW, nullptr));
     bytes.push_back(new ByteResolver(structTypeDef->fields.size(), nullptr));
 }
+
+FunctionNotFoundError NewCallExpr::getFunctionNotFoundError(Compiler *compiler) {
+    auto actualArgumentsTypes = Utils::getTypes(args, compiler);
+
+    auto argumentsTypes = getArgumentsTypes(compiler);
+    auto actualArgsTypes = std::vector<TypeReference *>(argumentsTypes.begin() + 1, argumentsTypes.end());
+
+    throw FunctionNotFoundError("new " + identifier->lexeme + "({{args}})", actualArgsTypes, rParen);
+}

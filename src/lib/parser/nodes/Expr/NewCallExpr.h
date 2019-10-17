@@ -16,6 +16,8 @@ public:
 
     void loadArgs(Compiler *compiler, std::vector<ByteResolver *> &bytes) override;
 
+    FunctionNotFoundError getFunctionNotFoundError(Compiler *compiler) override;
+
 protected:
     VariableEntry *getVariableEntry(Compiler *compiler) override;
 

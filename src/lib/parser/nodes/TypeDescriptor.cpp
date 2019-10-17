@@ -64,7 +64,7 @@ std::string StructTypeDescriptor::toString() {
         ss << field.name->lexeme << " " << field.type->toString() << "; ";
     }
 
-    ss << " }";
+    ss << "}";
 
     return ss.str();
 }
@@ -94,16 +94,28 @@ std::string FunctionTypeDescriptor::toString() {
 
     ss << "func (";
 
-    for (auto param:params) {
-        ss << param.name << " " << param.type->toString() << ", ";
+    for (int i = 0; i < params.size(); ++i) {
+        auto param = params[i];
+
+        if (i != 0) {
+            ss << ", ";
+        }
+
+        ss << param.name->lexeme << " " << param.type->toString();
     }
 
-    ss << " )";
+    ss << ")";
 
     if (!returnTypes.empty()) {
         ss << " (";
-        for (auto type : returnTypes) {
-            ss << type->toString() << ", ";
+        for (int i = 0; i < returnTypes.size(); ++i) {
+            auto type = returnTypes[i];
+
+            if (i != 0) {
+                ss << ", ";
+            }
+
+            ss << type->toString();
         }
         ss << ")";
     }
