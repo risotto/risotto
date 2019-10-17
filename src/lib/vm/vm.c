@@ -124,7 +124,7 @@ static InterpretResult run() {
 #endif
 
 #ifdef DEBUG_TRACE_EXECUTION
-    bool traceExec = true;
+    bool traceExec = hasFlag(TraceExecution);
 #endif
 
     for (;;) {
