@@ -404,7 +404,7 @@ static InterpretResult run() {
                     unsigned long c = timingsc[k];
 
                     if(c > 0) {
-                        printf("%-3u - %-14s C: %-9lu T: %-9lu AT: %-9Lf TT: %-9Lf \n", k, getName(k), c, t, ((long double)t)/c/CLOCKS_PER_SEC, ((long double)t)/CLOCKS_PER_SEC);
+                        printf("%-3u - %-14s C: %-9lu T: %-13lu AT: %-13.9Lf TT: %-13.9Lf \n", k, getName(k), c, t, ((long double)t)/c/CLOCKS_PER_SEC, ((long double)t)/CLOCKS_PER_SEC);
                     }
                 }
                 printf("\n");
