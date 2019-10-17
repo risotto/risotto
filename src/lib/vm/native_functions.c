@@ -5,11 +5,11 @@
 #include <stdio.h>
 #include <string.h>
 #include "value.h"
-#include "vm.c"
+#include "vm.h"
 
 #define str_t const char *
 
-#define ret0 NativeFunctionReturn __r = {.c = 0, .values = 0}; return __r;
+#define ret0 NativeFunctionReturn __r = {.c = 0, .values = NULL}; return __r;
 #define ret(vc, ...) \
     Value __lvalues[] = {__VA_ARGS__}; \
     Value *__values = malloc(sizeof(Value)*vc); \
@@ -18,8 +18,8 @@
     return __r;
 
 NativeFunctionReturn vm_stats(Value args[], int argc) {
-    printf("Objects count: %i\n", vm.numObjects);
-    printf("Max Objects: %i\n", vm.maxObjects);
+    printf("Objects count: %i\n", getVM()->numObjects);
+    printf("Max Objects: %i\n", getVM()->maxObjects);
 
     ret0
 }

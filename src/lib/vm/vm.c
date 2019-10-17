@@ -7,7 +7,10 @@
 #include <stdio.h>
 #include <assert.h>
 #include "value.h"
+
+#ifdef DEBUG_TRACE_EXECUTION
 #include "debug.h"
+#endif
 
 #ifdef BENCHMARK_TIMINGS
 #include <time.h>
@@ -16,9 +19,6 @@
 #define READ_BYTE() (*vm.ip++)
 #define READ_CONSTANT() (vm.chunk->constants.object.values[READ_BYTE()])
 #define GOTO(a) vm.ip = vm.chunk->code + (a)
-
-#define RED   "\x1B[31m"
-#define RESET "\x1B[0m"
 
 VM vm;
 
@@ -29,11 +29,10 @@ static void resetStack() {
 
 void initVM(unsigned int flags) {
     resetStack();
+    vm.flags = flags;
     vm.numObjects = 0;
     vm.maxObjects = INITIAL_GC_THRESHOLD;
     vm.firstObject = NULL;
-    vm.printf = &printf;
-    vm.flags = flags;
 }
 
 bool hasFlag(VMFlags flag) {
@@ -124,7 +123,9 @@ static InterpretResult run() {
     }
 #endif
 
+#ifdef DEBUG_TRACE_EXECUTION
     bool traceExec = hasFlag(TraceExecution);
+#endif
 
     for (;;) {
 #ifdef DEBUG_TRACE_EXECUTION
@@ -401,8 +402,7 @@ static InterpretResult run() {
 #ifdef PRINT_CARET
                 printf(RED "> " RESET);
 #endif
-                vm.printf("%s", v2s(pop()));
-                vm.printf("\n");
+                printf("%s\n", v2s(pop()));
                 break;
             }
             case OP_END: {

@@ -28,7 +28,6 @@ typedef struct {
     int numObjects;
     /* The number of values required to trigger a GC. */
     int maxObjects;
-    int (*printf)(const char * format, ...);
 } VM;
 
 typedef enum {

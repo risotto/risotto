@@ -9,8 +9,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-//#define DEBUG_TRACE_EXECUTION
-//#define PRINT_CARET
 //#define BENCHMARK_TIMINGS
 
 #define OP_T uint16_t
