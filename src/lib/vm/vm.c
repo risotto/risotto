@@ -8,8 +8,6 @@
 #include <assert.h>
 #include "value.h"
 
-#define DEBUG_TRACE_EXECUTION
-
 #ifdef DEBUG_TRACE_EXECUTION
 #include "debug.h"
 #endif
