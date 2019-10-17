@@ -22,9 +22,10 @@ std::vector<Expr *> GetCallExpr::getArguments(Compiler *compiler) {
 
 FunctionNotFoundError GetCallExpr::getFunctionNotFoundError(Compiler *compiler) {
     auto leftReturnType = callee->getReturnType(compiler);
-    auto args = getArgumentsTypes(compiler);
+    auto argsTypes = getArgumentsTypes(compiler);
+    auto actualArgsTypes = std::vector<TypeReference *>(argsTypes.begin() + 1, argsTypes.end());
 
-    return FunctionNotFoundError(op->lexeme, leftReturnType[0]->toString(), args, identifier);
+    return FunctionNotFoundError(leftReturnType[0]->toString() + "." + identifier->lexeme + "({{args}})", actualArgsTypes, identifier);
 }
 
 VariableEntry *GetCallExpr::getVariableEntry(Compiler *compiler) {

@@ -74,7 +74,7 @@ FunctionNotFoundError BaseCallExpr::getFunctionNotFoundError(Compiler *compiler)
 
     auto argumentsTypes = getArgumentsTypes(compiler);
 
-    throw FunctionNotFoundError("", "", argumentsTypes, rParen);
+    throw FunctionNotFoundError("func ({{args}})", argumentsTypes, rParen);
 }
 
 std::vector<Expr *> BaseCallExpr::getArguments(Compiler *compiler) {

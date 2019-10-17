@@ -5,7 +5,7 @@
 #include <lib/compiler/Compiler.h>
 #include "UnaryExpr.h"
 
-UnaryExpr::UnaryExpr(Token *op, Expr *right): GetCallExpr(right, op, op, op, {}) {
+UnaryExpr::UnaryExpr(Token *op, Expr *right) : GetCallExpr(right, op, op, op, {}) {
 
 }
 
@@ -36,7 +36,9 @@ FunctionEntry *UnaryExpr::getFunctionEntry(Compiler *compiler) {
 }
 
 FunctionNotFoundError UnaryExpr::getFunctionNotFoundError(Compiler *compiler) {
-    return FunctionNotFoundError(op()->lexeme, "", getArgumentsTypes(compiler), op());
+    auto rightReturnType = right()->getReturnType(compiler);
+
+    return FunctionNotFoundError(op()->lexeme + rightReturnType[0]->toString(), getArgumentsTypes(compiler), op());
 }
 
 VariableEntry *UnaryExpr::getVariableEntry(Compiler *compiler) {

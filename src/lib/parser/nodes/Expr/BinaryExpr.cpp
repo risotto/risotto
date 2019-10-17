@@ -38,9 +38,14 @@ FunctionEntry *BinaryExpr::getFunctionEntry(Compiler *compiler) {
 
 FunctionNotFoundError BinaryExpr::getFunctionNotFoundError(Compiler *compiler) {
     auto leftReturnType = left()->getReturnType(compiler);
+    auto rightReturnType = right()->getReturnType(compiler);
     auto args = getArgumentsTypes(compiler);
 
-    return FunctionNotFoundError(op()->lexeme, leftReturnType[0]->toString(), args, op());
+    return FunctionNotFoundError(
+            leftReturnType[0]->toString() + " " + op()->lexeme + " " + rightReturnType[0]->toString(),
+            args,
+            op()
+    );
 }
 
 VariableEntry *BinaryExpr::getVariableEntry(Compiler *compiler) {

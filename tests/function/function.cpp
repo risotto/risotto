@@ -53,20 +53,33 @@ TEST(Functions, NonExistingFunction) {
         risotto.run("I_do_not_exist(1, 1.1, 1.2)");
         FAIL() << "Expected CompilerError";
     } catch (CompilerError const &err) {
-        EXPECT_EQ(err.what(), std::string("Cannot find function matching I_do_not_exist(int, double, double) at 1:27"));
+        EXPECT_EQ(err.what(), std::string("Undefined function: I_do_not_exist(int, double, double) at 1:27"));
     } catch (...) {
         FAIL() << "Expected CompilerError";
     }
 }
 
-TEST(Functions, DISABLED_NonExistingBoundFunction) {
+TEST(Functions, NonExistingBoundFunction) {
     INIT_RISOTTO
 
     try {
         risotto.run("1.xxx(1.2)");
         FAIL() << "Expected CompilerError";
     } catch (CompilerError const &err) {
-        EXPECT_EQ(err.what(), std::string("Cannot find function matching int.xxx(double) at 1:10"));
+        EXPECT_EQ(err.what(), std::string("Undefined function: int.xxx(double) at 1:3"));
+    } catch (...) {
+        FAIL() << "Expected CompilerError";
+    }
+}
+
+TEST(Functions, NonExistingOperator) {
+    INIT_RISOTTO
+
+    try {
+        risotto.run("1 * \"hello\"");
+        FAIL() << "Expected CompilerError";
+    } catch (CompilerError const &err) {
+        EXPECT_EQ(err.what(), std::string("Undefined function: int * string at 1:3"));
     } catch (...) {
         FAIL() << "Expected CompilerError";
     }
