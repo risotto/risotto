@@ -224,6 +224,8 @@ static InterpretResult run() {
                             push(returnValue.values[i]);
                         }
 
+                        free(returnValue.values);
+
                         break;
                     }
                     default:

@@ -43,9 +43,12 @@ typedef struct {
 } Value;
 
 typedef struct {
-    Value * values;
     int c;
+    Value *values;
 } NativeFunctionReturn;
+
+// This is super confusing syntax:
+// Creates a type `NativeFunction` which is a function `NativeFunctionReturn (Value *, int)`
 typedef NativeFunctionReturn (*NativeFunction)(Value *, int);
 
 typedef struct Object Object;

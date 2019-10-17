@@ -7,7 +7,14 @@
 #include "vm.c"
 
 #define str_t const char *
-#define ret(n, ...) Value __values[] = {__VA_ARGS__}; NativeFunctionReturn __r = {__values, n}; return __r;
+#define ret(vc, ...) \
+    Value __lvalues[] = {__VA_ARGS__}; \
+    Value *__values = malloc(sizeof(Value)*vc); \
+    for (int i = 0; i < vc; i ++) { \
+        __values[i] = __lvalues[i]; \
+    } \
+    NativeFunctionReturn __r = {.c = vc, .values = __values}; \
+    return __r;
 
 NativeFunctionReturn vm_stats(Value args[], int argc) {
     printf("Objects count: %i\n", vm.numObjects);
