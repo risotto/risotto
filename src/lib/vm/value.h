@@ -43,7 +43,7 @@ typedef struct {
 } Value;
 
 typedef struct {
-    int c;
+    uint8_t c;
     Value *values;
 } NativeFunctionReturn;
 

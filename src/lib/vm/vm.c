@@ -8,6 +8,8 @@
 #include <assert.h>
 #include "value.h"
 
+#define DEBUG_TRACE_EXECUTION
+
 #ifdef DEBUG_TRACE_EXECUTION
 #include "debug.h"
 #endif
@@ -124,7 +126,7 @@ static InterpretResult run() {
 #endif
 
 #ifdef DEBUG_TRACE_EXECUTION
-    bool traceExec = hasFlag(TraceExecution);
+    bool traceExec = true;
 #endif
 
     for (;;) {
@@ -396,13 +398,6 @@ static InterpretResult run() {
                 Value v = pop();
 
                 push(b2v(!typecheck(v, T_NIL)));
-                break;
-            }
-            case OP_PRINT: {
-#ifdef PRINT_CARET
-                printf(RED "> " RESET);
-#endif
-                printf("%s\n", v2s(pop()));
                 break;
             }
             case OP_END: {

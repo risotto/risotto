@@ -122,7 +122,6 @@ char *getName(OP_T instruction) {
         NAME(OP_JUMP)
         NAME(OP_JUMPT)
         NAME(OP_JUMPF)
-        NAME(OP_PRINT)
         NAME(OP_END)
         NAME(OP_LOAD)
         NAME(OP_LOAD_GLOBAL)
@@ -183,8 +182,6 @@ int disassembleInstruction(Chunk *chunk, int offset) {
             return addrInstruction(getName(instruction), chunk, offset);
         case OP_JUMPF:
             return addrInstruction(getName(instruction), chunk, offset);
-        case OP_PRINT:
-            return simpleInstruction(getName(instruction), offset);
         case OP_END:
             return simpleInstruction(getName(instruction), offset);
         case OP_LOAD:

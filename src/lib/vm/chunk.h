@@ -19,7 +19,6 @@ typedef enum {
     OP_JUMPT,
     OP_JUMPF,
     OP_CALL,
-    OP_PRINT,
     OP_END,
     OP_LOAD,
     OP_LOAD_GLOBAL,
