@@ -10,8 +10,6 @@
 #include <lib/parser/nodes/Expr/FunctionExpr.h>
 #include <lib/parser/nodes/Expr/ArrayExpr.h>
 #include <lib/parser/nodes/Stmt/TypeStmt.h>
-#include <lib/parser/nodes/Expr/NewExpr.h>
-#include <lib/parser/nodes/Expr/MixedCallExpr.h>
 #include <lib/parser/nodes/Expr/GetCallExpr.h>
 #include <lib/parser/nodes/Expr/IdentifierCallExpr.h>
 #include <lib/parser/nodes/Expr/NewCallExpr.h>

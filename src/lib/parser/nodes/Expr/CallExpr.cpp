@@ -7,13 +7,10 @@ extern "C" {
 }
 
 #include "CallExpr.h"
-#include "IdentifierExpr.h"
-#include "GetExpr.h"
-#include "lib/compiler/TypeReference.h"
+#include "IdentifierExpr.h"#include "lib/compiler/TypeReference.h"
 #include "lib/compiler/TypeDefinition.h"
 #include "lib/parser/nodes/TypeDescriptor.h"
 #include "lib/compiler/ReturnTypes.h"
-#include "NewExpr.h"
 
 #include <utility>
 #include <lib/compiler/Compiler.h>
