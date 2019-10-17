@@ -51,6 +51,8 @@ public:
 
     std::vector<FunctionEntry *> findFunctionsCandidates(const std::string &name);
 
+    FunctionEntry *findFunction(const std::string &name, std::vector<TypeReference *> types);
+
     int findFrame(FrameType type);
 };
 

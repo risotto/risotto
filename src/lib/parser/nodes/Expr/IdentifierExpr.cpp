@@ -23,18 +23,20 @@ std::vector<ByteResolver *> IdentifierExpr::compile(Compiler *compiler) {
         throw CompilerError("Must resolve to a single symbol");
     }
 
-    if (auto functionTypeRef = dynamic_cast<FunctionTypeReference *>(returnType[0])) {
-        auto functionEntry = functionTypeRef->entry->function;
+    if (auto concrete = dynamic_cast<ConcreteTypeReference *>(returnType[0])) {
+        if (auto functionTypeDef = dynamic_cast<FunctionTypeDefinition *>(concrete->definition)) {
+            auto functionEntry = functionTypeDef->entry;
 
-        Utils::loadFunctionEntryAddr(compiler, functionEntry, bytes);
+            Utils::loadFunctionEntryAddr(compiler, functionEntry, bytes);
 
-        return bytes;
+            return bytes;
+        }
     }
 
     auto response = compiler->frame->findVariable(name->lexeme);
 
     if (response == nullptr) {
-        throw CompilerError("Cannot find variable " + name->lexeme);
+        throw CompilerError("Cannot find symbol " + name->lexeme);
     }
 
     bytes.push_back(new ByteResolver(OP_LOAD_LOCAL, &name->position));
@@ -50,7 +52,7 @@ ReturnTypes IdentifierExpr::computeReturnType(Compiler *compiler) {
     auto candidateTypes = ReturnTypes();
 
     for (auto candidate : candidates) {
-        candidateTypes.push_back(new FunctionTypeReference(candidate->typeDefinition));
+        candidateTypes.push_back(new ConcreteTypeReference(candidate->typeDefinition));
     }
 
     auto response = compiler->frame->findVariable(name->lexeme);

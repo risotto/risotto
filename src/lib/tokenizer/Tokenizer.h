@@ -21,7 +21,7 @@ private:
 
     std::vector<Token *> tokens;
 
-    static std::map<std::string, Token::Type> keywords;
+    static std::map<std::string, TokenType> keywords;
 
 private:
     char advance();
@@ -32,10 +32,10 @@ private:
 
     void nextLine();
 
-    void addToken(Token::Type type);
+    void addToken(TokenType type);
 
     template<typename T>
-    void addToken(Token::Type type, T literal);
+    void addToken(TokenType type, T literal);
 
     bool match(char expected);
 

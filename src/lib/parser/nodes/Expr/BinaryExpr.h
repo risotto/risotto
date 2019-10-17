@@ -9,12 +9,11 @@
 #include <lib/parser/nodes/Expr.h>
 #include <lib/tokenizer/Token.h>
 #include "CallExpr.h"
+#include "GetCallExpr.h"
 
-class BinaryExpr : public CallExpr {
+class BinaryExpr : public GetCallExpr {
 public:
     BinaryExpr(Expr *left, Token *op, Expr *right);
-
-    FunctionEntry *getFunctionEntry(Compiler *compiler) override;
 
     Expr *left();
 
@@ -22,7 +21,10 @@ public:
 
     Token *op();
 
-    std::vector<Expr *> getArguments(Compiler *compiler) override;
+    FunctionEntry *getFunctionEntry(Compiler *compiler) override;
+
+protected:
+    VariableEntry *getVariableEntry(Compiler *compiler) override;
 
 protected:
     FunctionNotFoundError getFunctionNotFoundError(Compiler *compiler) override;

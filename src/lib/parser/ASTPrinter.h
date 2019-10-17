@@ -26,7 +26,8 @@
 #include <lib/parser/nodes/Expr/UnaryExpr.h>
 #include <lib/parser/nodes/Expr/ArrayExpr.h>
 #include <lib/parser/nodes/Stmt/TypeStmt.h>
-#include <lib/parser/nodes/Expr/NewExpr.h>
+#include <lib/parser/nodes/Expr/IdentifierCallExpr.h>
+#include <lib/parser/nodes/Expr/FunctionExpr.h>
 
 namespace ASTPrinter {
     std::string indent(std::string str, int n);
@@ -98,7 +99,13 @@ namespace ASTPrinter {
     std::string print<TypeStmt *>(TypeStmt *stmt);
 
     template<>
-    std::string print<NewExpr *>(NewExpr *stmt);
+    std::string print<IdentifierCallExpr *>(IdentifierCallExpr *stmt);
+
+    template<>
+    std::string print<GetCallExpr *>(GetCallExpr *stmt);
+
+    template<>
+    std::string print<FunctionExpr *>(FunctionExpr *stmt);
 };
 
 

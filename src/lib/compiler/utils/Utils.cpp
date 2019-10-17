@@ -67,7 +67,52 @@ FunctionEntry *Utils::findMatchingFunctions(
     return nullptr;
 }
 
-std::vector<TypeReference *> Utils::getTypes(const std::vector<Expr *>& exprs, Compiler *compiler) {
+bool Utils::typesMatch(const std::vector<FunctionTypeReferenceParameter> &params,
+                       std::vector<FunctionTypeReferenceParameter> args) {
+    if (params.size() != args.size()) {
+        return false;
+    }
+
+    auto paramsTypes = std::vector<TypeReference *>();
+    for (const auto &param: params) {
+        paramsTypes.push_back(param.type);
+    }
+
+    auto argsTypes = std::vector<TypeReference *>();
+    for (const auto &arg: args) {
+        argsTypes.push_back(arg.type);
+    }
+
+    for (int i = 0; i < params.size(); ++i) {
+        auto param = params[i];
+        auto arg = args[i];
+
+        if (param.asReference != arg.asReference) {
+            return false;
+        }
+    }
+
+    return typesMatch(paramsTypes, argsTypes);
+}
+
+bool Utils::typesMatch(const std::vector<TypeReference *> &params, std::vector<TypeReference *> args) {
+    if (params.size() != args.size()) {
+        return false;
+    }
+
+    for (int i = 0; i < params.size(); ++i) {
+        auto paramType = params[i];
+        auto argType = args[i];
+
+        if (!paramType->canReceiveType(argType)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+std::vector<TypeReference *> Utils::getTypes(const std::vector<Expr *> &exprs, Compiler *compiler) {
     auto exprsTypes = std::vector<TypeReference *>();
 
     for (auto expr : exprs) {

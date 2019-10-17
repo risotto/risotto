@@ -16,11 +16,11 @@ extern "C" {
 
 StructTypeDefinition *getStructTypeDefinition(TypeReference *typeRef) {
     if (auto structRef = dynamic_cast<StructTypeReference *>(typeRef)) {
-        return structRef->entry;
+        return structRef->definition;
     }
 
     if (auto concreteRef = dynamic_cast<ConcreteTypeReference *>(typeRef)) {
-        if (auto structRef = dynamic_cast<StructTypeDefinition *>(concreteRef->entry)) {
+        if (auto structRef = dynamic_cast<StructTypeDefinition *>(concreteRef->definition)) {
             return structRef;
         }
     }
@@ -41,10 +41,14 @@ std::vector<ByteResolver *> GetExpr::compile(Compiler *compiler) {
         throw CompilerError("Must resolve to a single symbol");
     }
 
-    if (auto functionTypeRef = dynamic_cast<FunctionTypeReference *>(returnType[0])) {
-        Utils::loadFunctionEntryAddr(compiler, functionTypeRef->entry->function, bytes);
+    if (auto concrete = dynamic_cast<ConcreteTypeReference *>(returnType[0])) {
+        if (auto functionTypeDef = dynamic_cast<FunctionTypeDefinition *>(concrete->definition)) {
+            auto functionEntry = functionTypeDef->entry;
 
-        return bytes;
+            Utils::loadFunctionEntryAddr(compiler, functionEntry, bytes);
+
+            return bytes;
+        }
     }
 
     auto calleeReturnType = callee->getReturnType(compiler);
@@ -75,7 +79,7 @@ ReturnTypes GetExpr::computeReturnType(Compiler *compiler) {
 
     std::vector<FunctionEntry *> functionsCandidates;
     if (auto receiver = dynamic_cast<ReceiverTypeReference *>(calleeType[0])) {
-        functionsCandidates = receiver->findFunctionsCandidates(compiler, identifier->lexeme);
+        functionsCandidates = receiver->findFunctionsCandidates(compiler->frame, identifier->lexeme);
     } else {
         auto virtualType = compiler->frame->findVirtualType(calleeType[0]);
 
@@ -85,7 +89,7 @@ ReturnTypes GetExpr::computeReturnType(Compiler *compiler) {
     }
 
     for (auto candidate : functionsCandidates) {
-        returnTypes.push_back(new FunctionTypeReference(candidate->typeDefinition));
+        returnTypes.push_back(new ConcreteTypeReference(candidate->typeDefinition));
     }
 
     if (auto structDef = getStructTypeDefinition(calleeType[0])) {

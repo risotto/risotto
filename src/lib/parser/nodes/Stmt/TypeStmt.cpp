@@ -8,7 +8,7 @@
 TypeStmt::TypeStmt(Token *name, TypeDescriptor *typeDescriptor) : name(name), typeDescriptor(typeDescriptor) {}
 
 std::vector<ByteResolver *> TypeStmt::compile(Compiler *compiler) {
-    auto def = typeDescriptor->toTypeReference(compiler)->toTypeDefinition(compiler);
+    auto def = typeDescriptor->toTypeReference(compiler)->toTypeDefinition(compiler->frame);
     compiler->frame->types.add(name->lexeme, def);
 
     return std::vector<ByteResolver *>();

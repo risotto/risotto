@@ -11,7 +11,7 @@ TEST(Functions, Fib) {
 
     risotto.runFile(INPUT("fib"));
 
-    EXPECT_STDOUT("75025\n");
+    EXPECT_STDOUT("75025\n75025\n");
 }
 
 TEST(Functions, Arguments) {
@@ -53,7 +53,7 @@ TEST(Functions, NonExistingFunction) {
         risotto.run("I_do_not_exist(1, 1.1, 1.2)");
         FAIL() << "Expected CompilerError";
     } catch (CompilerError const &err) {
-        EXPECT_EQ(err.what(), std::string("Cannot find function matching I_do_not_exist(int, double, double) at 1:27"));
+        EXPECT_EQ(err.what(), std::string("Undefined function: I_do_not_exist(int, double, double) at 1:27"));
     } catch (...) {
         FAIL() << "Expected CompilerError";
     }
@@ -66,7 +66,33 @@ TEST(Functions, NonExistingBoundFunction) {
         risotto.run("1.xxx(1.2)");
         FAIL() << "Expected CompilerError";
     } catch (CompilerError const &err) {
-        EXPECT_EQ(err.what(), std::string("Cannot find function matching int.xxx(double) at 1:10"));
+        EXPECT_EQ(err.what(), std::string("Undefined function: int.xxx(double) at 1:3"));
+    } catch (...) {
+        FAIL() << "Expected CompilerError";
+    }
+}
+
+TEST(Functions, NonExistingBinaryOperator) {
+    INIT_RISOTTO
+
+    try {
+        risotto.run("1 * \"hello\"");
+        FAIL() << "Expected CompilerError";
+    } catch (CompilerError const &err) {
+        EXPECT_EQ(err.what(), std::string("Undefined function: int * string at 1:3"));
+    } catch (...) {
+        FAIL() << "Expected CompilerError";
+    }
+}
+
+TEST(Functions, NonExistingUnaryOperator) {
+    INIT_RISOTTO
+
+    try {
+        risotto.run("-\"hello\"");
+        FAIL() << "Expected CompilerError";
+    } catch (CompilerError const &err) {
+        EXPECT_EQ(err.what(), std::string("Undefined function: -string at 1:1"));
     } catch (...) {
         FAIL() << "Expected CompilerError";
     }

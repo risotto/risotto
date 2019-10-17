@@ -5,8 +5,10 @@
 #ifndef RISOTTOV2_TOKEN_H
 #define RISOTTOV2_TOKEN_H
 
-#include <string>
+extern "C" {
 #include <lib/vm/value.h>
+};
+#include <string>
 #include "../../../lib/better-enums/enum.h"
 
 class Position {
@@ -19,7 +21,7 @@ public:
     std::string toString();
 };
 
-BETTER_ENUM(_token_type, int,
+BETTER_ENUM(TokenType, int,
 // Single-character tokens.
             LEFT_PAREN, RIGHT_PAREN, LEFT_CURLY, RIGHT_CURLY, LEFT_SQUARED, RIGHT_SQUARED,
             COMMA, DOT, MINUS, PLUS, PERCENT, SEMICOLON, COLON, SLASH, STAR,
@@ -51,14 +53,12 @@ BETTER_ENUM(_token_type, int,
 
 class Token {
 public:
-    using Type = _token_type;
-
-    Type type;
+    TokenType type;
     ValueData value;
     std::string lexeme;
     Position position;
 
-    Token(Type type,
+    Token(TokenType type,
           ValueData value,
           std::string lexeme,
           Position position

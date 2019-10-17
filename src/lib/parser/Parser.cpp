@@ -10,7 +10,9 @@
 #include <lib/parser/nodes/Expr/FunctionExpr.h>
 #include <lib/parser/nodes/Expr/ArrayExpr.h>
 #include <lib/parser/nodes/Stmt/TypeStmt.h>
-#include <lib/parser/nodes/Expr/NewExpr.h>
+#include <lib/parser/nodes/Expr/GetCallExpr.h>
+#include <lib/parser/nodes/Expr/IdentifierCallExpr.h>
+#include <lib/parser/nodes/Expr/NewCallExpr.h>
 #include "Parser.h"
 #include "ParseError.h"
 #include "lib/parser/nodes/Stmt/ExpressionStmt.h"
@@ -40,12 +42,12 @@ Token *Parser::advance() {
 }
 
 bool Parser::isAtEnd() {
-    return peek()->type._value == Token::Type::TOKEN_EOF;
+    return peek()->type._value == TokenType::TOKEN_EOF;
 }
 
 template<class ...Types>
 bool Parser::match(Types... types) {
-    for (Token::Type type : {types...}) {
+    for (TokenType type : {types...}) {
         if (check(type)) {
             advance();
             return true;
@@ -55,11 +57,11 @@ bool Parser::match(Types... types) {
     return false;
 }
 
-bool Parser::check(Token::Type tokenType) {
+bool Parser::check(TokenType tokenType) {
     return check(tokenType, 0);
 }
 
-bool Parser::check(Token::Type tokenType, int n) {
+bool Parser::check(TokenType tokenType, int n) {
     if (isAtEnd()) return false;
 
     return peek(n)->type == tokenType;
@@ -77,7 +79,7 @@ Token *Parser::previous() {
     return tokens.at(current - 1);
 }
 
-Token *Parser::consume(Token::Type type, const std::string &message) {
+Token *Parser::consume(TokenType type, const std::string &message) {
     if (check(type)) return advance();
 
     throw error(peek(), message);
@@ -88,30 +90,39 @@ ParseError Parser::error(Token *token, const std::string &message) {
 }
 
 TypeDescriptor *Parser::typeDesc() {
-    if (match(Token::Type::LEFT_SQUARED)) {
-        consume(Token::Type::RIGHT_SQUARED, "Expect ']'");
+    if (match(TokenType::LEFT_SQUARED)) {
+        consume(TokenType::RIGHT_SQUARED, "Expect ']'");
 
         return new ArrayTypeDescriptor(typeDesc());
     }
 
-    if (match(Token::Type::STRUCT)) {
-        consume(Token::Type::LEFT_CURLY, "Expect '{'");
+    if (match(TokenType::STRUCT)) {
+        consume(TokenType::LEFT_CURLY, "Expect '{'");
 
         auto fields = enumeration<StructTypeDescriptor::Field>([this]() {
-            auto name = consume(Token::Type::IDENTIFIER, "Expect field name");
+            auto name = consume(TokenType::IDENTIFIER, "Expect field name");
             auto type = typeDesc();
 
             return StructTypeDescriptor::Field(name, type);
-        }, Token::Type::SEMICOLON, Token::Type::RIGHT_CURLY);
+        }, TokenType::SEMICOLON, TokenType::RIGHT_CURLY);
 
-        consume(Token::Type::RIGHT_CURLY, "Expect '}'");
+        consume(TokenType::RIGHT_CURLY, "Expect '}'");
 
         return new StructTypeDescriptor(fields);
     }
 
-    auto name = consume(Token::Type::IDENTIFIER, "Expect type");
+    if (match(TokenType::FUNC)) {
+        return functionSignature<FunctionTypeDescriptor *>(false, false, [](FUNCTION_SIGNATURE_FACTORY_ARGS) {
+            return new FunctionTypeDescriptor(std::move(parameters), std::move(returnTypes));
+        });
+    }
 
-    return new IdentifierTypeDescriptor(name);
+    if (match(TokenType::IDENTIFIER)) {
+        auto name = previous();
+        return new IdentifierTypeDescriptor(name);
+    }
+
+    return nullptr;
 }
 
 std::vector<Stmt *> Parser::program() {
@@ -132,17 +143,17 @@ std::vector<Stmt *> Parser::program() {
 }
 
 Stmt *Parser::declaration() {
-    if (match(Token::Type::TYPE)) {
+    if (match(TokenType::TYPE)) {
         return type();
     }
 
-    if (match(Token::Type::FUNC, Token::Type::OP, Token::Type::NEW)) {
+    if (match(TokenType::FUNC, TokenType::OP, TokenType::NEW)) {
         auto type = previous();
-        auto isConstructor = type->type._value == Token::Type::NEW;
+        auto isConstructor = type->type._value == TokenType::NEW;
 
         auto isNamed = !isConstructor;
 
-        return function<FunctionStmt *>(true, isNamed, [isConstructor](FUNCTION_NODE_ARGS) {
+        return function<FunctionStmt *>(true, isNamed, [isConstructor](FUNCTION_FACTORY_ARGS) {
             if (isConstructor) {
                 if (returnTypes.size() != 1) {
                     throw CompilerError("Constructors must return the object");
@@ -178,7 +189,7 @@ Stmt *Parser::declaration() {
 }
 
 Stmt *Parser::type() {
-    auto identifier = consume(Token::Type::IDENTIFIER, "Expect type name.");
+    auto identifier = consume(TokenType::IDENTIFIER, "Expect type name.");
 
     auto desc = typeDesc();
 
@@ -187,13 +198,13 @@ Stmt *Parser::type() {
 
 Stmt *Parser::varDecl() {
     auto c = current;
-    if (match(Token::Type::IDENTIFIER)) {
+    if (match(TokenType::IDENTIFIER)) {
         auto identifiers = std::vector<Token *>({previous()});
-        while (match(Token::Type::COMMA)) {
-            identifiers.push_back(consume(Token::Type::IDENTIFIER, "Expect identifier."));
+        while (match(TokenType::COMMA)) {
+            identifiers.push_back(consume(TokenType::IDENTIFIER, "Expect identifier."));
         }
 
-        if (match(Token::Type::COLON_EQUAL)) {
+        if (match(TokenType::COLON_EQUAL)) {
             auto op = previous();
 
             auto value = expression();
@@ -209,23 +220,23 @@ Stmt *Parser::varDecl() {
 }
 
 template<typename T>
-T Parser::function(bool canHaveReceiver, bool isNamed, const FunctionNodeType<T> &f) {
+T Parser::functionSignature(bool canHaveReceiver, bool isNamed, const FunctionSignatureFactory<T> &f) {
     auto type = previous();
 
     ParameterDefinition *receiver = nullptr;
-    if (canHaveReceiver && match(Token::Type::LEFT_PAREN)) {
+    if (canHaveReceiver && match(TokenType::LEFT_PAREN)) {
         receiver = parameter();
 
-        consume(Token::Type::RIGHT_PAREN, "Expect ')' after receiver declaration.");
+        consume(TokenType::RIGHT_PAREN, "Expect ')' after receiver declaration.");
     }
 
     Token *name = nullptr;
     if (isNamed) {
         switch (type->type) {
-            case Token::Type::FUNC:
-                name = consume(Token::Type::IDENTIFIER, "Expect function name.");
+            case TokenType::FUNC:
+                name = consume(TokenType::IDENTIFIER, "Expect function name.");
                 break;
-            case Token::Type::OP:
+            case TokenType::OP:
                 name = advance(); // anything
                 break;
             default:
@@ -233,30 +244,48 @@ T Parser::function(bool canHaveReceiver, bool isNamed, const FunctionNodeType<T>
         }
     }
 
-    consume(Token::Type::LEFT_PAREN, "Expect '(' after function name.");
+    consume(TokenType::LEFT_PAREN, "Expect '(' after function name.");
 
     std::vector<ParameterDefinition> parameters = enumeration<ParameterDefinition>([this]() {
         return *parameter();
-    }, Token::Type::RIGHT_PAREN);
+    }, TokenType::RIGHT_PAREN);
 
-    consume(Token::Type::RIGHT_PAREN, "Expect ')' after parameters.");
+    consume(TokenType::RIGHT_PAREN, "Expect ')' after parameters.");
 
-    auto returnTypes = enumeration<TypeDescriptor *>([this]() {
-        return typeDesc();
-    }, Token::Type::LEFT_CURLY);
+    std::vector<TypeDescriptor *> returnTypes;
+    if (match(TokenType::LEFT_PAREN)) {
+        returnTypes = enumeration<TypeDescriptor *>([this]() {
+            return typeDesc();
+        }, TokenType::RIGHT_PAREN);
 
-    auto closeBlock = consume(Token::Type::LEFT_CURLY, "Expect '}'.");
+        consume(TokenType::RIGHT_PAREN, "Expect ')' after return types.");
+    } else {
+        auto returnType = typeDesc();
 
-    std::vector<Stmt *> body = block();
+        if (returnType != nullptr) {
+            returnTypes = std::vector<TypeDescriptor *>({returnType});
+        }
+    }
 
-    return f(type, receiver, name, returnTypes, parameters, body, closeBlock);
+    return f(type, receiver, name, returnTypes, parameters);
+}
+
+template<typename T>
+T Parser::function(bool canHaveReceiver, bool isNamed, const FunctionFactory<T> &f) {
+    return functionSignature<T>(canHaveReceiver, isNamed, [this, f](FUNCTION_SIGNATURE_FACTORY_ARGS) {
+        auto closeBlock = consume(TokenType::LEFT_CURLY, "Expect '{'.");
+
+        std::vector<Stmt *> body = block();
+
+        return f(type, receiver, name, returnTypes, parameters, body, closeBlock);
+    });
 }
 
 ParameterDefinition *Parser::parameter() {
-    auto name = consume(Token::Type::IDENTIFIER, "Expect parameter name.");
+    auto name = consume(TokenType::IDENTIFIER, "Expect parameter name.");
 
     auto asReference = false;
-    if (match(Token::Type::AMPERSAND)) {
+    if (match(TokenType::AMPERSAND)) {
         asReference = true;
     }
 
@@ -268,7 +297,7 @@ ParameterDefinition *Parser::parameter() {
 std::vector<Stmt *> Parser::block() {
     std::vector<Stmt *> statements;
 
-    while (!check(Token::Type::RIGHT_CURLY) && !isAtEnd()) {
+    while (!check(TokenType::RIGHT_CURLY) && !isAtEnd()) {
         auto stmt = declaration();
 
         if (stmt == nullptr) {
@@ -279,16 +308,16 @@ std::vector<Stmt *> Parser::block() {
         statements.push_back(stmt);
     }
 
-    consume(Token::Type::RIGHT_CURLY, "Expect '}' after block.");
+    consume(TokenType::RIGHT_CURLY, "Expect '}' after block.");
     return statements;
 }
 
 Stmt *Parser::statement() {
-    if (match(Token::Type::FOR)) return forStatement();
-    if (match(Token::Type::IF)) return ifStatement(true);
-    if (match(Token::Type::RETURN)) return returnStatement();
-    if (match(Token::Type::LEFT_CURLY)) return new BlockStmt(block());
-    if (match(Token::Type::WHILE)) return whileStatement();
+    if (match(TokenType::FOR)) return forStatement();
+    if (match(TokenType::IF)) return ifStatement(true);
+    if (match(TokenType::RETURN)) return returnStatement();
+    if (match(TokenType::LEFT_CURLY)) return new BlockStmt(block());
+    if (match(TokenType::WHILE)) return whileStatement();
 
     return expressionStatement();
 }
@@ -310,7 +339,7 @@ Stmt *Parser::whileStatement() {
 
 Stmt *Parser::forStatement() {
     Stmt *initializer;
-    if (match(Token::Type::SEMICOLON)) {
+    if (match(TokenType::SEMICOLON)) {
         initializer = nullptr;
     } else {
         auto varDeclStmt = varDecl();
@@ -322,16 +351,16 @@ Stmt *Parser::forStatement() {
         }
     }
 
-    consume(Token::Type::SEMICOLON, "Expect ';' after loop initializer.");
+    consume(TokenType::SEMICOLON, "Expect ';' after loop initializer.");
 
     Expr *condition = nullptr;
-    if (!check(Token::Type::SEMICOLON)) {
+    if (!check(TokenType::SEMICOLON)) {
         condition = expression();
     }
-    consume(Token::Type::SEMICOLON, "Expect ';' after loop condition.");
+    consume(TokenType::SEMICOLON, "Expect ';' after loop condition.");
 
     Expr *increment = nullptr;
-    if (!check(Token::Type::RIGHT_PAREN)) {
+    if (!check(TokenType::RIGHT_PAREN)) {
         increment = expression();
     }
 
@@ -357,8 +386,8 @@ Stmt *Parser::ifStatement(bool canHaveElse) {
     Stmt *thenBranch = statement();
     auto elseifs = std::vector<IfStmt *>();
     Stmt *elseBranch = nullptr;
-    while (canHaveElse && match(Token::Type::ELSE)) {
-        if (match(Token::Type::IF)) {
+    while (canHaveElse && match(TokenType::ELSE)) {
+        if (match(TokenType::IF)) {
             elseifs.push_back((IfStmt *) ifStatement(false));
         } else {
             elseBranch = statement();
@@ -381,7 +410,7 @@ Stmt *Parser::returnStatement() {
 
         values.push_back(value);
 
-        if (!match(Token::Type::COMMA)) {
+        if (!match(TokenType::COMMA)) {
             break;
         }
     }
@@ -402,8 +431,8 @@ Stmt *Parser::expressionStatement() {
 }
 
 Expr *Parser::expression() {
-    if (match(Token::Type::FUNC)) {
-        auto functionStmt = function<FunctionStmt *>(false, false, [](FUNCTION_NODE_ARGS) {
+    if (match(TokenType::FUNC)) {
+        auto functionStmt = function<FunctionStmt *>(false, false, [](FUNCTION_FACTORY_ARGS) {
             return new FunctionStmt(
                     type,
                     receiver,
@@ -419,31 +448,30 @@ Expr *Parser::expression() {
         return new FunctionExpr(functionStmt);
     }
 
-    if (check(Token::Type::LEFT_SQUARED)) {
+    if (check(TokenType::LEFT_SQUARED)) {
         auto type = typeDesc();
 
-        consume(Token::Type::LEFT_CURLY, "Expect '{'");
+        consume(TokenType::LEFT_CURLY, "Expect '{'");
 
         auto elements = enumeration<Expr *>([this]() {
             return expression();
-        }, Token::Type::RIGHT_CURLY);
+        }, TokenType::RIGHT_CURLY);
 
-        consume(Token::Type::RIGHT_CURLY, "Expect '}'");
+        consume(TokenType::RIGHT_CURLY, "Expect '}'");
 
         return new ArrayExpr(type, elements);
     }
 
-    if (match(Token::Type::NEW)) {
-        auto identifier = consume(Token::Type::IDENTIFIER, "Expect identifier");
-        auto identifierDesc = new IdentifierTypeDescriptor(identifier);
+    if (match(TokenType::NEW)) {
+        auto identifier = consume(TokenType::IDENTIFIER, "Expect identifier");
 
-        consume(Token::Type::LEFT_PAREN, "Expect '('");
+        consume(TokenType::LEFT_PAREN, "Expect '('");
 
         auto args = arguments();
 
-        Token *rParen = consume(Token::Type::RIGHT_PAREN, "Expect ')' after parameters.");
+        Token *rParen = consume(TokenType::RIGHT_PAREN, "Expect ')' after parameters.");
 
-        return new CallExpr(new NewExpr(identifierDesc), rParen, args);
+        return new NewCallExpr(identifier, rParen, args);
     }
 
     return assignment();
@@ -452,7 +480,7 @@ Expr *Parser::expression() {
 Expr *Parser::assignment() {
     Expr *expr = logicalOr();
 
-    if (match(Token::Type::EQUAL)) {
+    if (match(TokenType::EQUAL)) {
         Token *op = previous();
         Expr *value = expression();
 
@@ -460,10 +488,10 @@ Expr *Parser::assignment() {
     }
 
     if (match(
-            Token::Type::PLUS_EQUAL,
-            Token::Type::MINUS_EQUAL,
-            Token::Type::STAR_EQUAL,
-            Token::Type::SLASH_EQUAL
+            TokenType::PLUS_EQUAL,
+            TokenType::MINUS_EQUAL,
+            TokenType::STAR_EQUAL,
+            TokenType::SLASH_EQUAL
     )) {
         Token *op = previous();
         Expr *value = expression();
@@ -477,7 +505,7 @@ Expr *Parser::assignment() {
 Expr *Parser::logicalOr() {
     Expr *expr = logicalAnd();
 
-    while (match(Token::Type::OR)) {
+    while (match(TokenType::OR)) {
         Token *op = previous();
         Expr *right = logicalAnd();
         expr = new LogicalExpr(expr, op, right);
@@ -489,7 +517,7 @@ Expr *Parser::logicalOr() {
 Expr *Parser::logicalAnd() {
     Expr *expr = equality();
 
-    while (match(Token::Type::AND)) {
+    while (match(TokenType::AND)) {
         Token *op = previous();
         Expr *right = equality();
         expr = new LogicalExpr(expr, op, right);
@@ -501,7 +529,7 @@ Expr *Parser::logicalAnd() {
 Expr *Parser::equality() {
     Expr *expr = comparison();
 
-    while (match(Token::Type::EQUAL_EQUAL, Token::Type::BANG_EQUAL)) {
+    while (match(TokenType::EQUAL_EQUAL, TokenType::BANG_EQUAL)) {
         Token *op = previous();
         Expr *right = comparison();
         expr = new BinaryExpr(expr, op, right);
@@ -513,7 +541,7 @@ Expr *Parser::equality() {
 Expr *Parser::comparison() {
     Expr *expr = addition();
 
-    while (match(Token::Type::GREATER, Token::Type::GREATER_EQUAL, Token::Type::LESS, Token::Type::LESS_EQUAL)) {
+    while (match(TokenType::GREATER, TokenType::GREATER_EQUAL, TokenType::LESS, TokenType::LESS_EQUAL)) {
         Token *op = previous();
         Expr *right = addition();
         expr = new BinaryExpr(expr, op, right);
@@ -525,7 +553,7 @@ Expr *Parser::comparison() {
 Expr *Parser::addition() {
     Expr *expr = multiplication();
 
-    while (match(Token::Type::MINUS, Token::Type::PLUS)) {
+    while (match(TokenType::MINUS, TokenType::PLUS)) {
         Token *op = previous();
         Expr *right = multiplication();
         expr = new BinaryExpr(expr, op, right);
@@ -537,7 +565,7 @@ Expr *Parser::addition() {
 Expr *Parser::multiplication() {
     Expr *expr = unary();
 
-    while (match(Token::Type::SLASH, Token::Type::STAR, Token::Type::PERCENT)) {
+    while (match(TokenType::SLASH, TokenType::STAR, TokenType::PERCENT)) {
         Token *op = previous();
         Expr *right = unary();
         expr = new BinaryExpr(expr, op, right);
@@ -547,7 +575,7 @@ Expr *Parser::multiplication() {
 }
 
 Expr *Parser::unary() {
-    if (match(Token::Type::BANG, Token::Type::MINUS, Token::Type::MINUS_MINUS, Token::Type::PLUS_PLUS)) {
+    if (match(TokenType::BANG, TokenType::MINUS, TokenType::MINUS_MINUS, TokenType::PLUS_PLUS)) {
         Token *op = previous();
         Expr *right = unary();
         return new UnaryExpr(op, right);
@@ -560,14 +588,20 @@ Expr *Parser::call() {
     auto expr = primary();
 
     while (true) {
-        if (match(Token::Type::LEFT_PAREN)) {
+        if (match(TokenType::LEFT_PAREN)) {
             auto args = arguments();
 
-            Token *rParen = consume(Token::Type::RIGHT_PAREN, "Expect ')' after parameters.");
+            Token *rParen = consume(TokenType::RIGHT_PAREN, "Expect ')' after parameters.");
 
-            expr = new CallExpr(expr, rParen, args);
-        } else if (match(Token::Type::DOT)) {
-            auto identifier = consume(Token::Type::IDENTIFIER, "Expect identifier.");
+            if (auto identifierExpr = dynamic_cast<IdentifierExpr *>(expr)) {
+                expr = new IdentifierCallExpr(identifierExpr->name, rParen, args);
+            } else if (auto getExpr = dynamic_cast<GetExpr *>(expr)) {
+                expr = new GetCallExpr(getExpr->callee, rParen, getExpr->identifier, rParen, args);
+            }  else {
+                expr = new CallExpr(expr, rParen, args);
+            }
+        } else if (match(TokenType::DOT)) {
+            auto identifier = consume(TokenType::IDENTIFIER, "Expect identifier.");
 
             expr = new GetExpr(expr, identifier);
         } else {
@@ -580,21 +614,21 @@ Expr *Parser::call() {
 
 Expr *Parser::primary() {
     if (match(
-            Token::Type::FALSE,
-            Token::Type::TRUE,
-            Token::Type::NIL,
-            Token::Type::INT,
-            Token::Type::DOUBLE,
-            Token::Type::STRING
+            TokenType::FALSE,
+            TokenType::TRUE,
+            TokenType::NIL,
+            TokenType::INT,
+            TokenType::DOUBLE,
+            TokenType::STRING
     )) {
         return new LiteralExpr(previous());
     }
 
-    if (match(Token::Type::IDENTIFIER)) {
+    if (match(TokenType::IDENTIFIER)) {
         return new IdentifierExpr(previous());
     }
 
-    if (match(Token::Type::LEFT_PAREN)) return group();
+    if (match(TokenType::LEFT_PAREN)) return group();
 
     return nullptr;
 }
@@ -603,22 +637,22 @@ Expr *Parser::group() {
     auto lParen = previous();
     Expr *expr = expression();
 
-    auto rParen = consume(Token::Type::RIGHT_PAREN, "Expect ')' after expression.");
+    auto rParen = consume(TokenType::RIGHT_PAREN, "Expect ')' after expression.");
 
     return new GroupingExpr(expr, lParen, rParen);
 }
 
 std::vector<Expr *> Parser::arguments() {
-    return enumeration<Expr *>([this]() { return this->expression(); }, Token::Type::RIGHT_PAREN);
+    return enumeration<Expr *>([this]() { return this->expression(); }, TokenType::RIGHT_PAREN);
 }
 
 template<typename T>
-std::vector<T> Parser::enumeration(std::function<T()> of, Token::Type end) {
-    return enumeration(of, Token::Type::COMMA, end);
+std::vector<T> Parser::enumeration(std::function<T()> of, TokenType end) {
+    return enumeration(of, TokenType::COMMA, end);
 }
 
 template<typename T>
-std::vector<T> Parser::enumeration(std::function<T()> of, Token::Type separator, Token::Type end) {
+std::vector<T> Parser::enumeration(std::function<T()> of, TokenType separator, TokenType end) {
     std::vector<T> elements;
 
     do {

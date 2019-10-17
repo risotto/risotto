@@ -7,11 +7,15 @@
 ReturnTypes::ReturnTypes(TypeReference *ref) : ReturnTypes({ref}) {
 }
 
+ReturnTypes::ReturnTypes(std::vector<TypeReference *> refs): ReturnTypes() {
+    this->insert(this->end(),  refs.begin(), refs.end());
+}
+
 ReturnTypes ReturnTypes::onlyFunctions() {
     auto onlyFunctions = ReturnTypes();
 
     for (auto ref : *this) {
-        if (ref->isFunction()) {
+        if (ref->asFunction()) {
             onlyFunctions.push_back(ref);
         }
     }

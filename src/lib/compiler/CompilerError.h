@@ -24,8 +24,7 @@ public:
 
 class FunctionNotFoundError : public CompilerError {
 public:
-    FunctionNotFoundError(const std::string& name, const std::string& type, const std::vector<TypeReference *>& argsTypes, Token *hook);
-    FunctionNotFoundError(Token *name, const std::string& type);
+    FunctionNotFoundError(const std::string& tpl, const std::vector<TypeReference *>& argsTypes, Token *hook);
 };
 
 #endif //RISOTTOV2_COMPILERERROR_H

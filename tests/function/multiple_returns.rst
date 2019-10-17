@@ -1,4 +1,4 @@
-func test() int, string, bool {
+func test() (int, string, bool) {
     return 1, "yolo", true
 }
 

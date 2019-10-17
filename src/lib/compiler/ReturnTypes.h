@@ -13,6 +13,7 @@ public:
     using std::vector<TypeReference *>::vector;
 
     ReturnTypes(TypeReference *ref);
+    ReturnTypes(std::vector<TypeReference *> refs);
 
     bool single();
 

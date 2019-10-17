@@ -17,7 +17,7 @@ TEST(Operators, Precedence) {
     EXPECT_STDOUT("17\n17\n17\n17\n");
 }
 
-TEST(Operators, DISABLED_UnaryPrefixMinus) {
+TEST(Operators, UnaryPrefixMinus) {
     INIT_TEST
 
     risotto.run("println(-2) println(-(-2)) println(- -2) println(-2.0) println(-(-2.0)) println(- -2.0)");
@@ -25,10 +25,10 @@ TEST(Operators, DISABLED_UnaryPrefixMinus) {
     EXPECT_STDOUT("-2\n2\n2\n-2.000000\n2.000000\n2.000000\n");
 }
 
-TEST(Operators, DISABLED_UnaryPrefixMinusMinus) {
+TEST(Operators, UnaryPrefixMinusMinus) {
     INIT_TEST
 
-    risotto.run("var a = 3) print --a; print a; var b = 3.0; print --b; print b;");
+    risotto.run("a := 3 println(--a) println(a) b := 3.0 println(--b) println(b)");
 
     EXPECT_STDOUT("2\n2\n2.000000\n2.000000\n");
 }
@@ -41,18 +41,18 @@ TEST(Operators, DISABLED_UnaryPostfixMinusMinus) {
     EXPECT_STDOUT("3\n2\n3.000000\n2.000000\n");
 }
 
-TEST(Operators, DISABLED_UnaryPrefixBang) {
+TEST(Operators, UnaryPrefixBang) {
     INIT_TEST
 
-    risotto.run("print !true; print !false; print !!true; print !!false;");
+    risotto.run("println(!true) println(!false) println(!!true) println(!!false)");
 
     EXPECT_STDOUT("false\ntrue\ntrue\nfalse\n");
 }
 
-TEST(Operators, DISABLED_UnaryPrefixPlusPlus) {
+TEST(Operators, UnaryPrefixPlusPlus) {
     INIT_TEST
 
-    risotto.run("var a = 3; print ++a; print a; var b = 3.0; print ++b; print b;");
+    risotto.run("a := 3 println(++a) println(a) b := 3.0 println(++b) println(b)");
 
     EXPECT_STDOUT("4\n4\n4.000000\n4.000000\n");
 }

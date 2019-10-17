@@ -13,28 +13,39 @@
 #include "lib/compiler/TypeReference.h"
 #include "lib/compiler/ReturnTypes.h"
 
-class CallExpr: public Expr {
+class BaseCallExpr : public Expr {
 public:
-    Expr *callee;
     Token *rParen;
     std::vector<Expr *> args;
 
-    CallExpr(Expr *callee, Token *rParen, std::vector<Expr *> args);
-    CallExpr(Expr *callee, Token *rParen, std::vector<Expr *> args, bool calleeIsValue);
-
-    virtual std::vector<Expr *> getArguments(Compiler *compiler);
-    virtual FunctionEntry *getFunctionEntry(Compiler *compiler);
+    BaseCallExpr(Token *rParen, std::vector<Expr *> args);
 
     std::vector<ByteResolver *> compile(Compiler *compiler) override;
 
-protected:
-    ReturnTypes computeReturnType(Compiler *compiler) override;
+    virtual std::vector<TypeReference *> getArgumentsTypes(Compiler *compiler);
 
-    std::vector<TypeReference *> getArgumentsTypes(Compiler *compiler);
+    virtual std::vector<Expr *> getArguments(Compiler *compiler);
 
     virtual FunctionNotFoundError getFunctionNotFoundError(Compiler *compiler);
 
-    ReturnTypes getCalleeEntry(Compiler *compiler);
+    virtual bool isArgumentReference(Compiler *compiler, int i) = 0;
+
+    virtual void loadCallAddr(Compiler *compiler, std::vector<ByteResolver *> &bytes) = 0;
+    virtual void loadArgs(Compiler *compiler, std::vector<ByteResolver *> &bytes);
+};
+
+class CallExpr : public BaseCallExpr {
+public:
+    Expr *callee;
+
+    CallExpr(Expr *callee, Token *rParen, const std::vector<Expr *>& args);
+
+    bool isArgumentReference(Compiler *compiler, int i) override;
+
+    void loadCallAddr(Compiler *compiler, std::vector<ByteResolver *> &bytes) override;
+
+protected:
+    ReturnTypes computeReturnType(Compiler *compiler) override;
 };
 
 

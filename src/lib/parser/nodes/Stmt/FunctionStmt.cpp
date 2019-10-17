@@ -71,21 +71,21 @@ FunctionEntry *FunctionStmt::getFunctionEntry(Compiler *compiler) {
             }
 
             switch (type->type) {
-                case Token::Type::FUNC:
+                case TokenType::FUNC:
                     functionEntry = receiverType->addFunction(
                             receiver->name->lexeme,
                             receiver->asReference,
                             functionEntry
                     );
                     break;
-                case Token::Type::OP:
+                case TokenType::OP:
                     functionEntry = receiverType->addOperator(
                             receiver->name->lexeme,
                             receiver->asReference,
                             functionEntry
                     );
                     break;
-                case Token::Type::NEW: {
+                case TokenType::NEW: {
                     auto structType = dynamic_cast<StructTypeDefinition *>(receiverType);
                     if (structType == nullptr) {
                         throw CompilerError("Receiver must be a struct", receiver->name->position);

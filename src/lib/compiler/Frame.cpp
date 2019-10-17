@@ -3,8 +3,10 @@
 //
 
 #include <lib/parser/nodes/TypeDescriptor.h>
+#include <lib/compiler/utils/Utils.h>
 #include "Frame.h"
 #include "TypeDefinition.h"
+#include "Compiler.h"
 
 VariableFindResponse::VariableFindResponse(VariableEntry *variable, int distance) : variable(variable),
                                                                                     distance(distance) {}
@@ -89,14 +91,16 @@ std::vector<FunctionEntry *> Frame::findFunctionsCandidates(const std::string &n
         auto functionCandidates = current->functions.findCandidates(name);
         allCandidates.insert(allCandidates.end(), functionCandidates.begin(), functionCandidates.end());
 
-        auto var = current->variables.find(name);
-        if (var != nullptr) {
-            if (var->typeRef->isFunction()) {
-                if (auto functionTypeRef = dynamic_cast<FunctionTypeReference *>(var->typeRef)) {
-                    allCandidates.push_back(functionTypeRef->entry->function);
-                }
-            }
-        }
+//        auto var = current->variables.find(name);
+//        if (var != nullptr) {
+//            if (auto functionRef = var->typeRef->asFunction()) {
+//                auto def = functionRef->toTypeDefinition(this);
+//
+//                if (auto functionDef = dynamic_cast<FunctionTypeDefinition *>(def)) {
+//                    allCandidates.push_back(functionDef->entry);
+//                }
+//            }
+//        }
 
         current = current->parent;
     }
@@ -113,7 +117,7 @@ TypeDefinition *Frame::findOrCreateVirtualType(TypeReference *typeReference, Com
 
     auto id = typeReference->toString();
 
-    typeDefinition = typeReference->toTypeDefinition(compiler);
+    typeDefinition = typeReference->toTypeDefinition(this);
     typeDefinition = types.addVirtual(id, typeDefinition);
 
     return typeDefinition;
@@ -123,4 +127,10 @@ TypeDefinition *Frame::findVirtualType(TypeReference *typeReference) {
     auto id = typeReference->toString();
 
     return findVirtualType(id);
+}
+
+FunctionEntry * Frame::findFunction(const std::string &name, std::vector<TypeReference *> argsTypes) {
+    auto functionsCandidates = findFunctionsCandidates(name);
+
+    return Utils::findMatchingFunctions(functionsCandidates, argsTypes);
 }

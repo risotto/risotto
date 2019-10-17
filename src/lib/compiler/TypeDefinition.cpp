@@ -50,7 +50,7 @@ FunctionEntry *TypeDefinition::addPrefix(const std::string &selfName, bool asRef
     return prefixes.add(entry);
 }
 
-FunctionTypeDefinition::FunctionTypeDefinition(FunctionEntry *function) : function(function) {
+FunctionTypeDefinition::FunctionTypeDefinition(FunctionEntry *function) : entry(function) {
 
 }
 

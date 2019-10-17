@@ -11,7 +11,7 @@ CompilerError::CompilerError(const std::string &message) {
     this->message = message;
 }
 
-CompilerError::CompilerError(const std::string& message, Position position) :
+CompilerError::CompilerError(const std::string &message, Position position) :
         CompilerError(message + " at " + position.toString()) {
 
 }
@@ -20,47 +20,39 @@ const char *CompilerError::what() const noexcept {
     return message.c_str();
 }
 
-std::string
-format(const std::string &name, const std::string &type, const std::vector<TypeReference *> *argsTypes) {
-    std::stringstream ss;
-    ss << "Cannot find function matching ";
-
-    if (!type.empty()) {
-        ss << type << ".";
+std::string replace_str(std::string str, const std::string &from, const std::string &to) {
+    while (str.find(from) != std::string::npos) {
+        str.replace(str.find(from), from.length(), to);
     }
 
-    if (!name.empty()) {
-        ss << name;
-    }
-
-    if (argsTypes != nullptr) {
-        ss << "(";
-
-        for (size_t i = 0; i < argsTypes->size(); ++i) {
-            if (i != 0) {
-                ss << ", ";
-            }
-
-            ss << (*argsTypes)[i]->toString();
-        }
-
-        ss << ")";
-
-    }
-
-    return ss.str();
+    return str;
 }
 
-FunctionNotFoundError::FunctionNotFoundError(Token *name, const std::string &type) :
-        CompilerError(format(name->lexeme, type, nullptr), name->position) {
+std::string
+format(const std::string &tpl, const std::vector<TypeReference *> *argsTypes) {
+    std::stringstream argsss;
 
+    if (argsTypes != nullptr) {
+        for (size_t i = 0; i < argsTypes->size(); ++i) {
+            if (i != 0) {
+                argsss << ", ";
+            }
+
+            argsss << (*argsTypes)[i]->toString();
+        }
+    }
+
+    auto argsStr = argsss.str();
+
+    auto str = replace_str(tpl, "{{args}}", argsStr);
+
+    return "Undefined function: " + str;
 }
 
 FunctionNotFoundError::FunctionNotFoundError(
-        const std::string &name,
-        const std::string &type,
+        const std::string &tpl,
         const std::vector<TypeReference *> &argsTypes,
         Token *hook
-) : CompilerError(format(name, type, &argsTypes), hook->position) {
+) : CompilerError(format(tpl, &argsTypes), hook->position) {
 
 }

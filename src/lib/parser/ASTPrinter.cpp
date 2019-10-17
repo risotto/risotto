@@ -89,7 +89,9 @@ if (auto V = dynamic_cast<T *>(stmt)) { \
         DC(GetExpr)
         DC(SetExpr)
         DC(ArrayExpr)
-        DC(NewExpr)
+        DC(IdentifierCallExpr)
+        DC(GetCallExpr)
+        DC(FunctionExpr)
 
         DC(CallExpr)
 
@@ -263,7 +265,7 @@ if (auto V = dynamic_cast<T *>(stmt)) { \
         ss << "GetExpr" << std::endl;
         ss << indent("+Callee:", 1) << std::endl;
         ss << indent(print(stmt->callee), 2);
-        ss << indent("+Identifier: " + stmt->identifier->lexeme, 1) << std::endl;
+        ss << indent("+Identifier: " + stmt->identifier->lexeme, 1);
 
         return ss.str();
     }
@@ -328,17 +330,43 @@ if (auto V = dynamic_cast<T *>(stmt)) { \
         ss << "TypeStmt" << std::endl;
         ss << indent("+Name: ", 1) + stmt->name->lexeme << std::endl;
         ss << indent("+Descriptor:", 1) << std::endl;
-        ss << indent(stmt->typeDescriptor->toString(), 2) << "\n";
+        ss << indent(stmt->typeDescriptor->toString(), 2);
 
         return ss.str();
     }
 
     template<>
-    std::string print<NewExpr *>(NewExpr *stmt) {
+    std::string print<IdentifierCallExpr *>(IdentifierCallExpr *stmt) {
         std::stringstream ss;
 
-        ss << "NewExpr" << std::endl;
-        ss << indent("+Identifier: ", 1) + stmt->identifier->toString() << std::endl;
+        ss << "IdentifierCallExpr" << std::endl;
+        ss << indent("+Identifier: ", 1) + stmt->identifier->lexeme << std::endl;
+        ss << indent("+Args:", 1) << std::endl;
+        ss << indent(print(stmt->args), 2);
+
+        return ss.str();
+    }
+
+    template<>
+    std::string print<GetCallExpr *>(GetCallExpr *stmt) {
+        std::stringstream ss;
+
+        ss << "GetCallExpr" << std::endl;
+        ss << indent("+Callee: ", 1) << std::endl;
+        ss << indent(print(stmt->callee), 2) << std::endl;
+        ss << indent("+Identifier: ", 1) + stmt->identifier->lexeme << std::endl;
+        ss << indent("+Args:", 1) << std::endl;
+        ss << indent(print(stmt->args), 2);
+
+        return ss.str();
+    }
+
+    template<>
+    std::string print<FunctionExpr *>(FunctionExpr *stmt) {
+        std::stringstream ss;
+
+        ss << "FunctionExpr" << std::endl;
+        ss << indent(print(stmt->functionStmt), 2);
 
         return ss.str();
     }

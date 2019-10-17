@@ -18,6 +18,8 @@ class Utils {
 public:
     static std::vector<FunctionEntry *> findCandidatesFunctions(const std::vector<FunctionEntry *>& functions, const std::string& name);
     static FunctionEntry * findMatchingFunctions(const std::vector<FunctionEntry *>& functions, std::vector<TypeReference *> argsTypes);
+    static bool typesMatch(const std::vector<TypeReference *>& receivers, std::vector<TypeReference *> args);
+    static bool typesMatch(const std::vector<FunctionTypeReferenceParameter>& params, std::vector<FunctionTypeReferenceParameter> args);
 
     static void loadFunctionEntryAddr(Compiler *compiler, FunctionEntry *entry, std::vector<ByteResolver *> &bytes);
 
