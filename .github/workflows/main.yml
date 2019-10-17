@@ -43,10 +43,17 @@ jobs:
     - name: Build
       run: cmake --build build
     - name: Test binary
-      run: build/cmd -h
+      run: build/rst -h
+
     - name: Upload binary
       uses: actions/upload-artifact@master
       if: success()
       with:
-        name: cmd-${{ matrix.os }}
-        path: build/cmd
+        name: rst-${{ matrix.os }}
+        path: build/rst
+    - name: Upload debug binary
+      uses: actions/upload-artifact@master
+      if: success()
+      with:
+        name: rst-debug-${{ matrix.os }}
+        path: build/rst-debug

@@ -69,13 +69,24 @@ file(GLOB_RECURSE CMD_SRC RELATIVE ${CMAKE_SOURCE_DIR} "src/cmd/cmd.cpp" )
 
 # LIBRARY
 
-add_library(risotto STATIC ${LIB_BETTER_ENUMS_SRC} ${RISOTTO_LIB_SRC})
-target_include_directories(risotto PUBLIC ${CMAKE_SOURCE_DIR}/src)
+add_library(risotto_lib STATIC ${LIB_BETTER_ENUMS_SRC} ${RISOTTO_LIB_SRC})
+target_include_directories(risotto_lib PUBLIC ${CMAKE_SOURCE_DIR}/src)
+
+# DEBUG LIBRARY
+
+add_library(risotto_lib_debug STATIC ${LIB_BETTER_ENUMS_SRC} ${RISOTTO_LIB_SRC})
+target_compile_definitions(risotto_lib_debug PUBLIC DEBUG_TRACE_EXECUTION)
+target_include_directories(risotto_lib_debug PUBLIC ${CMAKE_SOURCE_DIR}/src)
 
 # CMD
 
-add_executable(cmd ${CMD_COMMON} ${CMD_SRC})
-target_link_libraries(cmd risotto)
+add_executable(rst ${CMD_COMMON} ${CMD_SRC})
+target_link_libraries(rst risotto_lib)
+
+# DEBUG CMD
+
+add_executable(rst-debug ${CMD_COMMON} ${CMD_SRC})
+target_link_libraries(rst-debug risotto_lib_debug)
 
 # TESTING
 
@@ -94,5 +105,5 @@ endif ()
 file(GLOB_RECURSE TESTS_SRC RELATIVE ${CMAKE_SOURCE_DIR} "tests/*.c" "tests/*.cpp" "tests/*.h")
 
 add_executable(tests ${TESTS_SRC})
-target_link_libraries(tests risotto)
+target_link_libraries(tests risotto_lib)
 target_link_libraries(tests gtest_main)

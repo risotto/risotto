@@ -24,7 +24,7 @@ enum RisottoFlags {
 
 class Risotto {
 public:
-    unsigned int flags;
+    const unsigned int flags;
 
     Risotto();
 
