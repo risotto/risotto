@@ -72,7 +72,7 @@ TEST(Functions, NonExistingBoundFunction) {
     }
 }
 
-TEST(Functions, NonExistingOperator) {
+TEST(Functions, NonExistingBinaryOperator) {
     INIT_RISOTTO
 
     try {
@@ -80,6 +80,19 @@ TEST(Functions, NonExistingOperator) {
         FAIL() << "Expected CompilerError";
     } catch (CompilerError const &err) {
         EXPECT_EQ(err.what(), std::string("Undefined function: int * string at 1:3"));
+    } catch (...) {
+        FAIL() << "Expected CompilerError";
+    }
+}
+
+TEST(Functions, NonExistingUnaryOperator) {
+    INIT_RISOTTO
+
+    try {
+        risotto.run("-\"hello\"");
+        FAIL() << "Expected CompilerError";
+    } catch (CompilerError const &err) {
+        EXPECT_EQ(err.what(), std::string("Undefined function: -string at 1:1"));
     } catch (...) {
         FAIL() << "Expected CompilerError";
     }
