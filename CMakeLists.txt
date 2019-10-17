@@ -58,26 +58,24 @@ if (CMAKE_VERSION VERSION_LESS 2.8.11)
     include_directories("${gtest_SOURCE_DIR}/include" "${gmock_SOURCE_DIR}/include")
 endif ()
 
-file(GLOB_RECURSE BETTER_ENUMS_SRC RELATIVE ${CMAKE_SOURCE_DIR} "lib/better-enums/enum.h")
+file(GLOB_RECURSE LIB_BETTER_ENUMS_SRC RELATIVE ${CMAKE_SOURCE_DIR} "lib/better-enums/enum.h")
+file(GLOB_RECURSE LIB_CXXOPTS_SRC RELATIVE ${CMAKE_SOURCE_DIR} "lib/cxxopts/include/cxxopts.hpp")
 
 file(GLOB_RECURSE RISOTTO_LIB_SRC RELATIVE ${CMAKE_SOURCE_DIR} "src/lib/*.c" "src/lib/*.cpp" "src/lib/*.h")
-file(GLOB_RECURSE CMD_SRC RELATIVE ${CMAKE_SOURCE_DIR} "src/cmd/*.c" "src/cmd/*.cpp" "src/cmd/*.h")
-file(GLOB_RECURSE DEBUGCMD_SRC RELATIVE ${CMAKE_SOURCE_DIR} "src/debugcmd/*.c" "src/debugcmd/*.cpp" "src/debugcmd/*.h")
+
+set(CMD_COMMON ${LIB_CXXOPTS_SRC})
+
+file(GLOB_RECURSE CMD_SRC RELATIVE ${CMAKE_SOURCE_DIR} "src/cmd/cmd.cpp" )
 
 # LIBRARY
 
-add_library(risotto STATIC ${BETTER_ENUMS_SRC} ${RISOTTO_LIB_SRC})
+add_library(risotto STATIC ${LIB_BETTER_ENUMS_SRC} ${RISOTTO_LIB_SRC})
 target_include_directories(risotto PUBLIC ${CMAKE_SOURCE_DIR}/src)
 
 # CMD
 
-add_executable(cmd ${CMD_SRC})
+add_executable(cmd ${CMD_COMMON} ${CMD_SRC})
 target_link_libraries(cmd risotto)
-
-# DEBUGCMD
-
-add_executable(debugcmd ${DEBUGCMD_SRC})
-target_link_libraries(debugcmd risotto)
 
 # TESTING
 

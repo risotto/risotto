@@ -111,6 +111,7 @@ static InterpretResult run() {
 #ifdef BENCHMARK_TIMINGS
     clock_t timings[Last+1];
     unsigned long timingsc[Last+1];
+    unsigned long opsc = 0;
 
     for (int m = 0; m <= Last; ++m) {
         timings[m] = 0;
@@ -140,6 +141,7 @@ static InterpretResult run() {
 
 #ifdef BENCHMARK_TIMINGS
         clock_t start = clock();
+        opsc++;
 #endif
 
         switch (instruction) {
@@ -400,10 +402,12 @@ static InterpretResult run() {
                     unsigned long c = timingsc[k];
 
                     if(c > 0) {
-                        printf("%-3u - %-14s C: %-6lu T: %-6lu AT: %-8Lf TT: %Lf \n", k, getName(k), c, t, ((long double)t)/c/CLOCKS_PER_SEC, ((long double)t)/CLOCKS_PER_SEC);
+                        printf("%-3u - %-14s C: %-9lu T: %-9lu AT: %-9Lf TT: %-9Lf \n", k, getName(k), c, t, ((long double)t)/c/CLOCKS_PER_SEC, ((long double)t)/CLOCKS_PER_SEC);
                     }
                 }
-                printf("C: Count - T: Ticks - AT: Average Time - TT: Total Time\n");
+                printf("\n");
+                printf("Total ops: %lu\n", opsc);
+                printf("C: Count - T: CPU Ticks - AT: Average Time - TT: Total Time\n");
                 printf("=======================================================\n");
 #endif
                 return INTERPRET_OK;

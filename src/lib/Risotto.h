@@ -13,14 +13,30 @@ extern "C" {
 #include <vector>
 #include <lib/tokenizer/Token.h>
 
+enum RisottoFlags {
+    None              = 0,
+    PrintTimings      = 1 << 0,
+    PrintTokens       = 1 << 1,
+    PrintAST          = 1 << 2,
+    PrintDisassembled = 1 << 3,
+};
+
 class Risotto {
 public:
+    unsigned int flags;
+
+    explicit Risotto(unsigned int flags);
+
     InterpretResult runFile(const std::string &filename);
 
-    InterpretResult run(std::string program);
+    InterpretResult run(const std::string& program);
 
+    bool hasFlag(RisottoFlags flag);
+
+    template<typename T>
+    T timing(const std::string& name, std::function<T()> f);
 private:
-    InterpretResult doRun(std::vector<Token *> tokens);
+    InterpretResult doRun(const std::vector<Token *>& tokens);
 };
 
 

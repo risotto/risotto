@@ -42,6 +42,8 @@ jobs:
       run: cmake -DCMAKE_BUILD_TYPE=Release -H. -Bbuild
     - name: Build
       run: cmake --build build
+    - name: Test binary
+      run: build/cmd/cmd -h
     - name: Upload binary
       uses: actions/upload-artifact@master
       if: success()
