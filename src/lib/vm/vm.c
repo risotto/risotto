@@ -27,12 +27,17 @@ static void resetStack() {
     vm.fp = vm.sp;
 }
 
-void initVM() {
+void initVM(unsigned int flags) {
     resetStack();
     vm.numObjects = 0;
     vm.maxObjects = INITIAL_GC_THRESHOLD;
     vm.firstObject = NULL;
     vm.printf = &printf;
+    vm.flags = flags;
+}
+
+bool hasFlag(VMFlags flag) {
+    return (vm.flags & flag) == flag;
 }
 
 VM *getVM() {
@@ -119,22 +124,26 @@ static InterpretResult run() {
     }
 #endif
 
+    bool traceExec = hasFlag(TraceExecution);
+
     for (;;) {
 #ifdef DEBUG_TRACE_EXECUTION
-        printf("          ");
-        for (Value *slot = vm.stack; slot < vm.sp; slot++) {
-            printf("[ ");
-            printValue(*slot);
-            printf(" ]");
+        if (traceExec) {
+            printf("          ");
+            for (Value *slot = vm.stack; slot < vm.sp; slot++) {
+                printf("[ ");
+                printValue(*slot);
+                printf(" ]");
+            }
+            long _ip = vm.ip - vm.chunk->code;
+            long _sp = vm.sp - vm.stack;
+            long _fp = vm.fp - vm.stack;
+
+            printf(" IP: %lu SP: %lu FP: %lu", _ip, _sp, _fp);
+            printf("\n");
+
+            disassembleInstruction(vm.chunk, (int) (vm.ip - vm.chunk->code));
         }
-        auto _ip = vm.ip - vm.chunk->code;
-        auto _sp = vm.sp - vm.stack;
-        auto _fp = vm.fp - vm.stack;
-
-        printf(" IP: %lu SP: %lu FP: %lu", _ip, _sp, _fp);
-        printf("\n");
-
-        disassembleInstruction(vm.chunk, (int) (vm.ip - vm.chunk->code));
 #endif
 
         OP_T instruction = READ_BYTE();

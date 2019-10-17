@@ -62,7 +62,13 @@ InterpretResult Risotto::doRun(const std::vector<Token *> &tokens) {
         disassembleChunk(&chunk, "chunk");
     }
 
-    initVM();
+    unsigned int vmFlags = VMFlags::VMNone;
+
+    if (hasFlag(RisottoFlags::PrintTraceExecution)) {
+        vmFlags |= VMFlags::TraceExecution;
+    }
+
+    initVM(vmFlags);
 
     auto result = timing<InterpretResult>("VM", [&chunk]() {
         return interpret(&chunk, 0);

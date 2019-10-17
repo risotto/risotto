@@ -15,6 +15,11 @@ int main(int argc, char *argv[]) {
             ("ast", "Print AST", cxxopts::value<bool>()->default_value("false"))
             ("disassemble", "Disassemble bytecode", cxxopts::value<bool>()->default_value("false"));
 
+#ifdef DEBUG_TRACE_EXECUTION
+    options.add_options("Debug")
+            ("trace-execution", "Print trace execution", cxxopts::value<bool>()->default_value("false"));
+#endif
+
     options.parse_positional({"file"});
     options.positional_help("[file]")
             .show_positional_help();
@@ -32,28 +37,34 @@ int main(int argc, char *argv[]) {
         throw std::logic_error("path must be provided");
     }
 
-    auto showTimings = result["timings"].as<bool>();
-    auto showTokens = result["tokens"].as<bool>();
-    auto showAST = result["ast"].as<bool>();
-    auto showDisassemble = result["disassemble"].as<bool>();
-
     auto flags = (unsigned int) RisottoFlags::None;
 
+    auto showTimings = result["timings"].as<bool>();
     if (showTimings) {
         flags |= RisottoFlags::PrintTimings;
     }
 
+    auto showTokens = result["tokens"].as<bool>();
     if (showTokens) {
         flags |= RisottoFlags::PrintTokens;
     }
 
+    auto showAST = result["ast"].as<bool>();
     if (showAST) {
         flags |= RisottoFlags::PrintAST;
     }
 
+    auto showDisassemble = result["disassemble"].as<bool>();
     if (showDisassemble) {
         flags |= RisottoFlags::PrintDisassembled;
     }
+
+#ifdef DEBUG_TRACE_EXECUTION
+    auto showTraceExecution= result["trace-execution"].as<bool>();
+    if (showTraceExecution) {
+        flags |= RisottoFlags::PrintTraceExecution;
+    }
+#endif
 
     Risotto(flags).runFile(path);
 
