@@ -10,7 +10,7 @@ TEST(TypesDescriptor, Identifier) {
     auto typeDesc = new IdentifierTypeDescriptor(
             new Token(
                     TokenType::INT,
-                    {._str = "int"},
+                    ValueData{._str = "int"},
                     "int",
                     Position(1, 1)
             )
@@ -24,7 +24,7 @@ TEST(TypesDescriptor, Array) {
             new IdentifierTypeDescriptor(
                     new Token(
                             TokenType::INT,
-                            {._str = "int"},
+                            ValueData{._str = "int"},
                             "int",
                             Position(1, 1)
                     )
@@ -38,7 +38,7 @@ TEST(TypesDescriptor, Struct) {
     auto intDesc = new IdentifierTypeDescriptor(
             new Token(
                     TokenType::INT,
-                    {._str = "int"},
+                    ValueData{._str = "int"},
                     "int",
                     Position(1, 1)
             )
@@ -48,13 +48,13 @@ TEST(TypesDescriptor, Struct) {
             {
                     StructTypeDescriptor::Field(new Token(
                             TokenType::IDENTIFIER,
-                            {._str = "field1"},
+                            ValueData{._str = "field1"},
                             "field1",
                             Position(1, 1)
                     ), intDesc),
                     StructTypeDescriptor::Field(new Token(
                             TokenType::IDENTIFIER,
-                            {._str = "field2"},
+                            ValueData{._str = "field2"},
                             "field2",
                             Position(1, 1)
                     ), intDesc),
@@ -68,7 +68,7 @@ TEST(TypesDescriptor, Function) {
     auto intDesc = new IdentifierTypeDescriptor(
             new Token(
                     TokenType::INT,
-                    {._str = "int"},
+                    ValueData{._str = "int"},
                     "int",
                     Position(1, 1)
             )
@@ -79,7 +79,7 @@ TEST(TypesDescriptor, Function) {
                     ParameterDefinition(
                             new Token(
                                     TokenType::IDENTIFIER,
-                                    {._str = "var1"},
+                                    ValueData{._str = "var1"},
                                     "var1",
                                     Position(1, 1)
                             ),
@@ -89,7 +89,7 @@ TEST(TypesDescriptor, Function) {
                     ParameterDefinition(
                             new Token(
                                     TokenType::IDENTIFIER,
-                                    {._str = "var2"},
+                                    ValueData{._str = "var2"},
                                     "var2",
                                     Position(1, 1)
                             ),
