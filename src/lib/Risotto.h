@@ -12,6 +12,7 @@ extern "C" {
 #include <string>
 #include <vector>
 #include <lib/tokenizer/Token.h>
+#include <functional>
 
 enum RisottoFlags {
     None              = 0,
