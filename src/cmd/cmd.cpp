@@ -6,8 +6,9 @@ int main(int argc, char *argv[]) {
     cxxopts::Options options(argv[0], "Risotto - YAPL ¯\\_(ツ)_/¯");
 
     options.add_options()
-            ("f,file", "File name", cxxopts::value<std::string>())
-            ("h,help", "Help");
+            ("file", "File name", cxxopts::value<std::string>())
+            ("args", "Arguments", cxxopts::value<std::vector<std::string>>()->default_value(""))
+            ("h,help", "Show this screen");
 
     options.add_options("Debug")
             ("timings", "Print timings", cxxopts::value<bool>()->default_value("false"))
@@ -20,9 +21,8 @@ int main(int argc, char *argv[]) {
             ("trace-execution", "Print trace execution", cxxopts::value<bool>()->default_value("false"));
 #endif
 
-    options.parse_positional({"file"});
-    options.positional_help("[file]")
-            .show_positional_help();
+    options.parse_positional({"file", "args"});
+    options.positional_help("file [arguments]");
 
     auto result = options.parse(argc, argv);
 
@@ -65,6 +65,8 @@ int main(int argc, char *argv[]) {
         flags |= RisottoFlags::PrintTraceExecution;
     }
 #endif
+
+//    auto args = result["args"].as<std::vector<std::string>>();
 
     Risotto(flags).runFile(path);
 
