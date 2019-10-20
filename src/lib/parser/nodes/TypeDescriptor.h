@@ -75,5 +75,15 @@ public:
     std::string toString() override;
 };
 
+class InterfaceTypeDescriptor : public TypeDescriptor {
+public:
+    std::vector<std::pair<Token *, FunctionTypeDescriptor *>> functions;
+
+    explicit InterfaceTypeDescriptor(std::vector<std::pair<Token *, FunctionTypeDescriptor *>> functions);
+
+    TypeReference *toTypeReference(Compiler *compiler) override;
+
+    std::string toString() override;
+};
 
 #endif //RISOTTOV2_TYPEDESCRIPTOR_H

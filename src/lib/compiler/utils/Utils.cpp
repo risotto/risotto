@@ -25,14 +25,23 @@ Utils::findCandidatesFunctions(const std::vector<FunctionEntry *> &functions, co
 }
 
 void Utils::loadFunctionEntryAddr(Compiler *compiler, FunctionEntry *entry, std::vector<ByteResolver *> &bytes) {
-    bytes.push_back(new ByteResolver(OP_CONST, nullptr));
+    if (auto interfaceEntry = dynamic_cast<InterfaceFunctionEntry *>(entry)) {
+        auto entryAddr = compiler->registerFunctionEntry(interfaceEntry);
 
-    if (auto nativeEntry = dynamic_cast<NativeFunctionEntry *>(entry)) {
+        bytes.push_back(new ByteResolver(OP_CONST, nullptr));
+        bytes.push_back(new ByteResolver([entryAddr](Compiler *c) {
+            auto v = i2v(entryAddr);
+
+            return c->registerConst(v);
+        }, nullptr));
+    } else if (auto nativeEntry = dynamic_cast<NativeFunctionEntry *>(entry)) {
         auto v = p2v((void *) nativeEntry->fun);
         auto addr = compiler->registerConst(v);
 
+        bytes.push_back(new ByteResolver(OP_CONST, nullptr));
         bytes.push_back(new ByteResolver(addr, nullptr));
     } else {
+        bytes.push_back(new ByteResolver(OP_CONST, nullptr));
         bytes.push_back(new ByteResolver([entry](Compiler *c) {
             auto v = i2v(c->getAddr(entry->firstByte));
 

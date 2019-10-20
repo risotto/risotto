@@ -4,6 +4,7 @@
 
 #include <lib/compiler/Compiler.h>
 #include "UnaryExpr.h"
+#include "lib/compiler/TypeDefinition.h"
 
 UnaryExpr::UnaryExpr(Token *op, Expr *right) : GetCallExpr(right, op, op, op, {}) {
 
@@ -28,11 +29,7 @@ FunctionEntry *UnaryExpr::getFunctionEntry(Compiler *compiler) {
         throw CompilerError("RHS of unary operation must be a single value", op()->position);
     }
 
-    if (auto receiver = dynamic_cast<ReceiverTypeReference *>(rightTypes[0])) {
-        return receiver->findPrefix(compiler->frame, op()->lexeme, getArgumentsTypes(compiler));
-    }
-
-    throw CompilerError("RHS must be a receiver", op()->position);
+    return rightTypes[0]->getTypeDefinition(compiler)->prefixes.find(op()->lexeme, getArgumentsTypes(compiler));
 }
 
 FunctionNotFoundError UnaryExpr::getFunctionNotFoundError(Compiler *compiler) {

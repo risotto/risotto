@@ -40,7 +40,11 @@ void NewCallExpr::loadArgs(Compiler *compiler, std::vector<ByteResolver *> &byte
 
     auto structTypeDef = getStructTypeDef(compiler);
 
+    auto v = p2v(structTypeDef->vtable);
+    auto vtableAddr = compiler->registerConst(v);
+
     bytes.push_back(new ByteResolver(OP_NEW, nullptr));
+    bytes.push_back(new ByteResolver(vtableAddr, nullptr));
     bytes.push_back(new ByteResolver(structTypeDef->fields.size(), nullptr));
 }
 

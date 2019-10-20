@@ -32,6 +32,8 @@ public:
 
     virtual void loadCallAddr(Compiler *compiler, std::vector<ByteResolver *> &bytes) = 0;
     virtual void loadArgs(Compiler *compiler, std::vector<ByteResolver *> &bytes);
+
+    virtual bool needAddrResolution(Compiler *compiler);
 };
 
 class CallExpr : public BaseCallExpr {

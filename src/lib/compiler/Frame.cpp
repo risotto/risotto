@@ -11,10 +11,6 @@
 VariableFindResponse::VariableFindResponse(VariableEntry *variable, int distance) : variable(variable),
                                                                                     distance(distance) {}
 
-Frame::Frame(FrameType type) : type(type) {
-
-}
-
 Frame::Frame(Frame *parent) : parent(parent) {
 
 }
@@ -106,21 +102,6 @@ std::vector<FunctionEntry *> Frame::findFunctionsCandidates(const std::string &n
     }
 
     return allCandidates;
-}
-
-TypeDefinition *Frame::findOrCreateVirtualType(TypeReference *typeReference, Compiler *compiler) {
-    auto typeDefinition = findVirtualType(typeReference);
-
-    if (typeDefinition != nullptr) {
-        return typeDefinition;
-    }
-
-    auto id = typeReference->toString();
-
-    typeDefinition = typeReference->toTypeDefinition(this);
-    typeDefinition = types.addVirtual(id, typeDefinition);
-
-    return typeDefinition;
 }
 
 TypeDefinition *Frame::findVirtualType(TypeReference *typeReference) {

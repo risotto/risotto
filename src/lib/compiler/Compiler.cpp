@@ -11,7 +11,7 @@ extern "C" {
 #include <lib/vm/native_functions.h>
 }
 
-#define TYPE_REF(type) new ConcreteTypeReference(type##Entry->definition)
+#define TYPE_REF(type) new NamedTypeReference(#type, type##Entry->definition)
 
 #define NATIVE_BINARY_DECLARATION_NAMED(target, op, param, return, functionName) \
     target##Entry->definition->addOperator( \
@@ -79,7 +79,7 @@ NATIVE_UNARY_PREFIX_OPERATOR_DECLARATION(target, --, return, decrement) \
         ) \
     );
 
-Compiler::Compiler(std::vector<Stmt *> stmts) : stmts(std::move(stmts)) {
+Compiler::Compiler(std::vector<Stmt *> stmts) : stmts(std::move(stmts)), chunk(Chunk()) {
     frame = new Frame();
 
     initChunk(&chunk);
@@ -124,21 +124,21 @@ Compiler::Compiler(std::vector<Stmt *> stmts) : stmts(std::move(stmts)) {
     NATIVE_PRINT(string)
 
     frame->functions.add(
-        new NativeFunctionEntry(
-            "vm_stats",
-            {},
-            {},
-            vm_stats
-        )
+            new NativeFunctionEntry(
+                    "vm_stats",
+                    {},
+                    {},
+                    vm_stats
+            )
     );
 
     frame->functions.add(
-        new NativeFunctionEntry(
-            "gc",
-            {},
-            {},
-            run_gc
-        )
+            new NativeFunctionEntry(
+                    "gc",
+                    {},
+                    {},
+                    run_gc
+            )
     );
 }
 
@@ -176,9 +176,22 @@ OP_T Compiler::getAddr(ByteResolver *byte) {
         auto c = bytes.at(i);
 
         if (c == byte) {
-            return static_cast<int>(i);
+            return i;
         }
     }
 
     throw std::logic_error("Byte is not part of program");
+}
+
+unsigned long Compiler::registerFunctionEntry(FunctionEntry *entry) {
+    auto it = std::find(functions.begin(), functions.end(), entry);
+
+    if (it != functions.end()) {
+        return std::distance(functions.begin(), it);
+    }
+
+    auto i = functions.size();
+    functions.push_back(entry);
+
+    return i;
 }

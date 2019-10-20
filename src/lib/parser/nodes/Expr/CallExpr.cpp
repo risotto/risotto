@@ -31,7 +31,8 @@ std::vector<ByteResolver *> BaseCallExpr::compile(Compiler *compiler) {
     auto argc = argsTypes.size();
 
     bytes.push_back(new ByteResolver(OpCode::OP_CALL, &rParen->position));
-    bytes.push_back(new ByteResolver(static_cast<int>(argc), nullptr));
+    bytes.push_back(new ByteResolver(needAddrResolution(compiler), nullptr));
+    bytes.push_back(new ByteResolver(argc, nullptr));
 
     for (int i = 0; i < argc; ++i) {
         bytes.push_back(new ByteResolver(isArgumentReference(compiler, i), nullptr));
@@ -78,6 +79,10 @@ FunctionNotFoundError BaseCallExpr::getFunctionNotFoundError(Compiler *compiler)
 
 std::vector<Expr *> BaseCallExpr::getArguments(Compiler *compiler) {
     return args;
+}
+
+bool BaseCallExpr::needAddrResolution(Compiler *compiler) {
+    return false;
 }
 
 CallExpr::CallExpr(Expr *callee, Token *rParen, const std::vector<Expr *> &args) :

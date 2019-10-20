@@ -6,6 +6,7 @@
 #include <lib/compiler/utils/Utils.h>
 #include "BinaryExpr.h"
 #include "lib/compiler/Compiler.h"
+#include "lib/compiler/TypeDefinition.h"
 
 BinaryExpr::BinaryExpr(Expr *left, Token *op, Expr *right) : GetCallExpr(left, op, op, op, {right}) {
 }
@@ -29,11 +30,7 @@ FunctionEntry *BinaryExpr::getFunctionEntry(Compiler *compiler) {
         throw CompilerError("LHS of binary operation must be a single value", op()->position);
     }
 
-    if (auto receiver = dynamic_cast<ReceiverTypeReference *>(leftReturnType[0])) {
-        return receiver->findOperator(compiler->frame, op()->lexeme, getArgumentsTypes(compiler));
-    }
-
-    throw CompilerError("LHS must be a receiver", op()->position);
+    return leftReturnType[0]->getTypeDefinition(compiler)->operators.find(op()->lexeme, getArgumentsTypes(compiler));
 }
 
 FunctionNotFoundError BinaryExpr::getFunctionNotFoundError(Compiler *compiler) {

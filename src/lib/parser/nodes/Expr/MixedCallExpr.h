@@ -9,6 +9,7 @@
 #include <lib/tokenizer/Token.h>
 #include <lib/parser/nodes/Expr.h>
 #include <lib/compiler/VariablesTable.h>
+#include <lib/compiler/FunctionsTable.h>
 #include "CallExpr.h"
 
 class MixedCallExpr: public BaseCallExpr {
@@ -27,6 +28,7 @@ protected:
     virtual FunctionEntry *getFunctionEntry(Compiler *compiler) = 0;
 
     virtual void loadVariableEntryAddr(Compiler *compiler, std::vector<ByteResolver *> &bytes) = 0;
+    virtual void loadFunctionEntryAddr(Compiler *compiler, FunctionEntry *entry, std::vector<ByteResolver *> &bytes);
 
     ReturnTypes computeReturnType(Compiler *compiler) override;
 };

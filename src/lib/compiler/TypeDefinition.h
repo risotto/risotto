@@ -5,10 +5,16 @@
 #ifndef RISOTTOV2_TypeDefinition_H
 #define RISOTTOV2_TypeDefinition_H
 
+extern "C" {
+#include "lib/vm/value.h"
+}
+
 #include <string>
 #include <vector>
 #include "FunctionsTable.h"
 #include "VariablesTable.h"
+
+class TypeReference;
 
 class TypeDefinition {
 public:
@@ -16,13 +22,17 @@ public:
     FunctionsTable operators = FunctionsTable();
     FunctionsTable prefixes = FunctionsTable();
 
-    bool canReceiveType(TypeDefinition *type);
+    struct vtable *vtable;
+
+    TypeDefinition();
 
     FunctionEntry *addFunction(const std::string &selfName, bool asReference, FunctionEntry *entry);
 
     FunctionEntry *addOperator(const std::string &selfName, bool asReference, FunctionEntry *entry);
 
     FunctionEntry *addPrefix(const std::string &selfName, bool asReference, FunctionEntry *entry);
+
+    virtual TypeReference *getTypeReference() = 0;
 
     virtual ~TypeDefinition() = default;
 
@@ -35,6 +45,8 @@ public:
     TypeDefinition *element;
 
     explicit ArrayTypeDefinition(TypeDefinition *element);
+
+    TypeReference *getTypeReference() override;
 };
 
 class ConcreteTypeDefinition : public TypeDefinition {
@@ -42,6 +54,8 @@ public:
     std::string name;
 
     explicit ConcreteTypeDefinition(std::string name);
+
+    TypeReference *getTypeReference() override;
 };
 
 class FunctionTypeDefinition : public TypeDefinition {
@@ -49,6 +63,8 @@ public:
     FunctionEntry *entry;
 
     explicit FunctionTypeDefinition(FunctionEntry *function);
+
+    TypeReference *getTypeReference() override;
 };
 
 class StructTypeDefinition : public TypeDefinition {
@@ -61,8 +77,14 @@ public:
     FunctionEntry *addConstructor(const std::string &selfName, bool asReference, FunctionEntry *entry);
 
     int getFieldIndex(VariableEntry *entry);
+
+    TypeReference *getTypeReference() override;
 };
 
+class InterfaceTypeDefinition : public TypeDefinition {
+public:
+    TypeReference *getTypeReference() override;
+};
 
 
 #endif //RISOTTOV2_TypeDefinition_H

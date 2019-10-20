@@ -50,6 +50,14 @@ void printValue(Value value) {
 void disassembleChunk(Chunk *chunk, const char *name) {
     printf("== %s ==\n", name);
 
+    for (int i = 0; i < chunk->constants.object.size; ++i) {
+        printf("%-3i => ", i);
+        printValue(chunk->constants.object.values[i]);
+        printf("\n");
+    }
+
+    printf("---------\n");
+
     for (int i = 0; i < chunk->count;) {
         i = disassembleInstruction(chunk, i);
     }
@@ -62,15 +70,21 @@ static int simpleInstruction(const char *name, int offset) {
     return offset + 1;
 }
 
-static int constantInstruction(const char *name, Chunk *chunk, int offset) {
-    OP_T constant = chunk->code[offset + 1];
-    printf("%-16s %4d '", name, constant);
+static void printConst(OP_T constant, Chunk *chunk) {
+    printf("'");
     if (constant <= chunk->constants.object.size) {
         printValue(chunk->constants.object.values[constant]);
     } else {
         printf("# Constant '%d' not found #", constant);
     }
     printf("'\n");
+}
+
+static int constantInstruction(const char *name, Chunk *chunk, int offset) {
+    OP_T constant = chunk->code[offset + 1];
+    printf("%-16s %4d ", name, constant);
+    printConst(constant, chunk);
+
     return offset + 2;
 }
 
@@ -89,17 +103,11 @@ static int biIntInstruction(const char *name, const char *l1, const char *l2, Ch
 }
 
 static int callInstruction(const char *name, Chunk *chunk, int offset) {
-    int c = chunk->code[offset + 1];
-    printf("%-11s C:%-3d \n", name, c);
+    bool needReso = chunk->code[offset + 1];
+    int c = chunk->code[offset + 2];
+    printf("%-11s C:%-3d %i\n", name, c, needReso);
 
-    return offset + 2 + c;
-}
-
-static int nativeCallInstruction(const char *name, Chunk *chunk, int offset) {
-    int c = chunk->code[offset + 1];
-    printf("%-11s C:%-3d \n", name, c);
-
-    return offset + 2 + c;
+    return offset + 3 + c;
 }
 
 static int intInstruction(const char *name, Chunk *chunk, int offset) {
@@ -107,6 +115,16 @@ static int intInstruction(const char *name, Chunk *chunk, int offset) {
     printf("%-16s %4d \n", name, i);
 
     return offset + 2;
+}
+
+static int newInstruction(const char *name, Chunk *chunk, int offset) {
+    OP_T constant = chunk->code[offset + 1];
+    int i = chunk->code[offset + 2];
+
+    printf("%-16s %4d %4d ", name, i, constant);
+    printConst(constant, chunk);
+
+    return offset + 3;
 }
 
 #define NAME(op) case op: return #op;
@@ -132,7 +150,6 @@ char *getName(OP_T instruction) {
         NAME(OP_DYNAMIC_LOAD_INSTANCE)
         NAME(OP_ARRAY_INSERT)
         NAME(OP_CALL)
-        NAME(OP_NATIVE_CALL)
         NAME(OP_POP)
         NAME(OP_COPY)
         NAME(OP_NIL)
@@ -202,8 +219,6 @@ int disassembleInstruction(Chunk *chunk, int offset) {
             return intInstruction(getName(instruction), chunk, offset);
         case OP_CALL:
             return callInstruction(getName(instruction), chunk, offset);
-        case OP_NATIVE_CALL:
-            return nativeCallInstruction(getName(instruction), chunk, offset);
         case OP_POP:
             return intInstruction(getName(instruction), chunk, offset);
         case OP_COPY:
@@ -219,7 +234,7 @@ int disassembleInstruction(Chunk *chunk, int offset) {
         case OP_NEQ_NIL:
             return simpleInstruction(getName(instruction), offset);
         case OP_NEW:
-            return intInstruction(getName(instruction), chunk, offset);
+            return newInstruction(getName(instruction), chunk, offset);
         default:
             printf("Unknown opcode %d\n", instruction);
             return offset + 1;

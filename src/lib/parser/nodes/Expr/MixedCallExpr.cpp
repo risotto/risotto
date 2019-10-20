@@ -63,13 +63,18 @@ void MixedCallExpr::loadCallAddr(Compiler *compiler, std::vector<ByteResolver *>
         loadVariableEntryAddr(compiler, bytes);
 
         return bytes;
-    }, [compiler](FunctionEntry *functionEntry) {
+    }, [this, compiler](FunctionEntry *functionEntry) {
         auto bytes = std::vector<ByteResolver *>();
 
-        Utils::loadFunctionEntryAddr(compiler, functionEntry, bytes);
+        loadFunctionEntryAddr(compiler, functionEntry, bytes);
 
         return bytes;
     });
 
     bytes.insert(bytes.end(), loadBytes.begin(), loadBytes.end());
+}
+
+void
+MixedCallExpr::loadFunctionEntryAddr(Compiler *compiler, FunctionEntry *entry, std::vector<ByteResolver *> &bytes) {
+    Utils::loadFunctionEntryAddr(compiler, entry, bytes);
 }

@@ -8,14 +8,15 @@
 
 #include <lib/parser/nodes/Stmt.h>
 #include <lib/parser/nodes/Expr.h>
+#include <lib/parser/nodes/TypeDescriptor.h>
 
 class VarDeclStmt: public Stmt {
 public:
-    std::vector<Token *> identifiers;
+    std::vector<std::pair<Token *, TypeDescriptor *>> identifiers;
     Token *op;
     Expr *value;
 
-    VarDeclStmt(std::vector<Token *> identifiers, Token *op, Expr *value);
+    VarDeclStmt(std::vector<std::pair<Token *, TypeDescriptor *>> identifiers, Token *op, Expr *value);
 
     std::vector<ByteResolver *> compile(Compiler *compiler) override;
 };

@@ -18,6 +18,8 @@ class Compiler {
 private:
     std::vector<Stmt *> stmts;
     std::vector<ByteResolver *> bytes;
+
+    std::vector<FunctionEntry *> functions;
 public:
     Chunk chunk;
     Frame *frame;
@@ -29,6 +31,8 @@ public:
     OP_T registerConst(Value v);
 
     OP_T getAddr(ByteResolver *byte);
+
+    unsigned long registerFunctionEntry(FunctionEntry * entry);
 };
 
 

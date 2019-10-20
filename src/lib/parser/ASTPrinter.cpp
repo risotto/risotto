@@ -133,6 +133,7 @@ if (auto V = dynamic_cast<T *>(stmt)) { \
         std::stringstream ss;
 
         ss << "FunctionStmt" << std::endl;
+        ss << indent("+Type: " + stmt->type->lexeme, 1) << std::endl;
         if (stmt->receiver) {
             ss << indent("+Receiver: " + stmt->receiver->type->toString(), 1) << std::endl;
         }
@@ -277,7 +278,7 @@ if (auto V = dynamic_cast<T *>(stmt)) { \
         ss << "VarDeclStmt" << std::endl;
         ss << indent("+Identifiers:", 1) << std::endl;
         for (auto id : stmt->identifiers) {
-            ss << indent("- " + id->lexeme, 2) << std::endl;
+            ss << indent("- " + id.first->lexeme, 2) << std::endl;
         }
         ss << indent("+Value:", 1) << std::endl;
         ss << indent(print(stmt->value), 2);
@@ -330,7 +331,7 @@ if (auto V = dynamic_cast<T *>(stmt)) { \
         ss << "TypeStmt" << std::endl;
         ss << indent("+Name: ", 1) + stmt->name->lexeme << std::endl;
         ss << indent("+Descriptor:", 1) << std::endl;
-        ss << indent(stmt->typeDescriptor->toString(), 2);
+        ss << indent(stmt->typeDescriptor->toString(), 2) << std::endl;
 
         return ss.str();
     }

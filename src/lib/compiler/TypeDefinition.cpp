@@ -3,32 +3,18 @@
 //
 
 #include "TypeDefinition.h"
-
 #include <utility>
 
-bool TypeDefinition::canReceiveType(TypeDefinition *type) {
-    return this == type;
-}
+TypeDefinition::TypeDefinition() : vtable(new struct vtable) {
+    vec_init(vtable);
 
-TypeReference *getTypeRef(TypeDefinition *typeDef) {
-    if (auto arrayDef = dynamic_cast<ArrayTypeDefinition *>(typeDef)) {
-        return new ArrayTypeReference(getTypeRef(arrayDef->element));
-    }
-
-    if (auto structDef = dynamic_cast<StructTypeDefinition *>(typeDef)) {
-        return new StructTypeReference(structDef);
-    }
-
-    // Must be last
-    if (dynamic_cast<ConcreteTypeDefinition *>(typeDef)) {
-        return new ConcreteTypeReference(typeDef);
-    }
-
-    throw std::logic_error("Unhandled TypeDefinition");
+    // TODO: unfake
+    vtable_entry entry = {.vaddr  = 0, .addr= i2v(10)};
+    vec_push(&vtable->addrs, entry);
 }
 
 void TypeDefinition::addSelf(const std::string &selfName, bool asReference, FunctionEntry *entry) {
-    auto typeRef = getTypeRef(this);
+    auto typeRef = getTypeReference();
     entry->params.insert(entry->params.begin(), {FunctionEntryParameter(selfName, typeRef, asReference)});
 }
 
@@ -54,11 +40,23 @@ FunctionTypeDefinition::FunctionTypeDefinition(FunctionEntry *function) : entry(
 
 }
 
+TypeReference *FunctionTypeDefinition::getTypeReference() {
+    return new FunctionTypeReference(entry);
+}
+
 ArrayTypeDefinition::ArrayTypeDefinition(TypeDefinition *element) : element(element) {
 
 }
 
+TypeReference *ArrayTypeDefinition::getTypeReference() {
+    return new ArrayTypeReference(element->getTypeReference());
+}
+
 ConcreteTypeDefinition::ConcreteTypeDefinition(std::string name) : name(std::move(name)) {}
+
+TypeReference *ConcreteTypeDefinition::getTypeReference() {
+    return new NamedTypeReference(name, this);
+}
 
 StructTypeDefinition::StructTypeDefinition(VariablesTable fields) : fields(std::move(fields)) {}
 
@@ -81,4 +79,21 @@ int StructTypeDefinition::getFieldIndex(VariableEntry *entry) {
     }
 
     return -1;
+}
+
+TypeReference *StructTypeDefinition::getTypeReference() {
+    return new StructTypeReference(this);
+}
+
+TypeReference *InterfaceTypeDefinition::getTypeReference() {
+    auto functionRefs = std::vector<std::pair<std::string, FunctionTypeReference *>>();
+
+    for (auto function : functions) {
+        functionRefs.push_back(std::make_pair<std::string, FunctionTypeReference *>(
+                static_cast<std::string>(function->name),
+                new FunctionTypeReference(function)
+        ));
+    }
+
+    return new InterfaceTypeReference(functionRefs);
 }

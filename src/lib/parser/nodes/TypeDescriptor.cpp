@@ -4,6 +4,7 @@
 
 #include <lib/compiler/CompilerError.h>
 
+#include <cassert>
 #include <utility>
 #include <sstream>
 #include "TypeDescriptor.h"
@@ -119,6 +120,36 @@ std::string FunctionTypeDescriptor::toString() {
         }
         ss << ")";
     }
+
+    return ss.str();
+}
+
+InterfaceTypeDescriptor::InterfaceTypeDescriptor(std::vector<std::pair<Token *, FunctionTypeDescriptor *>> functions) :
+        functions(std::move(functions)) {}
+
+TypeReference *InterfaceTypeDescriptor::toTypeReference(Compiler *compiler) {
+    auto functionRefs = std::vector<std::pair<std::string, FunctionTypeReference *>>();
+
+    for (auto entry: functions) {
+        auto ref = dynamic_cast<FunctionTypeReference *>(entry.second->toTypeReference(compiler));
+        assert(ref != nullptr);
+
+        functionRefs.emplace_back(entry.first->lexeme, ref);
+    }
+
+    return new InterfaceTypeReference(functionRefs);
+}
+
+std::string InterfaceTypeDescriptor::toString() {
+    std::stringstream ss;
+
+    ss << "interface { ";
+
+    for (auto function:functions) {
+        ss << function.first->lexeme << ": " << function.second->toString() << " ";
+    }
+
+    ss << "}";
 
     return ss.str();
 }

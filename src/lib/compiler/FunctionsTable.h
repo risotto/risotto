@@ -5,10 +5,13 @@
 #ifndef RISOTTOV2_FUNCTIONSTABLE_H
 #define RISOTTOV2_FUNCTIONSTABLE_H
 
+extern "C" {
+#include <lib/vm/value.h>
+};
+
 #include <string>
 #include <vector>
 #include <lib/parser/nodes/ParameterDefinition.h>
-#include <lib/vm/value.h>
 #include "ByteResolver.h"
 #include "lib/compiler/ReturnTypes.h"
 
@@ -49,14 +52,27 @@ public:
     NativeFunctionEntry(std::string name, std::vector<FunctionEntryParameter> params, ReturnTypes returnTypes, NativeFunctionReturn (*fun)(Value[], int));
 };
 
+class InterfaceFunctionEntry: public FunctionEntry {
+public:
+    using FunctionEntry::FunctionEntry;
+};
+
 class FunctionsTable {
 private:
     std::vector<FunctionEntry *> entries;
+
+    typedef std::vector<FunctionEntry *>::const_iterator iterator;
+
 public:
     FunctionEntry *find(const std::string &name, const std::vector<TypeReference *>& argsTypes);
     std::vector<FunctionEntry *> findCandidates(const std::string &name);
 
     FunctionEntry * add(FunctionEntry *entry);
+
+    [[nodiscard]] iterator begin() const { return entries.begin(); }
+
+    [[nodiscard]] iterator end() const { return entries.end(); }
+
 };
 
 

@@ -16,8 +16,6 @@ public:
     ReturnTypes(std::vector<TypeReference *> refs);
 
     bool single();
-
-    ReturnTypes onlyFunctions();
 };
 
 #endif //RISOTTOV2_RETURNTYPES_H

@@ -46,7 +46,7 @@ BETTER_ENUM(TokenType, int,
 
 // Keywords
             AND, ELSE, FALSE, FUNC, FOR, IF, NIL, OR,
-            RETURN, THIS, TRUE, WHILE, NEW, TYPE, STRUCT, OP,
+            RETURN, THIS, TRUE, WHILE, NEW, TYPE, STRUCT, OP, INTERFACE,
 
             TOKEN_EOF
 )

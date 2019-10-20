@@ -35,8 +35,6 @@ public:
 
     explicit Frame(Frame *parent);
 
-    explicit Frame(FrameType type);
-
     explicit Frame(Frame *parent, FrameType type);
 
     TypeDefinition *findNamedType(const std::string &name);
@@ -44,8 +42,6 @@ public:
     TypeDefinition *findVirtualType(const std::string &name);
 
     TypeDefinition *findVirtualType(TypeReference *typeReference);
-
-    TypeDefinition *findOrCreateVirtualType(TypeReference *typeDescriptor, Compiler *compiler);
 
     VariableFindResponse *findVariable(const std::string &name);
 

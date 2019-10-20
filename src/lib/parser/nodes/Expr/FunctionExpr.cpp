@@ -11,19 +11,9 @@
 FunctionExpr::FunctionExpr(FunctionStmt *functionStmt) : functionStmt(functionStmt) {}
 
 ReturnTypes FunctionExpr::computeReturnType(Compiler *compiler) {
-    functionStmt->getFunctionEntry(compiler);
+    auto functionEntry = functionStmt->getFunctionEntry(compiler);
 
-    auto params = std::vector<FunctionTypeReferenceParameter>();
-    for (auto param: functionStmt->parameters) {
-        params.emplace_back(param.name->lexeme, param.type->toTypeReference(compiler), param.asReference);
-    }
-
-    auto returnTypes = std::vector<TypeReference *>();
-    for (auto returnType: functionStmt->returnTypes) {
-        returnTypes.push_back(returnType->toTypeReference(compiler));
-    }
-
-    return new FunctionTypeReference(params, returnTypes);
+    return new FunctionTypeReference(functionEntry);
 }
 
 std::vector<ByteResolver *> FunctionExpr::compile(Compiler *compiler) {

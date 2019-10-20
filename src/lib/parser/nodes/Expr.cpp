@@ -14,6 +14,10 @@ ReturnTypes Expr::getReturnType(Compiler *compiler) {
     _returnTypes = computeReturnType(compiler);
     _isReturnTypesInit = true;
 
+    for (auto type: _returnTypes) {
+        type->getTypeDefinition(compiler);
+    }
+
     return _returnTypes;
 }
 

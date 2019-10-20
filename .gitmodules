@@ -7,3 +7,6 @@
 [submodule "lib/cxxopts"]
 	path = lib/cxxopts
 	url = https://github.com/jarro2783/cxxopts.git
+[submodule "lib/vec"]
+	path = lib/vec
+	url = https://github.com/rxi/vec.git

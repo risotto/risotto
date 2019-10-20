@@ -31,7 +31,6 @@ typedef enum {
     OP_FRAME,
     OP_FRAME_END,
     OP_ARRAY,
-    OP_NATIVE_CALL,
     OP_ARRAY_INSERT,
     OP_TRUE,
     OP_FALSE,
@@ -52,7 +51,7 @@ typedef struct {
 
 void initChunk(Chunk* chunk);
 void writeChunk(Chunk* chunk, OP_T byte, int line);
-int addConstant(Chunk* chunk, Value value);
+unsigned int addConstant(Chunk* chunk, Value value);
 void freeChunk(Chunk* chunk);
 
 

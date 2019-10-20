@@ -7,6 +7,7 @@ extern "C" {
 }
 
 #include <lib/compiler/CompilerError.h>
+#include <lib/compiler/TypeDefinition.h>
 #include "LiteralExpr.h"
 #include "lib/compiler/Compiler.h"
 #include "lib/compiler/TypeReference.h"
@@ -45,6 +46,8 @@ std::vector<ByteResolver *> LiteralExpr::compile(Compiler *compiler) {
     }
 
     auto v = literalToValue(value);
+    v.vtable = getReturnTypeDefinition(compiler)->vtable;
+
     auto constAddr = compiler->registerConst(v);
 
     bytes.push_back(new ByteResolver(OP_CONST, nullptr));
@@ -53,24 +56,28 @@ std::vector<ByteResolver *> LiteralExpr::compile(Compiler *compiler) {
     return bytes;
 }
 
-TypeDefinition *LiteralExpr::computeReturnTypeDefinition(Compiler *compiler) {
+std::string LiteralExpr::getReturnTypeName() {
     switch (value->type) {
         case TokenType::FALSE:
         case TokenType::TRUE:
-            return compiler->frame->findNamedType("bool");
+            return "bool";
         case TokenType::NIL:
             throw CompilerError("Cannot get type of nil ");
         case TokenType::INT:
-            return compiler->frame->findNamedType("int");
+            return "int";
         case TokenType::DOUBLE:
-            return compiler->frame->findNamedType("double");
+            return "double";
         case TokenType::STRING:
-            return compiler->frame->findNamedType("string");
+            return "string";
         default:
             throw CompilerError("Unhandled type " + std::string(value->type._to_string()));
     }
 }
 
+TypeDefinition *LiteralExpr::getReturnTypeDefinition(Compiler *compiler) {
+    return compiler->frame->findNamedType(getReturnTypeName());
+}
+
 ReturnTypes LiteralExpr::computeReturnType(Compiler *compiler) {
-    return new ConcreteTypeReference(computeReturnTypeDefinition(compiler));
+    return new NamedTypeReference(getReturnTypeName(), getReturnTypeDefinition(compiler));
 }

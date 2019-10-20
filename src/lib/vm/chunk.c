@@ -29,7 +29,7 @@ void writeChunk(Chunk* chunk, OP_T byte, int line) {
     chunk->count++;
 }
 
-int addConstant(Chunk* chunk, Value value) {
+unsigned int addConstant(Chunk* chunk, Value value) {
     writeValueArray(&chunk->constants, value);
     return chunk->constants.object.size - 1;
 }

@@ -39,17 +39,19 @@ FunctionEntry *GetCallExpr::getFunctionEntry(Compiler *compiler) {
         throw CompilerError("Return type has to be single", identifier->position);
     }
 
-    auto returnTypes = ReturnTypes();
+    auto typeDef = calleeType[0]->getTypeDefinition(compiler);
 
-    if (auto receiver = dynamic_cast<ReceiverTypeReference *>(calleeType[0])) {
-        auto functionsCandidates = receiver->findFunctionsCandidates(compiler->frame, identifier->lexeme);
-
-        return Utils::findMatchingFunctions(functionsCandidates, getArgumentsTypes(compiler));
-    }
-
-    return nullptr;
+    return typeDef->functions.find(identifier->lexeme, getArgumentsTypes(compiler));
 }
 
 void GetCallExpr::loadVariableEntryAddr(Compiler *compiler, std::vector<ByteResolver *> &bytes) {
     throw CompilerError("Unimplemented", identifier->position);
+}
+
+bool GetCallExpr::needAddrResolution(Compiler *compiler) {
+    return act<bool>(compiler, [](FunctionTypeReference *functionRef) {
+        return false;
+    }, [](FunctionEntry *functionEntry) {
+        return dynamic_cast<InterfaceFunctionEntry *>(functionEntry) != nullptr;
+    });
 }

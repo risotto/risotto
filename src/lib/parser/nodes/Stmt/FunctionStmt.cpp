@@ -56,15 +56,7 @@ FunctionEntry *FunctionStmt::getFunctionEntry(Compiler *compiler) {
 
     if (autoRegister) {
         if (receiver != nullptr) {
-            TypeDefinition *receiverType;
-            if (auto identifierTypeDesc = dynamic_cast<IdentifierTypeDescriptor *>(receiver->type)) {
-                receiverType = compiler->frame->findNamedType(identifierTypeDesc->name->lexeme);
-            } else {
-                receiverType = compiler->frame->findOrCreateVirtualType(
-                        receiver->type->toTypeReference(compiler),
-                        compiler
-                );
-            }
+            auto receiverType = receiver->type->toTypeReference(compiler)->getTypeDefinition(compiler);
 
             if (receiverType == nullptr) {
                 throw CompilerError("Cannot find type for " + receiver->type->toString(), receiver->name->position);
