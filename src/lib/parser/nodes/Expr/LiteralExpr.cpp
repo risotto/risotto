@@ -43,6 +43,9 @@ std::vector<ByteResolver *> LiteralExpr::compile(Compiler *compiler) {
         case TokenType::FALSE:
             bytes.push_back(new ByteResolver(OP_FALSE, nullptr));
             return bytes;
+        default: {
+            // continue
+        }
     }
 
     auto v = literalToValue(value);

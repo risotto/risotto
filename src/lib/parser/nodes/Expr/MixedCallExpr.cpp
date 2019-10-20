@@ -56,6 +56,12 @@ T MixedCallExpr::act(
     throw getFunctionNotFoundError(compiler);
 }
 
+template bool MixedCallExpr::act<bool>(
+        Compiler *compiler,
+        const std::function<bool(FunctionTypeReference *)> &variableActor,
+        const std::function<bool(FunctionEntry *)> &functionActor
+);
+
 void MixedCallExpr::loadCallAddr(Compiler *compiler, std::vector<ByteResolver *> &bytes) {
     auto loadBytes = act<std::vector<ByteResolver *>>(compiler, [this, compiler](FunctionTypeReference *functionRef) {
         auto bytes = std::vector<ByteResolver *>();
