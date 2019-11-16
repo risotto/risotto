@@ -354,7 +354,7 @@ if (auto V = dynamic_cast<T *>(stmt)) { \
 
         ss << "GetCallExpr" << std::endl;
         ss << indent("+Callee: ", 1) << std::endl;
-        ss << indent(print(stmt->callee), 2) << std::endl;
+        ss << indent(print(stmt->callee), 2);
         ss << indent("+Identifier: ", 1) + stmt->identifier->lexeme << std::endl;
         ss << indent("+Args:", 1) << std::endl;
         ss << indent(print(stmt->args), 2);

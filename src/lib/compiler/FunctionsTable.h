@@ -42,6 +42,8 @@ public:
 
     ByteResolver *firstByte = nullptr;
 
+    unsigned int addr = 0;
+
     virtual ~FunctionEntry() = default;
 };
 

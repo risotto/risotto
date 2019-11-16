@@ -11,6 +11,8 @@ std::vector<ByteResolver *> TypeStmt::compile(Compiler *compiler) {
     auto def = typeDescriptor->toTypeReference(compiler)->getTypeDefinition(compiler);
     compiler->frame->types.add(name->lexeme, def);
 
+    compiler->typesManager.registerType(def);
+
     return std::vector<ByteResolver *>();
 }
 

@@ -26,7 +26,7 @@ Utils::findCandidatesFunctions(const std::vector<FunctionEntry *> &functions, co
 
 void Utils::loadFunctionEntryAddr(Compiler *compiler, FunctionEntry *entry, std::vector<ByteResolver *> &bytes) {
     if (auto interfaceEntry = dynamic_cast<InterfaceFunctionEntry *>(entry)) {
-        auto entryAddr = compiler->registerFunctionEntry(interfaceEntry);
+        auto entryAddr = interfaceEntry->addr;
 
         bytes.push_back(new ByteResolver(OP_CONST, nullptr));
         bytes.push_back(new ByteResolver([entryAddr](Compiler *c) {

@@ -93,6 +93,8 @@ FunctionEntry *FunctionStmt::getFunctionEntry(Compiler *compiler) {
                 default:
                     throw CompilerError("Unhandled function type");
             }
+
+            compiler->typesManager.registerFunction(receiverType, functionEntry);
         } else {
             functionEntry = compiler->frame->functions.add(functionEntry);
         }

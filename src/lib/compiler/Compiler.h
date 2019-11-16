@@ -9,6 +9,7 @@
 #include <vector>
 #include "ByteResolver.h"
 #include "Frame.h"
+#include "TypesManager.h"
 
 extern "C" {
 #include <lib/vm/chunk.h>
@@ -19,10 +20,10 @@ private:
     std::vector<Stmt *> stmts;
     std::vector<ByteResolver *> bytes;
 
-    std::vector<FunctionEntry *> functions;
 public:
     Chunk chunk;
     Frame *frame;
+    TypesManager typesManager;
 
     explicit Compiler(std::vector<Stmt *> stmts);
 
@@ -31,8 +32,6 @@ public:
     OP_T registerConst(Value v);
 
     OP_T getAddr(ByteResolver *byte);
-
-    unsigned long registerFunctionEntry(FunctionEntry * entry);
 };
 
 

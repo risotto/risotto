@@ -63,6 +63,7 @@ typedef struct {
 typedef vec_t(vtable_entry) vtable_entry_vec_t;
 
 struct vtable {
+    unsigned int size;
     vtable_entry_vec_t addrs;
 };
 

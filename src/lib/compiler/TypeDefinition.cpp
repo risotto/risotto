@@ -7,10 +7,6 @@
 
 TypeDefinition::TypeDefinition() : vtable(new struct vtable) {
     vec_init(vtable);
-
-    // TODO: unfake
-    vtable_entry entry = {.vaddr  = 0, .addr= i2v(10)};
-    vec_push(&vtable->addrs, entry);
 }
 
 void TypeDefinition::addSelf(const std::string &selfName, bool asReference, FunctionEntry *entry) {

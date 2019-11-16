@@ -182,16 +182,3 @@ OP_T Compiler::getAddr(ByteResolver *byte) {
 
     throw std::logic_error("Byte is not part of program");
 }
-
-unsigned long Compiler::registerFunctionEntry(FunctionEntry *entry) {
-    auto it = std::find(functions.begin(), functions.end(), entry);
-
-    if (it != functions.end()) {
-        return std::distance(functions.begin(), it);
-    }
-
-    auto i = functions.size();
-    functions.push_back(entry);
-
-    return i;
-}
