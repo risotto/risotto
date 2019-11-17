@@ -94,3 +94,7 @@ std::vector<ByteResolver *> IfStmt::compile(Compiler  *compiler) {
 
     return bytes;
 }
+
+void IfStmt::walk(ASTWalker *walker) {
+    walker->walkIfStmt(this);
+}

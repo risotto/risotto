@@ -33,3 +33,7 @@ std::vector<ByteResolver *> FunctionExpr::compile(Compiler *compiler) {
 
     return bytes;
 }
+
+void FunctionExpr::walk(ASTWalker *walker) {
+    walker->walkFunctionExpr(this);
+}

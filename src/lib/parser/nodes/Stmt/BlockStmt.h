@@ -15,6 +15,8 @@ public:
     explicit BlockStmt(std::vector<Stmt *> stmts);
 
     std::vector<ByteResolver *> compile(Compiler *compiler) override;
+
+    void walk(ASTWalker *walker) override;
 };
 
 

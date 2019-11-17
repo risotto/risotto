@@ -26,6 +26,9 @@ protected:
     std::vector<Expr *> getArguments(Compiler *compiler) override;
 
     FunctionNotFoundError getFunctionNotFoundError(Compiler *compiler) override;
+
+public:
+    void walk(ASTWalker *walker) override;
 };
 
 

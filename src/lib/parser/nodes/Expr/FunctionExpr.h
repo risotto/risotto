@@ -16,9 +16,10 @@ public:
     FunctionStmt *functionStmt;
 
     FunctionExpr(FunctionStmt *functionStmt);
-protected:
 public:
     std::vector<ByteResolver *> compile(Compiler *compiler) override;
+
+    void walk(ASTWalker *walker) override;
 
 protected:
     ReturnTypes computeReturnType(Compiler *compiler) override;

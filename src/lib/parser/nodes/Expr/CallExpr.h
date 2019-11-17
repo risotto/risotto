@@ -46,6 +46,9 @@ public:
 
 protected:
     ReturnTypes computeReturnType(Compiler *compiler) override;
+
+public:
+    void walk(ASTWalker *walker) override;
 };
 
 

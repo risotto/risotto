@@ -74,3 +74,7 @@ TypeDefinition *LiteralExpr::computeReturnTypeDefinition(Compiler *compiler) {
 ReturnTypes LiteralExpr::computeReturnType(Compiler *compiler) {
     return new ConcreteTypeReference(computeReturnTypeDefinition(compiler));
 }
+
+void LiteralExpr::walk(ASTWalker *walker) {
+    walker->walkLiteralExpr(this);
+}

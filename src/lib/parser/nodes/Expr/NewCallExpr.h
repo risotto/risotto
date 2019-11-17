@@ -24,6 +24,9 @@ protected:
     FunctionEntry *getFunctionEntry(Compiler *compiler) override;
 
     StructTypeDefinition *getStructTypeDef(Compiler *compiler);
+
+public:
+    void walk(ASTWalker *walker) override;
 };
 
 

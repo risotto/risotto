@@ -14,3 +14,7 @@ std::vector<ByteResolver *> TypeStmt::compile(Compiler *compiler) {
     return std::vector<ByteResolver *>();
 }
 
+void TypeStmt::walk(ASTWalker *walker) {
+    walker->walkTypeStmt(this);
+}
+

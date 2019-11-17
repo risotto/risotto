@@ -39,3 +39,7 @@ std::vector<ByteResolver *> WhileStmt::compile(Compiler *compiler) {
 
     return bytes;
 }
+
+void WhileStmt::walk(ASTWalker *walker) {
+    walker->walkWhileStmt(this);
+}

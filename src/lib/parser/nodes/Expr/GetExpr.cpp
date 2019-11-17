@@ -102,3 +102,7 @@ ReturnTypes GetExpr::computeReturnType(Compiler *compiler) {
 
     return returnTypes;
 }
+
+void GetExpr::walk(ASTWalker *walker) {
+    walker->walkGetExpr(this);
+}

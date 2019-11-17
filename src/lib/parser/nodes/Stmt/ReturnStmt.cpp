@@ -31,3 +31,7 @@ std::vector<ByteResolver *> ReturnStmt::compile(Compiler *compiler) {
 
     return bytes;
 }
+
+void ReturnStmt::walk(ASTWalker *walker) {
+    walker->walkReturnStmt(this);
+}

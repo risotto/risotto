@@ -90,3 +90,7 @@ std::vector<ByteResolver *> LogicalExpr::compile(Compiler *compiler) {
 ReturnTypes LogicalExpr::computeReturnType(Compiler *compiler) {
     return new ConcreteTypeReference(compiler->frame->types.findNamed("bool")->definition);
 }
+
+void LogicalExpr::walk(ASTWalker *walker) {
+    walker->walkLogicalExpr(this);
+}

@@ -18,6 +18,8 @@ public:
     ReturnStmt(Token *keyword, std::vector<Expr *> values);
 
     std::vector<ByteResolver *> compile(Compiler *compiler) override;
+
+    void walk(ASTWalker *walker) override;
 };
 
 

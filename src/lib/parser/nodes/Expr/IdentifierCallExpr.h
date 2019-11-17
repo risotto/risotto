@@ -22,6 +22,9 @@ protected:
     FunctionEntry *getFunctionEntry(Compiler *compiler) override;
 
     void loadVariableEntryAddr(Compiler *compiler, std::vector<ByteResolver *> &bytes) override;
+
+public:
+    void walk(ASTWalker *walker) override;
 };
 
 

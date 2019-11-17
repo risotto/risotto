@@ -44,3 +44,7 @@ FunctionNotFoundError UnaryExpr::getFunctionNotFoundError(Compiler *compiler) {
 VariableEntry *UnaryExpr::getVariableEntry(Compiler *compiler) {
     return nullptr;
 }
+
+void UnaryExpr::walk(ASTWalker *walker) {
+    walker->walkUnaryExpr(this);
+}

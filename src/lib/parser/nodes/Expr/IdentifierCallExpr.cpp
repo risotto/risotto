@@ -38,3 +38,7 @@ FunctionNotFoundError IdentifierCallExpr::getFunctionNotFoundError(Compiler *com
 
     throw FunctionNotFoundError(identifier->lexeme + "({{args}})", argumentsTypes, rParen);
 }
+
+void IdentifierCallExpr::walk(ASTWalker *walker) {
+    walker->walkIdentifierCallExpr(this);
+}

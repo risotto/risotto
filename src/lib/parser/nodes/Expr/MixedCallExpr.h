@@ -29,6 +29,9 @@ protected:
     virtual void loadVariableEntryAddr(Compiler *compiler, std::vector<ByteResolver *> &bytes) = 0;
 
     ReturnTypes computeReturnType(Compiler *compiler) override;
+
+public:
+    void walk(ASTWalker *walker) override;
 };
 
 

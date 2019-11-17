@@ -17,6 +17,8 @@ public:
     TypeStmt(Token *name, TypeDescriptor *typeDescriptor);
 
     std::vector<ByteResolver *> compile(Compiler *compiler) override;
+
+    void walk(ASTWalker *walker) override;
 };
 
 

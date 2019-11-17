@@ -31,3 +31,7 @@ std::vector<ByteResolver *> SetExpr::compile(Compiler *compiler) {
 ReturnTypes SetExpr::computeReturnType(Compiler *compiler) {
     return left->getReturnType(compiler);
 }
+
+void SetExpr::walk(ASTWalker *walker) {
+    walker->walkSetExpr(this);
+}

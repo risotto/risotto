@@ -51,3 +51,7 @@ FunctionNotFoundError BinaryExpr::getFunctionNotFoundError(Compiler *compiler) {
 VariableEntry *BinaryExpr::getVariableEntry(Compiler *compiler) {
     return nullptr;
 }
+
+void BinaryExpr::walk(ASTWalker *walker) {
+    walker->walkBinaryExpr(this);
+}

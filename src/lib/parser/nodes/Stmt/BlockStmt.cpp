@@ -28,3 +28,7 @@ std::vector<ByteResolver *> BlockStmt::compile(Compiler *compiler) {
 
     return bytes;
 }
+
+void BlockStmt::walk(ASTWalker *walker) {
+    walker->walkBlockStmt(this);
+}

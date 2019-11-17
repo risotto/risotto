@@ -17,3 +17,7 @@ std::vector<ByteResolver *> GroupingExpr::compile(Compiler *compiler) {
 ReturnTypes GroupingExpr::computeReturnType(Compiler *compiler) {
     return expr->getReturnType(compiler);
 }
+
+void GroupingExpr::walk(ASTWalker *walker) {
+    walker->walkGroupingExpr(this);
+}

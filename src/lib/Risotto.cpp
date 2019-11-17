@@ -85,7 +85,7 @@ bool Risotto::hasFlag(RisottoFlags flag) {
 }
 
 template<class _Rep, class _Period>
-std::string nsToStr(std::chrono::duration<_Rep, _Period> duration) {
+std::string durationToStr(std::chrono::duration<_Rep, _Period> duration) {
     auto hours = std::chrono::duration_cast<std::chrono::hours>(duration);
     duration -= hours;
     auto minutes = std::chrono::duration_cast<std::chrono::minutes>(duration);
@@ -140,20 +140,24 @@ std::string nsToStr(std::chrono::duration<_Rep, _Period> duration) {
         }
     }
 
+    if (ss.str().empty()) {
+        return "0ns";
+    }
+
     return ss.str();
 }
 
 template<typename T>
 T Risotto::timing(const std::string &name, std::function<T()> f) {
     if (hasFlag(PrintTimings)) {
-        auto start = std::chrono::high_resolution_clock::now();
+        auto start = std::chrono::steady_clock::now();
         auto r = f();
-        auto end = std::chrono::high_resolution_clock::now();
+        auto end = std::chrono::steady_clock::now();
 
         std::chrono::duration<unsigned long, std::nano> elapsed = end - start;
 
         std::cout.precision(7);
-        std::cout << name << " time: " << nsToStr(elapsed) << std::endl;
+        std::cout << name << " time: " << durationToStr(elapsed) << std::endl;
 
         return r;
     } else {

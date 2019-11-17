@@ -156,3 +156,7 @@ std::vector<ByteResolver *> FunctionStmt::compile(Compiler *compiler) {
 
     return bytes;
 }
+
+void FunctionStmt::walk(ASTWalker *walker) {
+    walker->walkFunctionStmt(this);
+}

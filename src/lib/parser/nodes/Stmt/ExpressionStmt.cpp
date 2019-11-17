@@ -24,3 +24,7 @@ std::vector<ByteResolver *> ExpressionStmt::compile(Compiler *compiler) {
 
     return bytes;
 }
+
+void ExpressionStmt::walk(ASTWalker *walker) {
+    walker->walkExpressionStmt(this);
+}

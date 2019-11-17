@@ -53,3 +53,7 @@ FunctionEntry *GetCallExpr::getFunctionEntry(Compiler *compiler) {
 void GetCallExpr::loadVariableEntryAddr(Compiler *compiler, std::vector<ByteResolver *> &bytes) {
     throw CompilerError("Unimplemented", identifier->position);
 }
+
+void GetCallExpr::walk(ASTWalker *walker) {
+    walker->walkGetCallExpr(this);
+}

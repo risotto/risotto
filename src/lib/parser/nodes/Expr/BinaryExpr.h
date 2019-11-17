@@ -23,6 +23,8 @@ public:
 
     FunctionEntry *getFunctionEntry(Compiler *compiler) override;
 
+    void walk(ASTWalker *walker) override;
+
 protected:
     VariableEntry *getVariableEntry(Compiler *compiler) override;
 

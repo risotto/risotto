@@ -32,3 +32,7 @@ std::vector<ByteResolver *> ArrayExpr::compile(Compiler *compiler) {
 ReturnTypes ArrayExpr::computeReturnType(Compiler *compiler) {
     return type->toTypeReference(compiler);
 }
+
+void ArrayExpr::walk(ASTWalker *walker) {
+    walker->walkArrayExpr(this);
+}

@@ -18,6 +18,8 @@ public:
     WhileStmt(Expr *condition, BlockStmt *body);
 
     std::vector<ByteResolver *> compile(Compiler *compiler) override;
+
+    void walk(ASTWalker *walker) override;
 };
 
 

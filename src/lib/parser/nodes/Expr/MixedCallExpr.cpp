@@ -73,3 +73,7 @@ void MixedCallExpr::loadCallAddr(Compiler *compiler, std::vector<ByteResolver *>
 
     bytes.insert(bytes.end(), loadBytes.begin(), loadBytes.end());
 }
+
+void MixedCallExpr::walk(ASTWalker *walker) {
+    walker->walkMixedCallExpr(this);
+}

@@ -2,14 +2,14 @@
 // Created by rvigee on 10/3/19.
 //
 
-#include "Compiler.h"
-#include "TypeDefinition.h"
-
-#include <utility>
-
 extern "C" {
 #include <lib/vm/native_functions.h>
 }
+
+#include "Compiler.h"
+#include "TypeDefinition.h"
+#include "CompilerWalker.h"
+#include <utility>
 
 #define TYPE_REF(type) new ConcreteTypeReference(type##Entry->definition)
 
@@ -143,9 +143,10 @@ Compiler::Compiler(std::vector<Stmt *> stmts) : stmts(std::move(stmts)) {
 }
 
 Chunk Compiler::compile() {
+    auto walker = new CompilerWalker();
+
     for (auto stmt: stmts) {
-        auto stmtBytes = stmt->compile(this);
-        bytes.insert(bytes.end(), stmtBytes.begin(), stmtBytes.end());
+        stmt->walk(walker);
     }
 
     bytes.push_back(new ByteResolver(OP_END, nullptr));

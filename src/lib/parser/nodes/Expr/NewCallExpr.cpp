@@ -52,3 +52,7 @@ FunctionNotFoundError NewCallExpr::getFunctionNotFoundError(Compiler *compiler) 
 
     throw FunctionNotFoundError("new " + identifier->lexeme + "({{args}})", actualArgsTypes, rParen);
 }
+
+void NewCallExpr::walk(ASTWalker *walker) {
+    walker->walkNewCallExpr(this);
+}

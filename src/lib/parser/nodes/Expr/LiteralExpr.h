@@ -22,6 +22,9 @@ public:
 protected:
     TypeDefinition *computeReturnTypeDefinition(Compiler *compiler);
     ReturnTypes computeReturnType(Compiler *compiler) override;
+
+public:
+    void walk(ASTWalker *walker) override;
 };
 
 

@@ -67,3 +67,7 @@ ReturnTypes IdentifierExpr::computeReturnType(Compiler *compiler) {
 
     return candidateTypes;
 }
+
+void IdentifierExpr::walk(ASTWalker *walker) {
+    walker->walkIdentifierExpr(this);
+}

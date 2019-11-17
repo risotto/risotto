@@ -34,6 +34,9 @@ public:
     FunctionEntry *getFunctionEntry(Compiler *compiler);
 private:
     FunctionEntry *_functionEntry = nullptr;
+
+public:
+    void walk(ASTWalker *walker) override;
 };
 
 

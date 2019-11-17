@@ -27,3 +27,7 @@ std::vector<ByteResolver *> VarDeclStmt::compile(Compiler *compiler) {
 
     return value->compile(compiler);
 }
+
+void VarDeclStmt::walk(ASTWalker *walker) {
+    walker->walkVarDeclStmt(this);
+}

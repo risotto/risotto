@@ -116,3 +116,7 @@ void CallExpr::loadCallAddr(Compiler *compiler, std::vector<ByteResolver *> &byt
     auto calleeBytes = callee->compile(compiler);
     bytes.insert(bytes.end(), calleeBytes.begin(), calleeBytes.end());
 }
+
+void CallExpr::walk(ASTWalker *walker) {
+    walker->walkCallExpr(this);
+}
