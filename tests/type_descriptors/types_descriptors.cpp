@@ -76,7 +76,7 @@ TEST(TypesDescriptor, Function) {
 
     auto typeDesc = new FunctionTypeDescriptor(
             {
-                    ParameterDefinition(
+                    new ParameterDefinition(
                             new Token(
                                     TokenType::IDENTIFIER,
                                     ValueData{._str = "var1"},
@@ -86,7 +86,7 @@ TEST(TypesDescriptor, Function) {
                             intDesc,
                             true
                     ),
-                    ParameterDefinition(
+                    new ParameterDefinition(
                             new Token(
                                     TokenType::IDENTIFIER,
                                     ValueData{._str = "var2"},
