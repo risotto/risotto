@@ -22,7 +22,7 @@ extern "C" {
         SELF_RECEIVER("self", target), \
         new NativeFunctionEntry( \
             #op, \
-            {ParameterDefinition("right", TYPE_DESC(param), true)}, \
+            {new ParameterDefinition("right", TYPE_DESC(param), true)}, \
             {TYPE_DESC(return)}, \
             functionName \
         ) \
@@ -75,7 +75,7 @@ NATIVE_UNARY_PREFIX_OPERATOR_DECLARATION(target, --, return, decrement) \
     frame->functions.add( \
         new NativeFunctionEntry( \
             "println", \
-            {ParameterDefinition("e", TYPE_DESC(type), true)}, \
+            {new ParameterDefinition("e", TYPE_DESC(type), true)}, \
             {}, \
             println_##type \
         ) \

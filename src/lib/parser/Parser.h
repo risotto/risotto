@@ -18,7 +18,7 @@
     ParameterDefinition *receiver, \
     Token *name, \
     std::vector<TypeDescriptor *> returnTypes, \
-    std::vector<ParameterDefinition> parameters
+    std::vector<ParameterDefinition *> parameters
 
 template<typename T>
 using FunctionSignatureFactory = std::function<T(FUNCTION_SIGNATURE_FACTORY_ARGS)>;

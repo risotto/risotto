@@ -82,10 +82,10 @@ public:
 
 class FunctionTypeDescriptor : public TypeDescriptor {
 public:
-    std::vector<ParameterDefinition> params;
+    std::vector<ParameterDefinition *> params;
     std::vector<TypeDescriptor *> returnTypes;
 
-    FunctionTypeDescriptor(std::vector<ParameterDefinition> params, std::vector<TypeDescriptor *> returnTypes);
+    FunctionTypeDescriptor(std::vector<ParameterDefinition *> params, std::vector<TypeDescriptor *> returnTypes);
     explicit FunctionTypeDescriptor(FunctionEntry *functionEntry);
 
     TypeEntry *genType(Frame *frame) override;

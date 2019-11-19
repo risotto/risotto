@@ -20,7 +20,7 @@ public:
     static std::vector<FunctionEntry *> findCandidatesFunctions(const std::vector<FunctionEntry *>& functions, const std::string& name);
     static FunctionEntry * findMatchingFunctions(const std::vector<FunctionEntry *>& functions, std::vector<TypeDescriptor *> argsTypes);
     static bool typesMatch(const std::vector<TypeDescriptor *>& receivers, std::vector<TypeDescriptor *> args);
-    static bool typesMatch(const std::vector<ParameterDefinition>& params, std::vector<ParameterDefinition> args);
+    static bool typesMatch(const std::vector<ParameterDefinition *>& params, std::vector<ParameterDefinition *> args);
 
     static void loadFunctionEntryAddr(Compiler *compiler, FunctionEntry *entry, std::vector<ByteResolver *> &bytes);
 

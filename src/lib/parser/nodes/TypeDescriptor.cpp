@@ -127,7 +127,7 @@ TypeEntry *StructTypeDescriptor::genType(Frame *frame) {
 
 StructTypeDescriptor::Field::Field(Token *name, TypeDescriptor *type) : name(name), type(type) {}
 
-FunctionTypeDescriptor::FunctionTypeDescriptor(std::vector<ParameterDefinition> params,
+FunctionTypeDescriptor::FunctionTypeDescriptor(std::vector<ParameterDefinition *> params,
                                                std::vector<TypeDescriptor *> returnTypes)
         : params(std::move(params)), returnTypes(std::move(returnTypes)) {}
 
@@ -148,7 +148,7 @@ std::string FunctionTypeDescriptor::toString() {
             ss << ", ";
         }
 
-        ss << param.name->lexeme << " " << param.type->toString();
+        ss << param->name->lexeme << " " << param->type->toString();
     }
 
     ss << ")";
@@ -172,12 +172,12 @@ std::string FunctionTypeDescriptor::toString() {
 
 TypeEntry *FunctionTypeDescriptor::genType(Frame *frame) {
     for (auto param: params) {
-        auto entry = param.type->genType(frame);
+        auto entry = param->type->genType(frame);
         if (entry == nullptr) {
             return nullptr;
         }
 
-        param.type->setTypeEntry(entry);
+        param->type->setTypeEntry(entry);
     }
 
     auto functionEntry = new FunctionEntry("", params, returnTypes);
@@ -185,6 +185,8 @@ TypeEntry *FunctionTypeDescriptor::genType(Frame *frame) {
     auto entry = new TypeEntry(typeDef);
 
     frame->types.add(entry);
+
+    return entry;
 }
 
 TypeDefinition *TypeDescriptor::getTypeDefinition() {

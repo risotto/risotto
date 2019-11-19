@@ -20,9 +20,9 @@ ReturnTypes MixedCallExpr::computeReturnType(Compiler *compiler) {
 
 bool MixedCallExpr::isArgumentReference(Compiler *compiler, int i) {
     return act<bool>(compiler, [i](FunctionTypeDescriptor *functionRef) {
-        return functionRef->params[i].asReference;
+        return functionRef->params[i]->asReference;
     }, [i](FunctionEntry *functionEntry) {
-        return functionEntry->params[i].asReference;
+        return functionEntry->params[i]->asReference;
     });
 }
 
@@ -38,7 +38,7 @@ T MixedCallExpr::act(
         if (auto functionRef = dynamic_cast<FunctionTypeDescriptor *>(variableEntry->typeRef)) {
             auto params = std::vector<TypeDescriptor *>();
             for (const auto &param: functionRef->params) {
-                params.push_back(param.type);
+                params.push_back(param->type);
             }
 
             if (Utils::typesMatch(params, getArgumentsTypes(compiler))) {

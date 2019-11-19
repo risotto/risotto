@@ -50,7 +50,7 @@ FunctionEntry *Utils::findMatchingFunctions(
         if (entry->params.size() == argsTypes.size()) {
             auto compatible = true;
             for (int i = 0; i < entry->params.size(); ++i) {
-                auto paramType = entry->params[i].type;
+                auto paramType = entry->params[i]->type;
                 auto argType = argsTypes[i];
 
                 if (!paramType->canReceiveType(argType)) {
@@ -68,27 +68,27 @@ FunctionEntry *Utils::findMatchingFunctions(
     return nullptr;
 }
 
-bool Utils::typesMatch(const std::vector<ParameterDefinition> &params,
-                       std::vector<ParameterDefinition> args) {
+bool Utils::typesMatch(const std::vector<ParameterDefinition *> &params,
+                       std::vector<ParameterDefinition *> args) {
     if (params.size() != args.size()) {
         return false;
     }
 
     auto paramsTypes = std::vector<TypeDescriptor *>();
     for (const auto &param: params) {
-        paramsTypes.push_back(param.type);
+        paramsTypes.push_back(param->type);
     }
 
     auto argsTypes = std::vector<TypeDescriptor *>();
     for (const auto &arg: args) {
-        argsTypes.push_back(arg.type);
+        argsTypes.push_back(arg->type);
     }
 
     for (int i = 0; i < params.size(); ++i) {
         auto param = params[i];
         auto arg = args[i];
 
-        if (param.asReference != arg.asReference) {
+        if (param->asReference != arg->asReference) {
             return false;
         }
     }

@@ -9,14 +9,14 @@
 
 #include <utility>
 
-FunctionEntry::FunctionEntry(std::string name, std::vector<ParameterDefinition> params, ReturnTypes returnTypes) :
+FunctionEntry::FunctionEntry(std::string name, std::vector<ParameterDefinition *> params, ReturnTypes returnTypes) :
         name(std::move(name)), params(std::move(params)), returnTypes(std::move(returnTypes)) {
     typeDefinition = new FunctionTypeDefinition(this);
 }
 
 NativeFunctionEntry::NativeFunctionEntry(
         std::string name,
-        std::vector<ParameterDefinition> params,
+        std::vector<ParameterDefinition *> params,
         ReturnTypes returnTypes,
         NativeFunctionReturn (*fun)(Value[], int)
 ) : FunctionEntry(std::move(name), std::move(params), std::move(returnTypes)), fun(fun) {
@@ -32,7 +32,7 @@ FunctionEntry *FunctionsTable::find(const std::string &name, const std::vector<T
 FunctionEntry *FunctionsTable::add(FunctionEntry *entry) {
     auto paramsTypes = std::vector<TypeDescriptor *>();
     for (const auto &param: entry->params) {
-        paramsTypes.push_back(param.type);
+        paramsTypes.push_back(param->type);
     }
 
     auto existingFunction = find(entry->name, paramsTypes);

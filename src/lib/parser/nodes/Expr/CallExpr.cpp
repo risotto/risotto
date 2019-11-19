@@ -110,7 +110,7 @@ bool CallExpr::isArgumentReference(Compiler *compiler, int i) {
     }
 
     if (auto functionType = dynamic_cast<FunctionTypeDescriptor *>(calleeType[0])) {
-        return functionType->params[i].asReference;
+        return functionType->params[i]->asReference;
     }
 
     throw CompilerError("Return type must be a function");

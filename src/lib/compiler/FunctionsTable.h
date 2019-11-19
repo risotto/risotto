@@ -18,10 +18,10 @@ class FunctionTypeDefinition;
 
 class FunctionEntry {
 public:
-    FunctionEntry(std::string name, std::vector<ParameterDefinition> params, ReturnTypes returnTypes);
+    FunctionEntry(std::string name, std::vector<ParameterDefinition *> params, ReturnTypes returnTypes);
 
     std::string name;
-    std::vector<ParameterDefinition> params;
+    std::vector<ParameterDefinition *> params;
     ReturnTypes returnTypes;
     FunctionTypeDefinition *typeDefinition = nullptr;
 
@@ -34,7 +34,7 @@ class NativeFunctionEntry : public FunctionEntry {
 public:
     NativeFunctionReturn (*fun)(Value[], int);
 
-    NativeFunctionEntry(std::string name, std::vector<ParameterDefinition> params, ReturnTypes returnTypes,
+    NativeFunctionEntry(std::string name, std::vector<ParameterDefinition *> params, ReturnTypes returnTypes,
                         NativeFunctionReturn (*fun)(Value[], int));
 };
 

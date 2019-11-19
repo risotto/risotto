@@ -16,7 +16,7 @@ FunctionStmt::FunctionStmt(
         ParameterDefinition *receiver,
         Token *name,
         std::vector<TypeDescriptor *> returnTypes,
-        std::vector<ParameterDefinition> parameters,
+        std::vector<ParameterDefinition *> parameters,
         std::vector<Stmt *> body,
         Token *closeBlock
 ) : type(type),
@@ -133,7 +133,7 @@ std::vector<ByteResolver *> FunctionStmt::compile(Compiler *compiler) {
 
 void FunctionStmt::symbolize(Compiler *compiler) {
     for (auto param: parameters) {
-        compiler->linkables.push_back(new LinkUnit(param.type, compiler->frame));
+        compiler->linkables.push_back(new LinkUnit(param->type, compiler->frame));
     }
 
     for (auto returnType: returnTypes) {
@@ -155,7 +155,7 @@ void FunctionStmt::symbolize(Compiler *compiler) {
 
     // Declare parameters
     for (const auto &param : parameters) {
-        compiler->frame->variables.add(param.name->lexeme, param.type);
+        compiler->frame->variables.add(param->name->lexeme, param->type);
     }
 
     for (auto stmt : body) {

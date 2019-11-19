@@ -13,7 +13,7 @@ bool TypeDefinition::canReceiveType(TypeDefinition *type) {
 }
 
 void TypeDefinition::addSelf(ParameterDefinition *self, FunctionEntry *entry) {
-    entry->params.insert(entry->params.begin(), {*self});
+    entry->params.insert(entry->params.begin(), {self});
 }
 
 FunctionEntry *TypeDefinition::addFunction(ParameterDefinition *self, FunctionEntry *entry) {
@@ -53,8 +53,8 @@ bool FunctionTypeDefinition::canReceiveType(TypeDefinition *type) {
         }
 
         for (int i = 0; i < this->entry->params.size(); ++i) {
-            auto param = this->entry->params[i].type;
-            auto otherParam = otherFunction->entry->params[i].type;
+            auto param = this->entry->params[i]->type;
+            auto otherParam = otherFunction->entry->params[i]->type;
 
             if (!param->canReceiveType(otherParam)) {
                 return false;

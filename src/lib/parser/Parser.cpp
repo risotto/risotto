@@ -246,8 +246,8 @@ T Parser::functionSignature(bool canHaveReceiver, bool isNamed, const FunctionSi
 
     consume(TokenType::LEFT_PAREN, "Expect '(' after function name.");
 
-    std::vector<ParameterDefinition> parameters = enumeration<ParameterDefinition>([this]() {
-        return *parameter();
+    auto parameters = enumeration<ParameterDefinition *>([this]() {
+        return parameter();
     }, TokenType::RIGHT_PAREN);
 
     consume(TokenType::RIGHT_PAREN, "Expect ')' after parameters.");
