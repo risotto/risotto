@@ -7,6 +7,7 @@
 
 #include <utility>
 #include <lib/parser/nodes/TypeDescriptor.h>
+#include <lib/compiler/utils/Utils.h>
 
 bool TypeDefinition::canReceiveType(TypeDefinition *type) {
     return this == type;
@@ -44,35 +45,8 @@ bool FunctionTypeDefinition::canReceiveType(TypeDefinition *type) {
     }
 
     if (auto otherFunction = dynamic_cast<FunctionTypeDefinition *>(type)) {
-        if (this->entry->params.size() != otherFunction->entry->params.size()) {
-            return false;
-        }
-
-        if (this->entry->returnTypes.size() != otherFunction->entry->returnTypes.size()) {
-            return false;
-        }
-
-        for (int i = 0; i < this->entry->params.size(); ++i) {
-            auto param = this->entry->params[i]->type;
-            auto otherParam = otherFunction->entry->params[i]->type;
-
-            if (!param->canReceiveType(otherParam)) {
-                return false;
-            }
-        }
-
-        for (int i = 0; i < this->entry->returnTypes.size(); ++i) {
-            auto returnType = this->entry->returnTypes[i];
-            auto otherReturnType = otherFunction->entry->returnTypes[i];
-
-            if (!returnType->canReceiveType(otherReturnType)) {
-                return false;
-            }
-        }
-
-        return true;
+        return Utils::typesMatch(this->entry->params, otherFunction->entry->params);
     }
-
 
     return false;
 }

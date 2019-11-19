@@ -68,8 +68,10 @@ FunctionEntry *Utils::findMatchingFunctions(
     return nullptr;
 }
 
-bool Utils::typesMatch(const std::vector<ParameterDefinition *> &params,
-                       std::vector<ParameterDefinition *> args) {
+bool Utils::typesMatch(
+        const std::vector<ParameterDefinition *> &params,
+        std::vector<ParameterDefinition *> args
+) {
     if (params.size() != args.size()) {
         return false;
     }
