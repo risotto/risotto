@@ -13,10 +13,14 @@ class TypeStmt: public Stmt {
 public:
     Token *name;
     TypeDescriptor *typeDescriptor;
+    TypeEntry *typeEntry = nullptr;
 
     TypeStmt(Token *name, TypeDescriptor *typeDescriptor);
 
     std::vector<ByteResolver *> compile(Compiler *compiler) override;
+
+    void symbolize(Compiler *compiler) override;
+
 };
 
 

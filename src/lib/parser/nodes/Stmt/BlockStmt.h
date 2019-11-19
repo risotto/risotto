@@ -15,6 +15,8 @@ public:
     explicit BlockStmt(std::vector<Stmt *> stmts);
 
     std::vector<ByteResolver *> compile(Compiler *compiler) override;
+
+    void symbolize(Compiler *compiler) override;
 };
 
 

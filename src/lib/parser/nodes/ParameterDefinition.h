@@ -17,6 +17,7 @@ public:
     bool asReference;
 
     ParameterDefinition(Token *name, TypeDescriptor *type, bool asReference);
+    ParameterDefinition(const std::string& name, TypeDescriptor *type, bool asReference);
 };
 
 

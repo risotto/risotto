@@ -8,8 +8,6 @@ extern "C" {
 
 #include "CallExpr.h"
 #include "IdentifierExpr.h"
-#include "lib/compiler/TypeReference.h"
-#include "lib/compiler/TypeDefinition.h"
 #include "lib/parser/nodes/TypeDescriptor.h"
 #include "lib/compiler/ReturnTypes.h"
 
@@ -50,7 +48,7 @@ void BaseCallExpr::loadArgs(Compiler *compiler, std::vector<ByteResolver *> &byt
     }
 }
 
-std::vector<TypeReference *> BaseCallExpr::getArgumentsTypes(Compiler *compiler) {
+std::vector<TypeDescriptor *> BaseCallExpr::getArgumentsTypes(Compiler *compiler) {
     auto arguments = getArguments(compiler);
 
     for (auto arg : arguments) {
@@ -80,6 +78,12 @@ std::vector<Expr *> BaseCallExpr::getArguments(Compiler *compiler) {
     return args;
 }
 
+void BaseCallExpr::symbolize(Compiler *compiler) {
+    for (auto arg: args) {
+        arg->symbolize(compiler);
+    }
+}
+
 CallExpr::CallExpr(Expr *callee, Token *rParen, const std::vector<Expr *> &args) :
         BaseCallExpr(rParen, args), callee(callee) {
 }
@@ -91,7 +95,7 @@ ReturnTypes CallExpr::computeReturnType(Compiler *compiler) {
         throw CompilerError("Callee type must be single");
     }
 
-    if (auto functionType = dynamic_cast<FunctionTypeReference *>(calleeType[0])) {
+    if (auto functionType = dynamic_cast<FunctionTypeDescriptor *>(calleeType[0])) {
         return functionType->returnTypes;
     }
 
@@ -105,7 +109,7 @@ bool CallExpr::isArgumentReference(Compiler *compiler, int i) {
         throw CompilerError("Callee type must be single");
     }
 
-    if (auto functionType = dynamic_cast<FunctionTypeReference *>(calleeType[0])) {
+    if (auto functionType = dynamic_cast<FunctionTypeDescriptor *>(calleeType[0])) {
         return functionType->params[i].asReference;
     }
 
@@ -115,4 +119,9 @@ bool CallExpr::isArgumentReference(Compiler *compiler, int i) {
 void CallExpr::loadCallAddr(Compiler *compiler, std::vector<ByteResolver *> &bytes) {
     auto calleeBytes = callee->compile(compiler);
     bytes.insert(bytes.end(), calleeBytes.begin(), calleeBytes.end());
+}
+
+void CallExpr::symbolize(Compiler *compiler) {
+    callee->symbolize(compiler);
+    BaseCallExpr::symbolize(compiler);
 }

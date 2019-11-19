@@ -16,32 +16,32 @@ public:
     FunctionsTable operators = FunctionsTable();
     FunctionsTable prefixes = FunctionsTable();
 
-    bool canReceiveType(TypeDefinition *type);
+    virtual bool canReceiveType(TypeDefinition *type);
 
-    FunctionEntry *addFunction(const std::string &selfName, bool asReference, FunctionEntry *entry);
+    FunctionEntry *addFunction(ParameterDefinition *self, FunctionEntry *entry);
 
-    FunctionEntry *addOperator(const std::string &selfName, bool asReference, FunctionEntry *entry);
+    FunctionEntry *addOperator(ParameterDefinition *self, FunctionEntry *entry);
 
-    FunctionEntry *addPrefix(const std::string &selfName, bool asReference, FunctionEntry *entry);
+    FunctionEntry *addPrefix(ParameterDefinition *self, FunctionEntry *entry);
 
     virtual ~TypeDefinition() = default;
 
 protected:
-    void addSelf(const std::string &selfName, bool asReference, FunctionEntry *entry);
+    static void addSelf(ParameterDefinition *self, FunctionEntry *entry);
 };
 
 class ArrayTypeDefinition : public TypeDefinition {
 public:
-    TypeDefinition *element;
+    TypeDescriptor *element;
 
-    explicit ArrayTypeDefinition(TypeDefinition *element);
+    explicit ArrayTypeDefinition(TypeDescriptor *element);
 };
 
-class ConcreteTypeDefinition : public TypeDefinition {
+class ScalarTypeDefinition : public TypeDefinition {
 public:
     std::string name;
 
-    explicit ConcreteTypeDefinition(std::string name);
+    explicit ScalarTypeDefinition(std::string name);
 };
 
 class FunctionTypeDefinition : public TypeDefinition {
@@ -49,6 +49,8 @@ public:
     FunctionEntry *entry;
 
     explicit FunctionTypeDefinition(FunctionEntry *function);
+
+    bool canReceiveType(TypeDefinition *type) override;
 };
 
 class StructTypeDefinition : public TypeDefinition {
@@ -58,7 +60,7 @@ public:
 
     explicit StructTypeDefinition(VariablesTable fields);
 
-    FunctionEntry *addConstructor(const std::string &selfName, bool asReference, FunctionEntry *entry);
+    FunctionEntry *addConstructor(ParameterDefinition *self, FunctionEntry *entry);
 
     int getFieldIndex(VariableEntry *entry);
 };

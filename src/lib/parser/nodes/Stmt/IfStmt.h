@@ -19,6 +19,8 @@ public:
     IfStmt(Expr *condition, Stmt *thenBranch, std::vector<IfStmt *> elseifs, Stmt *elseBranch);
 
     std::vector<ByteResolver *> compile(Compiler *compiler) override;
+
+    void symbolize(Compiler *compiler) override;
 };
 
 

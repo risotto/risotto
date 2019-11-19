@@ -63,6 +63,8 @@ public:
           std::string lexeme,
           Position position
     );
+
+    static Token* IdentifierFactory(const std::string& id);
 };
 
 

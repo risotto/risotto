@@ -5,8 +5,15 @@
 #include "TypesTable.h"
 #include "TypeDefinition.h"
 #include <utility>
+#include <cassert>
+
+TypeEntry::TypeEntry(std::string name, TypeDefinition *definition) : name(std::move(name)), definition(definition) {}
+
+TypeEntry::TypeEntry(TypeDefinition *definition): TypeEntry("", definition) {}
 
 TypeEntry *TypesTable::findNamed(const std::string &name) {
+    assert(!name.empty());
+
     for (auto entry : entries) {
         if (entry->name == name) {
             return entry;
@@ -16,41 +23,16 @@ TypeEntry *TypesTable::findNamed(const std::string &name) {
     return nullptr;
 }
 
-TypeEntry *TypesTable::add(const std::string& name) {
-    auto entry = new ConcreteTypeDefinition(name);
+TypeEntry *TypesTable::add(TypeEntry *typeEntry) {
+    entries.push_back(typeEntry);
 
-    return add(name, entry);
+    return typeEntry;
 }
 
-TypeDefinition *TypesTable::add(TypeDefinition *typeDefinition) {
-    definitions.push_back(typeDefinition);
-
-    return typeDefinition;
+TypeEntry *TypesTable::reg(const std::string &name) {
+    return add(name, nullptr);
 }
 
-TypeEntry *TypesTable::add(const std::string& name, TypeDefinition *typeDefinition) {
-    typeDefinition = add(typeDefinition);
-
-    auto entry = new TypeEntry(name, typeDefinition);
-    entries.push_back(entry);
-
-    return entry;
+TypeEntry *TypesTable::add(const std::string &name, TypeDefinition *typeDefinition) {
+    return add(new TypeEntry(name, typeDefinition));
 }
-
-TypeDefinition *TypesTable::addVirtual(const std::string &id, TypeDefinition *typeDefinition) {
-    virtualEntries.insert(std::make_pair(id, typeDefinition));
-
-    return typeDefinition;
-}
-
-TypeDefinition *TypesTable::findVirtual(const std::string &name) {
-    auto it = virtualEntries.find(name);
-
-    if (it != virtualEntries.end()) {
-        return it->second;
-    }
-
-    return nullptr;
-}
-
-TypeEntry::TypeEntry(std::string name, TypeDefinition *definition) : name(std::move(name)), definition(definition) {}

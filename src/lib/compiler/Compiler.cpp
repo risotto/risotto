@@ -6,21 +6,24 @@
 #include "TypeDefinition.h"
 
 #include <utility>
+#include <sstream>
+#include <lib/parser/nodes/TypeDescriptor.h>
 
 extern "C" {
 #include <lib/vm/native_functions.h>
 }
 
-#define TYPE_REF(type) new ConcreteTypeReference(type##Entry->definition)
+#define TYPE_ENTRY(type) type##Entry
+#define TYPE_DESC(type) new IdentifierTypeDescriptor(#type, TYPE_ENTRY(type)->definition)
+#define SELF_RECEIVER(name, type) new ParameterDefinition(name, TYPE_DESC(type), true)
 
 #define NATIVE_BINARY_DECLARATION_NAMED(target, op, param, return, functionName) \
-    target##Entry->definition->addOperator( \
-        "self", \
-        true, \
+    TYPE_ENTRY(target)->definition->addOperator( \
+        SELF_RECEIVER("self", target), \
         new NativeFunctionEntry( \
             #op, \
-            {FunctionEntryParameter("right", TYPE_REF(param))}, \
-            {TYPE_REF(return)}, \
+            {ParameterDefinition("right", TYPE_DESC(param), true)}, \
+            {TYPE_DESC(return)}, \
             functionName \
         ) \
     );
@@ -50,13 +53,12 @@ NATIVE_BINARY_OPERATOR_DECLARATION(type, +, string, string, add) \
 NATIVE_BINARY_OPERATOR_DECLARATION(string, +=, type, string, add_equal)
 
 #define NATIVE_UNARY_OPERATOR_DECLARATION(target, op, return, functionName) \
-    target##Entry->definition->addPrefix( \
-        "self", \
-        true, \
+    TYPE_ENTRY(target)->definition->addPrefix( \
+        SELF_RECEIVER("left", target), \
         new NativeFunctionEntry( \
             #op, \
             {}, \
-            {TYPE_REF(return)}, \
+            {TYPE_DESC(return)}, \
             functionName \
         ) \
     );
@@ -73,7 +75,7 @@ NATIVE_UNARY_PREFIX_OPERATOR_DECLARATION(target, --, return, decrement) \
     frame->functions.add( \
         new NativeFunctionEntry( \
             "println", \
-            {FunctionEntryParameter("e", TYPE_REF(type))}, \
+            {ParameterDefinition("e", TYPE_DESC(type), true)}, \
             {}, \
             println_##type \
         ) \
@@ -84,10 +86,10 @@ Compiler::Compiler(std::vector<Stmt *> stmts) : stmts(std::move(stmts)) {
 
     initChunk(&chunk);
 
-    auto intEntry = frame->types.add("int");
-    auto doubleEntry = frame->types.add("double");
-    auto boolEntry = frame->types.add("bool");
-    auto stringEntry = frame->types.add("string");
+    auto intEntry = frame->types.add("int", new ScalarTypeDefinition("int"));
+    auto doubleEntry = frame->types.add("double", new ScalarTypeDefinition("double"));
+    auto boolEntry = frame->types.add("bool", new ScalarTypeDefinition("bool"));
+    auto stringEntry = frame->types.add("string", new ScalarTypeDefinition("string"));
 
     NATIVE_BINARY_OPERATOR_MATH_DECLARATIONS(int, int, int)
     NATIVE_BINARY_OPERATOR_MATH_DECLARATIONS(int, double, double)
@@ -108,12 +110,11 @@ Compiler::Compiler(std::vector<Stmt *> stmts) : stmts(std::move(stmts)) {
     NATIVE_BINARY_OPERATOR_DECLARATION(string, +=, string, string, add_equal)
 
     boolEntry->definition->addPrefix(
-            "self",
-            true,
+            SELF_RECEIVER("right", bool),
             new NativeFunctionEntry(
                     "!",
                     {},
-                    {TYPE_REF(bool)},
+                    {TYPE_DESC(bool)},
                     unary_prefix_bool_invert
             )
     );
@@ -124,25 +125,63 @@ Compiler::Compiler(std::vector<Stmt *> stmts) : stmts(std::move(stmts)) {
     NATIVE_PRINT(string)
 
     frame->functions.add(
-        new NativeFunctionEntry(
-            "vm_stats",
-            {},
-            {},
-            vm_stats
-        )
+            new NativeFunctionEntry(
+                    "vm_stats",
+                    {},
+                    {},
+                    vm_stats
+            )
     );
 
     frame->functions.add(
-        new NativeFunctionEntry(
-            "gc",
-            {},
-            {},
-            run_gc
-        )
+            new NativeFunctionEntry(
+                    "gc",
+                    {},
+                    {},
+                    run_gc
+            )
     );
 }
 
 Chunk Compiler::compile() {
+    for (auto stmt: stmts) {
+        stmt->symbolize(this);
+    }
+
+    bool hasAdvanced;
+    do {
+        hasAdvanced = false;
+        auto it = linkables.begin();
+
+        while (it != linkables.end()) {
+            auto linkable = *it;
+
+            auto entry = linkable->typeDesc->genType(linkable->frame);
+            if (entry) {
+                linkable->typeDesc->setTypeEntry(entry);
+                hasAdvanced = true;
+                it = linkables.erase(it);
+                delete linkable;
+            } else {
+                linkable->hasError = true;
+                linkable->lastError = "Cannot find type for: "+linkable->typeDesc->toString();
+                ++it;
+            }
+        }
+    } while (hasAdvanced && !linkables.empty());
+
+    if (!linkables.empty()) {
+        std::stringstream ss;
+
+        for (auto linkable: linkables) {
+            if (linkable->hasError) {
+                ss << linkable->lastError << std::endl;
+            }
+        }
+
+        throw std::logic_error("cannot link: \n" + ss.str());
+    }
+
     for (auto stmt: stmts) {
         auto stmtBytes = stmt->compile(this);
         bytes.insert(bytes.end(), stmtBytes.begin(), stmtBytes.end());
@@ -181,4 +220,8 @@ OP_T Compiler::getAddr(ByteResolver *byte) {
     }
 
     throw std::logic_error("Byte is not part of program");
+}
+
+LinkUnit::LinkUnit(TypeDescriptor *typeDesc, Frame *frame) : typeDesc(typeDesc), frame(frame) {
+
 }

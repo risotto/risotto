@@ -16,6 +16,8 @@ public:
     explicit ExpressionStmt(Expr *expr);
 
     std::vector<ByteResolver *> compile(Compiler *compiler);
+
+    void symbolize(Compiler *compiler) override;
 };
 
 

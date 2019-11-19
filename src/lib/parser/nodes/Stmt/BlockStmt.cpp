@@ -28,3 +28,9 @@ std::vector<ByteResolver *> BlockStmt::compile(Compiler *compiler) {
 
     return bytes;
 }
+
+void BlockStmt::symbolize(Compiler *compiler) {
+    for (auto stmt: stmts) {
+        stmt->symbolize(compiler);
+    }
+}

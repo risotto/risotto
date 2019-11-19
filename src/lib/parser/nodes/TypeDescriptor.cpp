@@ -2,58 +2,87 @@
 // Created by rvigee on 10/8/19.
 //
 
+#include "TypeDescriptor.h"
 #include <lib/compiler/CompilerError.h>
-
 #include <utility>
 #include <sstream>
-#include "TypeDescriptor.h"
+#include <cassert>
 #include "lib/compiler/Compiler.h"
 #include "lib/compiler/TypeDefinition.h"
 
-IdentifierTypeDescriptor::IdentifierTypeDescriptor(Token *name) : name(name) {}
-
-TypeReference *IdentifierTypeDescriptor::toTypeReference(Compiler *compiler) {
-    auto paramType = compiler->frame->findNamedType(name->lexeme);
-
-    if (paramType == nullptr) {
-        throw CompilerError("Cannot find type for " + name->lexeme);
-    }
-
-    return new NamedTypeReference(name->lexeme, paramType);
-}
-
 std::string IdentifierTypeDescriptor::toString() {
     return name->lexeme;
+}
+
+IdentifierTypeDescriptor::IdentifierTypeDescriptor(Token *name) : name(name) {
+}
+
+IdentifierTypeDescriptor::IdentifierTypeDescriptor(const std::string &name, TypeDefinition *typeDef) :
+        IdentifierTypeDescriptor(Token::IdentifierFactory(name)) {
+    typeEntry = new TypeEntry(name, typeDef);
+}
+
+TypeEntry *IdentifierTypeDescriptor::genType(Frame *frame) {
+    auto entry = frame->findNamedType(name->lexeme);
+
+    return entry;
+}
+
+bool IdentifierTypeDescriptor::isSame(TypeDescriptor *type) {
+    if (TypeDescriptor::isSame(type)) {
+        return true;
+    }
+
+    if (auto otherIdentifier = dynamic_cast<IdentifierTypeDescriptor *>(type)) {
+        return name->lexeme == otherIdentifier->name->lexeme;
+    }
+
+    return false;
 }
 
 ArrayTypeDescriptor::ArrayTypeDescriptor(TypeDescriptor *element) : element(element) {
 
 }
 
-TypeReference *ArrayTypeDescriptor::toTypeReference(Compiler *compiler) {
-    return new ArrayTypeReference(element->toTypeReference(compiler));
-}
-
 std::string ArrayTypeDescriptor::toString() {
     return "[]" + element->toString();
 }
 
-StructTypeDescriptor::StructTypeDescriptor(std::vector<Field> fields) : fields(std::move(fields)) {}
-
-TypeReference *StructTypeDescriptor::toTypeReference(Compiler *compiler) {
-    if (typeDefinition == nullptr) {
-        auto fieldDefs = VariablesTable();
-        for (auto field : fields) {
-            auto fieldTypeRef = field.type->toTypeReference(compiler);
-            fieldDefs.add(field.name->lexeme, fieldTypeRef);
+TypeEntry *ArrayTypeDescriptor::genType(Frame *frame) {
+    for (auto entry: frame->types.entries) {
+        if (auto arrayDef = dynamic_cast<ArrayTypeDefinition *>(entry->definition)) {
+            if (element->isSame(arrayDef->element)) {
+                return entry;
+            }
         }
-        auto typeDef = new StructTypeDefinition(fieldDefs);
-
-        typeDefinition = dynamic_cast<StructTypeDefinition *>(compiler->frame->types.add(typeDef));
     }
 
-    return new StructTypeReference(typeDefinition);
+    auto elementEntry = element->genType(frame);
+    if (elementEntry == nullptr) {
+        return nullptr;
+    }
+    element->setTypeEntry(elementEntry);
+
+    auto entry = new TypeEntry(new ArrayTypeDefinition(element));
+
+    frame->types.add(entry);
+
+    return entry;
 }
+
+bool ArrayTypeDescriptor::isSame(TypeDescriptor *type) {
+    if (TypeDescriptor::isSame(type)) {
+        return true;
+    }
+
+    if (auto otherArray = dynamic_cast<ArrayTypeDescriptor *>(type)) {
+        return element->isSame(otherArray->element);
+    }
+
+    return false;
+}
+
+StructTypeDescriptor::StructTypeDescriptor(std::vector<Field> fields) : fields(std::move(fields)) {}
 
 std::string StructTypeDescriptor::toString() {
     std::stringstream ss;
@@ -69,24 +98,42 @@ std::string StructTypeDescriptor::toString() {
     return ss.str();
 }
 
+TypeEntry *StructTypeDescriptor::genType(Frame *frame) {
+    for (auto entry: frame->types.entries) {
+        if (auto structDef = dynamic_cast<StructTypeDefinition *>(entry->definition)) {
+            if (structDef->fields.size() == fields.size()) {
+                return entry;
+            }
+        }
+    }
+
+    auto structFields = VariablesTable();
+    for (auto field: fields) {
+        auto fieldEntry = field.type->genType(frame);
+        if (fieldEntry == nullptr) {
+            return nullptr;
+        }
+        field.type->setTypeEntry(fieldEntry);
+
+        structFields.add(field.name->lexeme, field.type);
+    }
+
+    auto entry = new TypeEntry(new StructTypeDefinition(structFields));
+
+    frame->types.add(entry);
+
+    return entry;
+}
+
 StructTypeDescriptor::Field::Field(Token *name, TypeDescriptor *type) : name(name), type(type) {}
 
 FunctionTypeDescriptor::FunctionTypeDescriptor(std::vector<ParameterDefinition> params,
                                                std::vector<TypeDescriptor *> returnTypes)
         : params(std::move(params)), returnTypes(std::move(returnTypes)) {}
 
-TypeReference *FunctionTypeDescriptor::toTypeReference(Compiler *compiler) {
-    auto paramsRefs = std::vector<FunctionTypeReferenceParameter>();
-    for (auto param: params) {
-        paramsRefs.emplace_back(param.name->lexeme, param.type->toTypeReference(compiler), param.asReference);
-    }
-
-    auto returnTypesRefs = std::vector<TypeReference *>();
-    for (auto returnType: returnTypes) {
-        returnTypesRefs.push_back(returnType->toTypeReference(compiler));
-    }
-
-    return new FunctionTypeReference(paramsRefs, returnTypesRefs);
+FunctionTypeDescriptor::FunctionTypeDescriptor(FunctionEntry *functionEntry) : FunctionTypeDescriptor(
+        functionEntry->params, functionEntry->returnTypes) {
+    typeEntry = new TypeEntry(functionEntry->typeDefinition);
 }
 
 std::string FunctionTypeDescriptor::toString() {
@@ -121,4 +168,42 @@ std::string FunctionTypeDescriptor::toString() {
     }
 
     return ss.str();
+}
+
+TypeEntry *FunctionTypeDescriptor::genType(Frame *frame) {
+    for (auto param: params) {
+        auto entry = param.type->genType(frame);
+        if (entry == nullptr) {
+            return nullptr;
+        }
+
+        param.type->setTypeEntry(entry);
+    }
+
+    auto functionEntry = new FunctionEntry("", params, returnTypes);
+    auto typeDef = new FunctionTypeDefinition(functionEntry);
+    auto entry = new TypeEntry(typeDef);
+
+    frame->types.add(entry);
+}
+
+TypeDefinition *TypeDescriptor::getTypeDefinition() {
+    assert(typeEntry != nullptr);
+
+    return typeEntry->definition;
+}
+
+bool TypeDescriptor::canReceiveType(TypeDescriptor *type) {
+    return getTypeDefinition()->canReceiveType(type->getTypeDefinition());
+}
+
+void TypeDescriptor::setTypeEntry(TypeEntry *entry) {
+    assert(entry != nullptr);
+    assert(typeEntry == nullptr);
+
+    typeEntry = entry;
+}
+
+bool TypeDescriptor::isSame(TypeDescriptor *type) {
+    return this == type;
 }

@@ -20,6 +20,9 @@ public:
     std::vector<ByteResolver *> compile(Compiler *compiler) override;
 protected:
     ReturnTypes computeReturnType(Compiler *compiler) override;
+
+public:
+    void symbolize(Compiler *compiler) override;
 };
 
 

@@ -11,7 +11,7 @@ MixedCallExpr::MixedCallExpr(Token *rParen, const std::vector<Expr *> &args)
         : BaseCallExpr(rParen, args) {}
 
 ReturnTypes MixedCallExpr::computeReturnType(Compiler *compiler) {
-    return act<ReturnTypes>(compiler, [](FunctionTypeReference *functionRef) {
+    return act<ReturnTypes>(compiler, [](FunctionTypeDescriptor *functionRef) {
         return ReturnTypes(functionRef->returnTypes);
     }, [](FunctionEntry *functionEntry) {
         return functionEntry->returnTypes;
@@ -19,7 +19,7 @@ ReturnTypes MixedCallExpr::computeReturnType(Compiler *compiler) {
 }
 
 bool MixedCallExpr::isArgumentReference(Compiler *compiler, int i) {
-    return act<bool>(compiler, [i](FunctionTypeReference *functionRef) {
+    return act<bool>(compiler, [i](FunctionTypeDescriptor *functionRef) {
         return functionRef->params[i].asReference;
     }, [i](FunctionEntry *functionEntry) {
         return functionEntry->params[i].asReference;
@@ -29,14 +29,14 @@ bool MixedCallExpr::isArgumentReference(Compiler *compiler, int i) {
 template<typename T>
 T MixedCallExpr::act(
         Compiler *compiler,
-        const std::function<T(FunctionTypeReference *)> &variableActor,
+        const std::function<T(FunctionTypeDescriptor *)> &variableActor,
         const std::function<T(FunctionEntry *)> &functionActor
 ) {
     auto variableEntry = getVariableEntry(compiler);
 
     if (variableEntry) {
-        if (auto functionRef = dynamic_cast<FunctionTypeReference *>(variableEntry->typeRef)) {
-            auto params = std::vector<TypeReference *>();
+        if (auto functionRef = dynamic_cast<FunctionTypeDescriptor *>(variableEntry->typeRef)) {
+            auto params = std::vector<TypeDescriptor *>();
             for (const auto &param: functionRef->params) {
                 params.push_back(param.type);
             }
@@ -57,7 +57,7 @@ T MixedCallExpr::act(
 }
 
 void MixedCallExpr::loadCallAddr(Compiler *compiler, std::vector<ByteResolver *> &bytes) {
-    auto loadBytes = act<std::vector<ByteResolver *>>(compiler, [this, compiler](FunctionTypeReference *functionRef) {
+    auto loadBytes = act<std::vector<ByteResolver *>>(compiler, [this, compiler](FunctionTypeDescriptor *functionRef) {
         auto bytes = std::vector<ByteResolver *>();
 
         loadVariableEntryAddr(compiler, bytes);

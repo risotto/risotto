@@ -30,5 +30,13 @@ std::vector<ByteResolver *> ArrayExpr::compile(Compiler *compiler) {
 }
 
 ReturnTypes ArrayExpr::computeReturnType(Compiler *compiler) {
-    return type->toTypeReference(compiler);
+    return type;
+}
+
+void ArrayExpr::symbolize(Compiler *compiler) {
+    compiler->linkables.push_back(new LinkUnit(type, compiler->frame));
+
+    for(auto element: elements) {
+        element->symbolize(compiler);
+    }
 }

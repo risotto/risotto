@@ -5,7 +5,6 @@
 #include <lib/compiler/Compiler.h>
 #include <lib/compiler/utils/Utils.h>
 #include "NewCallExpr.h"
-#include "lib/compiler/TypeDefinition.h"
 
 NewCallExpr::NewCallExpr(Token *identifier, Token *rParen, const std::vector<Expr *> &args) : IdentifierCallExpr(identifier, rParen, args) {}
 
@@ -16,7 +15,7 @@ VariableEntry *NewCallExpr::getVariableEntry(Compiler *compiler) {
 StructTypeDefinition *NewCallExpr::getStructTypeDef(Compiler *compiler) {
     auto typeDef = compiler->frame->findNamedType(identifier->lexeme);
 
-    return dynamic_cast<StructTypeDefinition *>(typeDef);
+    return dynamic_cast<StructTypeDefinition *>(typeDef->definition);
 }
 
 FunctionEntry *NewCallExpr::getFunctionEntry(Compiler *compiler) {
@@ -25,12 +24,11 @@ FunctionEntry *NewCallExpr::getFunctionEntry(Compiler *compiler) {
     return Utils::findMatchingFunctions(structTypeDef->constructors, getArgumentsTypes(compiler));
 }
 
-std::vector<TypeReference *> NewCallExpr::getArgumentsTypes(Compiler *compiler) {
-    auto structTypeDef = getStructTypeDef(compiler);
-
+std::vector<TypeDescriptor *> NewCallExpr::getArgumentsTypes(Compiler *compiler) {
     auto types = BaseCallExpr::getArgumentsTypes(compiler);
 
-    types.insert(types.begin(), new NamedTypeReference(identifier->lexeme, structTypeDef));
+    auto structTypeDef = getStructTypeDef(compiler);
+    types.insert(types.begin(), new IdentifierTypeDescriptor(identifier->lexeme, structTypeDef));
 
     return types;
 }
@@ -48,7 +46,7 @@ FunctionNotFoundError NewCallExpr::getFunctionNotFoundError(Compiler *compiler) 
     auto actualArgumentsTypes = Utils::getTypes(args, compiler);
 
     auto argumentsTypes = getArgumentsTypes(compiler);
-    auto actualArgsTypes = std::vector<TypeReference *>(argumentsTypes.begin() + 1, argumentsTypes.end());
+    auto actualArgsTypes = std::vector<TypeDescriptor *>(argumentsTypes.begin() + 1, argumentsTypes.end());
 
     throw FunctionNotFoundError("new " + identifier->lexeme + "({{args}})", actualArgsTypes, rParen);
 }

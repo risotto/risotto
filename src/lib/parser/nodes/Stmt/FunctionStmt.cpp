@@ -8,7 +8,6 @@
 #include <lib/compiler/CompilerError.h>
 #include "FunctionStmt.h"
 #include "BlockStmt.h"
-#include "lib/compiler/TypeReference.h"
 #include "lib/compiler/TypeDefinition.h"
 #include "lib/compiler/ReturnTypes.h"
 
@@ -20,7 +19,11 @@ FunctionStmt::FunctionStmt(
         std::vector<ParameterDefinition> parameters,
         std::vector<Stmt *> body,
         Token *closeBlock
-) : type(type), receiver(receiver), name(name), returnTypes(std::move(returnTypes)), parameters(std::move(parameters)),
+) : type(type),
+    receiver(receiver),
+    name(name),
+    returnTypes(std::move(returnTypes)),
+    parameters(std::move(parameters)),
     body(std::move(body)),
     closeBlock(closeBlock) {
 
@@ -34,12 +37,7 @@ FunctionEntry *FunctionStmt::getFunctionEntry(Compiler *compiler) {
     // Get return type
     auto returnTypeReferences = ReturnTypes();
     for (auto returnType : returnTypes) {
-        returnTypeReferences.push_back(returnType->toTypeReference(compiler));
-    }
-
-    auto entryParameters = std::vector<FunctionEntryParameter>();
-    for (auto parameter : parameters) {
-        entryParameters.emplace_back(parameter.name->lexeme, parameter.type->toTypeReference(compiler));
+        returnTypeReferences.push_back(returnType);
     }
 
     std::string nameStr;
@@ -50,38 +48,24 @@ FunctionEntry *FunctionStmt::getFunctionEntry(Compiler *compiler) {
     // Register function
     auto functionEntry = new FunctionEntry(
             nameStr,
-            entryParameters,
+            parameters,
             returnTypeReferences
     );
 
     if (autoRegister) {
         if (receiver != nullptr) {
-            TypeDefinition *receiverType;
-            if (auto identifierTypeDesc = dynamic_cast<IdentifierTypeDescriptor *>(receiver->type)) {
-                receiverType = compiler->frame->findNamedType(identifierTypeDesc->name->lexeme);
-            } else {
-                receiverType = compiler->frame->findOrCreateVirtualType(
-                        receiver->type->toTypeReference(compiler),
-                        compiler
-                );
-            }
-
-            if (receiverType == nullptr) {
-                throw CompilerError("Cannot find type for " + receiver->type->toString(), receiver->name->position);
-            }
+            auto receiverType = receiver->type->getTypeDefinition();
 
             switch (type->type) {
                 case TokenType::FUNC:
                     functionEntry = receiverType->addFunction(
-                            receiver->name->lexeme,
-                            receiver->asReference,
+                            receiver,
                             functionEntry
                     );
                     break;
                 case TokenType::OP:
                     functionEntry = receiverType->addOperator(
-                            receiver->name->lexeme,
-                            receiver->asReference,
+                            receiver,
                             functionEntry
                     );
                     break;
@@ -92,8 +76,7 @@ FunctionEntry *FunctionStmt::getFunctionEntry(Compiler *compiler) {
                     }
 
                     functionEntry = structType->addConstructor(
-                            receiver->name->lexeme,
-                            receiver->asReference,
+                            receiver,
                             functionEntry
                     );
                     break;
@@ -114,16 +97,7 @@ FunctionEntry *FunctionStmt::getFunctionEntry(Compiler *compiler) {
 std::vector<ByteResolver *> FunctionStmt::compile(Compiler *compiler) {
     auto functionEntry = getFunctionEntry(compiler);
 
-    // Keep reference previous frame
-    auto previousFrame = compiler->frame;
-
-    // Create new frame
-    compiler->frame = new Frame(previousFrame, FUNCTION);
-
-    // Declare parameters
-    for (const auto &param : functionEntry->params) {
-        compiler->frame->variables.add(param.name, param.type);
-    }
+    compiler->frame = bodyFrame;
 
     auto bytes = std::vector<ByteResolver *>();
 
@@ -140,7 +114,7 @@ std::vector<ByteResolver *> FunctionStmt::compile(Compiler *compiler) {
     }
 
     // Restore frame
-    compiler->frame = previousFrame;
+    compiler->frame = compiler->frame->parent;
 
     // Save entrypoint of functions
     functionEntry->firstByte = bytes.front();
@@ -155,4 +129,39 @@ std::vector<ByteResolver *> FunctionStmt::compile(Compiler *compiler) {
     });
 
     return bytes;
+}
+
+void FunctionStmt::symbolize(Compiler *compiler) {
+    for (auto param: parameters) {
+        compiler->linkables.push_back(new LinkUnit(param.type, compiler->frame));
+    }
+
+    for (auto returnType: returnTypes) {
+        compiler->linkables.push_back(new LinkUnit(returnType, compiler->frame));
+    }
+
+    if (receiver != nullptr) {
+        compiler->linkables.push_back(new LinkUnit(receiver->type, compiler->frame));
+    }
+
+    // Create new frame
+    bodyFrame = new Frame(compiler->frame, FUNCTION);
+
+    compiler->frame = bodyFrame;
+
+    if (receiver != nullptr) {
+        compiler->frame->variables.add(receiver->name->lexeme, receiver->type);
+    }
+
+    // Declare parameters
+    for (const auto &param : parameters) {
+        compiler->frame->variables.add(param.name->lexeme, param.type);
+    }
+
+    for (auto stmt : body) {
+        stmt->symbolize(compiler);
+    }
+
+    // Restore frame
+    compiler->frame = compiler->frame->parent;
 }

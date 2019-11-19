@@ -7,9 +7,10 @@
 
 #include <exception>
 #include <string>
+#include <vector>
 #include <lib/tokenizer/Token.h>
-#include "TypesTable.h"
-#include "TypeReference.h"
+
+class TypeDescriptor;
 
 class CompilerError : public std::exception {
 public:
@@ -24,7 +25,7 @@ public:
 
 class FunctionNotFoundError : public CompilerError {
 public:
-    FunctionNotFoundError(const std::string& tpl, const std::vector<TypeReference *>& argsTypes, Token *hook);
+    FunctionNotFoundError(const std::string& tpl, const std::vector<TypeDescriptor *>& argsTypes, Token *hook);
 };
 
 #endif //RISOTTOV2_COMPILERERROR_H

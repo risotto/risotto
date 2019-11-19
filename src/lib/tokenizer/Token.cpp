@@ -21,3 +21,7 @@ std::string Position::toString() {
 Token::Token(TokenType type, ValueData value, std::string lexeme, Position position): type(type), value(value), lexeme(std::move(lexeme)), position(position) {
 
 }
+
+Token *Token::IdentifierFactory(const std::string& id) {
+   return  new Token(TokenType::IDENTIFIER, s2v(id.c_str()).data, id, Position(0, 0));
+}

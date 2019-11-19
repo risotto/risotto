@@ -31,3 +31,9 @@ std::vector<ByteResolver *> ReturnStmt::compile(Compiler *compiler) {
 
     return bytes;
 }
+
+void ReturnStmt::symbolize(Compiler *compiler) {
+    for (auto value: values) {
+        value->symbolize(compiler);
+    }
+}

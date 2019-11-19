@@ -10,8 +10,8 @@
 #include <lib/tokenizer/Token.h>
 #include <lib/parser/nodes/Expr.h>
 #include <lib/compiler/CompilerError.h>
-#include "lib/compiler/TypeReference.h"
 #include "lib/compiler/ReturnTypes.h"
+#include <lib/compiler/TypeDefinition.h>
 
 class BaseCallExpr : public Expr {
 public:
@@ -22,7 +22,7 @@ public:
 
     std::vector<ByteResolver *> compile(Compiler *compiler) override;
 
-    virtual std::vector<TypeReference *> getArgumentsTypes(Compiler *compiler);
+    virtual std::vector<TypeDescriptor *> getArgumentsTypes(Compiler *compiler);
 
     virtual std::vector<Expr *> getArguments(Compiler *compiler);
 
@@ -32,6 +32,8 @@ public:
 
     virtual void loadCallAddr(Compiler *compiler, std::vector<ByteResolver *> &bytes) = 0;
     virtual void loadArgs(Compiler *compiler, std::vector<ByteResolver *> &bytes);
+
+    void symbolize(Compiler *compiler) override;
 };
 
 class CallExpr : public BaseCallExpr {
@@ -43,6 +45,8 @@ public:
     bool isArgumentReference(Compiler *compiler, int i) override;
 
     void loadCallAddr(Compiler *compiler, std::vector<ByteResolver *> &bytes) override;
+
+    void symbolize(Compiler *compiler) override;
 
 protected:
     ReturnTypes computeReturnType(Compiler *compiler) override;
