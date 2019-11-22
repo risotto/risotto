@@ -10,20 +10,11 @@
 #include <string>
 #include "ByteResolver.h"
 #include "Frame.h"
+#include "TypesManager.h"
 
 extern "C" {
 #include <lib/vm/chunk.h>
 }
-
-class LinkUnit {
-public:
-    TypeDescriptor *typeDesc;
-    Frame *frame;
-    bool hasError = false;
-    std::string lastError;
-
-    LinkUnit(TypeDescriptor *typeDesc, Frame *frame);
-};
 
 class Compiler {
 private:
@@ -33,7 +24,7 @@ private:
 public:
     Chunk chunk;
     Frame *frame;
-    std::vector<LinkUnit *> linkables;
+    TypesManager *typesManager;
 
     explicit Compiler(std::vector<Stmt *> stmts);
 

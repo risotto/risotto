@@ -8,14 +8,13 @@
 TypeStmt::TypeStmt(Token *name, TypeDescriptor *typeDescriptor) : name(name), typeDescriptor(typeDescriptor) {}
 
 std::vector<ByteResolver *> TypeStmt::compile(Compiler *compiler) {
-    typeEntry->definition = typeDescriptor->getTypeDefinition();
-
-    return std::vector<ByteResolver *>();
+    return {};
 }
 
 void TypeStmt::symbolize(Compiler *compiler) {
-    typeDescriptor->createLinkUnits(compiler->linkables, compiler->frame);
-
-    typeEntry = compiler->frame->types.reg(name->lexeme);
+    TypeDescriptor *identifierDesc = new IdentifierTypeDescriptor(name, [this](Frame *frame){
+        return typeDescriptor->genType(frame);
+    });
+    compiler->typesManager->add(typeDescriptor, compiler->frame);
+    compiler->typesManager->add(identifierDesc, compiler->frame);
 }
-

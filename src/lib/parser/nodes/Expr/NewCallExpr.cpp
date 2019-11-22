@@ -15,7 +15,7 @@ VariableEntry *NewCallExpr::getVariableEntry(Compiler *compiler) {
 StructTypeDefinition *NewCallExpr::getStructTypeDef(Compiler *compiler) {
     auto typeDef = compiler->frame->findNamedType(identifier->lexeme);
 
-    return dynamic_cast<StructTypeDefinition *>(typeDef->definition);
+    return dynamic_cast<StructTypeDefinition *>(typeDef->getTypeDefinition());
 }
 
 FunctionEntry *NewCallExpr::getFunctionEntry(Compiler *compiler) {

@@ -21,11 +21,11 @@ Frame::Frame(Frame *parent, FrameType type) : parent(parent), type(type) {
 
 }
 
-TypeEntry *Frame::findNamedType(const std::string &name) {
-    auto entry = types.findNamed(name);
+TypeDescriptor *Frame::findNamedType(const std::string &name) {
+    auto def = types.findNamed(name);
 
-    if (entry != nullptr) {
-        return entry;
+    if (def != nullptr) {
+        return def;
     }
 
     if (parent != nullptr) {

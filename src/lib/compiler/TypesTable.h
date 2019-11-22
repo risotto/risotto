@@ -10,30 +10,17 @@
 #include <map>
 
 class TypeDefinition;
-
 class TypeDescriptor;
-
-class TypeEntry {
-public:
-    std::string name;
-    TypeDefinition *definition;
-
-    explicit TypeEntry(TypeDefinition *definition);
-
-    TypeEntry(std::string name, TypeDefinition *definition);
-};
 
 class TypesTable {
 public:
-    std::vector<TypeEntry *> entries;
+    std::vector<TypeDescriptor *> entries;
 
-    TypeEntry *findNamed(const std::string &name);
+    TypeDescriptor *findNamed(const std::string &name);
 
-    TypeEntry *add(TypeEntry *typeEntry);
+    TypeDescriptor *find(TypeDescriptor * desc);
 
-    TypeEntry *reg(const std::string &name);
-
-    TypeEntry *add(const std::string &name, TypeDefinition *typeDefinition);
+    TypeDescriptor *add(TypeDescriptor *typeEntry);
 };
 
 #endif //RISOTTOV2_TYPESTABLE_H

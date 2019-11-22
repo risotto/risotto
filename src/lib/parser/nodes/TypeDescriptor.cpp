@@ -6,7 +6,6 @@
 #include <lib/compiler/CompilerError.h>
 #include <utility>
 #include <sstream>
-#include <cassert>
 #include "lib/compiler/Compiler.h"
 #include "lib/compiler/TypeDefinition.h"
 
@@ -19,13 +18,21 @@ IdentifierTypeDescriptor::IdentifierTypeDescriptor(Token *name) : name(name) {
 
 IdentifierTypeDescriptor::IdentifierTypeDescriptor(const std::string &name, TypeDefinition *typeDef) :
         IdentifierTypeDescriptor(Token::IdentifierFactory(name)) {
-    typeEntry = new TypeEntry(name, typeDef);
+    this->typeDef = typeDef;
 }
 
-TypeEntry *IdentifierTypeDescriptor::genType(Frame *frame) {
-    auto entry = frame->findNamedType(name->lexeme);
+IdentifierTypeDescriptor::IdentifierTypeDescriptor(Token *name, std::function<TypeDefinition *(Frame *frame)> typeDefGen): IdentifierTypeDescriptor(name) {
+    this->typeDefGen = std::move(typeDefGen);
+}
 
-    return entry;
+TypeDefinition *IdentifierTypeDescriptor::genType(Frame *frame) {
+    if(typeDefGen) {
+        return typeDefGen(frame);
+    }
+
+    auto desc = frame->findNamedType(name->lexeme);
+
+    return desc->getTypeDefinition();
 }
 
 bool IdentifierTypeDescriptor::isSame(TypeDescriptor *type) {
@@ -40,8 +47,7 @@ bool IdentifierTypeDescriptor::isSame(TypeDescriptor *type) {
     return false;
 }
 
-void IdentifierTypeDescriptor::createLinkUnits(std::vector<LinkUnit *> &linkables, Frame *frame) {
-    createSelfLinkUnit(linkables, frame);
+void IdentifierTypeDescriptor::createLinkUnits(TypesManager *typesManager, Frame *frame) {
 
 }
 
@@ -53,20 +59,8 @@ std::string ArrayTypeDescriptor::toString() {
     return "[]" + element->toString();
 }
 
-TypeEntry *ArrayTypeDescriptor::genType(Frame *frame) {
-    for (auto entry: frame->types.entries) {
-        if (auto arrayDef = dynamic_cast<ArrayTypeDefinition *>(entry->definition)) {
-            if (element->isSame(arrayDef->element)) {
-                return entry;
-            }
-        }
-    }
-
-    auto entry = new TypeEntry(new ArrayTypeDefinition(element));
-
-    frame->types.add(entry);
-
-    return entry;
+TypeDefinition *ArrayTypeDescriptor::genType(Frame *frame) {
+    return new ArrayTypeDefinition(element);
 }
 
 bool ArrayTypeDescriptor::isSame(TypeDescriptor *type) {
@@ -81,10 +75,8 @@ bool ArrayTypeDescriptor::isSame(TypeDescriptor *type) {
     return false;
 }
 
-void ArrayTypeDescriptor::createLinkUnits(std::vector<LinkUnit *> &linkables, Frame *frame) {
-    createSelfLinkUnit(linkables, frame);
-
-    element->createLinkUnits(linkables, frame);
+void ArrayTypeDescriptor::createLinkUnits(TypesManager *typesManager, Frame *frame) {
+    typesManager->add(element, frame);
 }
 
 StructTypeDescriptor::StructTypeDescriptor(std::vector<Field> fields) : fields(std::move(fields)) {}
@@ -103,32 +95,18 @@ std::string StructTypeDescriptor::toString() {
     return ss.str();
 }
 
-TypeEntry *StructTypeDescriptor::genType(Frame *frame) {
-    for (auto entry: frame->types.entries) {
-        if (auto structDef = dynamic_cast<StructTypeDefinition *>(entry->definition)) {
-            if (structDef->fields.size() == fields.size()) {
-                return entry;
-            }
-        }
-    }
-
+TypeDefinition *StructTypeDescriptor::genType(Frame *frame) {
     auto structFields = VariablesTable();
     for (auto field: fields) {
         structFields.add(field.name->lexeme, field.type);
     }
 
-    auto entry = new TypeEntry(new StructTypeDefinition(structFields));
-
-    frame->types.add(entry);
-
-    return entry;
+    return new StructTypeDefinition(structFields);
 }
 
-void StructTypeDescriptor::createLinkUnits(std::vector<LinkUnit *> &linkables, Frame *frame) {
-    createSelfLinkUnit(linkables, frame);
-
+void StructTypeDescriptor::createLinkUnits(TypesManager *typesManager, Frame *frame) {
     for (auto field: fields) {
-        field.type->createLinkUnits(linkables, frame);
+        typesManager->add(field.type, frame);
     }
 }
 
@@ -159,9 +137,9 @@ FunctionTypeDescriptor::FunctionTypeDescriptor(std::vector<ParameterDefinition *
                                                std::vector<TypeDescriptor *> returnTypes)
         : params(std::move(params)), returnTypes(std::move(returnTypes)) {}
 
-FunctionTypeDescriptor::FunctionTypeDescriptor(FunctionEntry *functionEntry) : FunctionTypeDescriptor(
-        functionEntry->params, functionEntry->returnTypes) {
-    typeEntry = new TypeEntry(functionEntry->typeDefinition);
+FunctionTypeDescriptor::FunctionTypeDescriptor(FunctionEntry *functionEntry) :
+        FunctionTypeDescriptor(functionEntry->params, functionEntry->returnTypes) {
+    typeDef = functionEntry->typeDefinition;
 }
 
 std::string FunctionTypeDescriptor::toString() {
@@ -198,32 +176,25 @@ std::string FunctionTypeDescriptor::toString() {
     return ss.str();
 }
 
-TypeEntry *FunctionTypeDescriptor::genType(Frame *frame) {
+TypeDefinition *FunctionTypeDescriptor::genType(Frame *frame) {
     auto functionEntry = new FunctionEntry("", params, returnTypes);
     auto typeDef = new FunctionTypeDefinition(functionEntry);
-    auto entry = new TypeEntry(typeDef);
 
-    frame->types.add(entry);
-
-    return entry;
+    return typeDef;
 }
 
-void FunctionTypeDescriptor::createLinkUnits(std::vector<LinkUnit *> &linkables, Frame *frame) {
-    createSelfLinkUnit(linkables, frame);
-
+void FunctionTypeDescriptor::createLinkUnits(TypesManager *typesManager, Frame *frame) {
     for (auto param: params) {
-        param->type->createLinkUnits(linkables, frame);
+        typesManager->add(param->type, frame);
     }
 
     for (auto returnType: returnTypes) {
-        returnType->createLinkUnits(linkables, frame);
+        typesManager->add(returnType, frame);
     }
 }
 
 TypeDefinition *TypeDescriptor::getTypeDefinition() {
-    assert(typeEntry != nullptr);
-
-    return typeEntry->definition;
+    return typeDef;
 }
 
 bool TypeDescriptor::canReceiveType(TypeDescriptor *type) {
@@ -235,20 +206,20 @@ bool TypeDescriptor::isSame(TypeDescriptor *type) {
 }
 
 bool TypeDescriptor::resolveType(Frame *frame) {
-    if (typeEntry != nullptr) {
+    if (typeDef != nullptr) {
         return true;
     }
 
-    auto entry = genType(frame);
-    if (!entry) {
-        return false;
+    auto desc = frame->types.find(this);
+    if (desc) {
+        typeDef = desc->getTypeDefinition();
+    } else {
+        typeDef = genType(frame);
     }
 
-    typeEntry = entry;
+    auto entry = frame->types.add(this);
+    this->typeDef = entry->typeDef;
 
-    return true;
+    return typeDef != nullptr;
 }
 
-void TypeDescriptor::createSelfLinkUnit(std::vector<LinkUnit *> &linkables, Frame *frame) {
-    linkables.push_back(new LinkUnit(this, frame));
-}

@@ -14,11 +14,12 @@ extern "C" {
 }
 
 #define TYPE_ENTRY(type) type##Entry
-#define TYPE_DESC(type) new IdentifierTypeDescriptor(#type, TYPE_ENTRY(type)->definition)
+#define ENTRY_DEF(entry) entry->getTypeDefinition()
+#define TYPE_DESC(type) new IdentifierTypeDescriptor(#type, ENTRY_DEF(TYPE_ENTRY(type)))
 #define SELF_RECEIVER(name, type) new ParameterDefinition(name, TYPE_DESC(type), true)
 
 #define NATIVE_BINARY_DECLARATION_NAMED(target, op, param, return, functionName) \
-    TYPE_ENTRY(target)->definition->addOperator( \
+    ENTRY_DEF(TYPE_ENTRY(target))->addOperator( \
         SELF_RECEIVER("self", target), \
         new NativeFunctionEntry( \
             #op, \
@@ -53,7 +54,7 @@ NATIVE_BINARY_OPERATOR_DECLARATION(type, +, string, string, add) \
 NATIVE_BINARY_OPERATOR_DECLARATION(string, +=, type, string, add_equal)
 
 #define NATIVE_UNARY_OPERATOR_DECLARATION(target, op, return, functionName) \
-    TYPE_ENTRY(target)->definition->addPrefix( \
+    ENTRY_DEF(TYPE_ENTRY(target))->addPrefix( \
         SELF_RECEIVER("left", target), \
         new NativeFunctionEntry( \
             #op, \
@@ -83,13 +84,14 @@ NATIVE_UNARY_PREFIX_OPERATOR_DECLARATION(target, --, return, decrement) \
 
 Compiler::Compiler(std::vector<Stmt *> stmts) : stmts(std::move(stmts)) {
     frame = new Frame();
+    typesManager = new TypesManager();
 
     initChunk(&chunk);
 
-    auto intEntry = frame->types.add("int", new ScalarTypeDefinition("int"));
-    auto doubleEntry = frame->types.add("double", new ScalarTypeDefinition("double"));
-    auto boolEntry = frame->types.add("bool", new ScalarTypeDefinition("bool"));
-    auto stringEntry = frame->types.add("string", new ScalarTypeDefinition("string"));
+    auto intEntry = frame->types.add(new IdentifierTypeDescriptor("int", new ScalarTypeDefinition("int")));
+    auto doubleEntry = frame->types.add(new IdentifierTypeDescriptor("double", new ScalarTypeDefinition("double")));
+    auto boolEntry = frame->types.add(new IdentifierTypeDescriptor("bool", new ScalarTypeDefinition("bool")));
+    auto stringEntry = frame->types.add(new IdentifierTypeDescriptor("string", new ScalarTypeDefinition("string")));
 
     NATIVE_BINARY_OPERATOR_MATH_DECLARATIONS(int, int, int)
     NATIVE_BINARY_OPERATOR_MATH_DECLARATIONS(int, double, double)
@@ -109,7 +111,7 @@ Compiler::Compiler(std::vector<Stmt *> stmts) : stmts(std::move(stmts)) {
     NATIVE_BINARY_OPERATOR_DECLARATION(string, +, string, string, add)
     NATIVE_BINARY_OPERATOR_DECLARATION(string, +=, string, string, add_equal)
 
-    boolEntry->definition->addPrefix(
+    ENTRY_DEF(TYPE_ENTRY(bool))->addPrefix(
             SELF_RECEIVER("right", bool),
             new NativeFunctionEntry(
                     "!",
@@ -148,39 +150,7 @@ Chunk Compiler::compile() {
         stmt->symbolize(this);
     }
 
-    bool hasAdvanced;
-    do {
-        hasAdvanced = false;
-        auto it = linkables.begin();
-
-        while (it != linkables.end()) {
-            auto linkable = *it;
-
-            auto ok = linkable->typeDesc->resolveType(frame);
-
-            if (ok) {
-                hasAdvanced = true;
-                it = linkables.erase(it);
-                delete linkable;
-            } else {
-                linkable->hasError = true;
-                linkable->lastError = "Cannot find type for: "+linkable->typeDesc->toString();
-                ++it;
-            }
-        }
-    } while (hasAdvanced && !linkables.empty());
-
-    if (!linkables.empty()) {
-        std::stringstream ss;
-
-        for (auto linkable: linkables) {
-            if (linkable->hasError) {
-                ss << linkable->lastError << std::endl;
-            }
-        }
-
-        throw std::logic_error("cannot link: \n" + ss.str());
-    }
+    typesManager->link();
 
     for (auto stmt: stmts) {
         auto stmtBytes = stmt->compile(this);
@@ -220,8 +190,4 @@ OP_T Compiler::getAddr(ByteResolver *byte) {
     }
 
     throw std::logic_error("Byte is not part of program");
-}
-
-LinkUnit::LinkUnit(TypeDescriptor *typeDesc, Frame *frame) : typeDesc(typeDesc), frame(frame) {
-
 }

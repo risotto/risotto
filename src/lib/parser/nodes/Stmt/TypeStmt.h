@@ -13,7 +13,6 @@ class TypeStmt: public Stmt {
 public:
     Token *name;
     TypeDescriptor *typeDescriptor;
-    TypeEntry *typeEntry = nullptr;
 
     TypeStmt(Token *name, TypeDescriptor *typeDescriptor);
 

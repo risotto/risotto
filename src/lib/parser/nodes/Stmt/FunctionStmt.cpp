@@ -133,15 +133,15 @@ std::vector<ByteResolver *> FunctionStmt::compile(Compiler *compiler) {
 
 void FunctionStmt::symbolize(Compiler *compiler) {
     for (auto param: parameters) {
-        param->type->createLinkUnits(compiler->linkables, compiler->frame);
+        compiler->typesManager->add(param->type, compiler->frame);
     }
 
     for (auto returnType: returnTypes) {
-        returnType->createLinkUnits(compiler->linkables, compiler->frame);
+        compiler->typesManager->add(returnType, compiler->frame);
     }
 
     if (receiver != nullptr) {
-        receiver->type->createLinkUnits(compiler->linkables, compiler->frame);
+        compiler->typesManager->add(receiver->type, compiler->frame);
     }
 
     // Create new frame

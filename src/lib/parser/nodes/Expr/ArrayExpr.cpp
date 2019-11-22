@@ -34,7 +34,7 @@ ReturnTypes ArrayExpr::computeReturnType(Compiler *compiler) {
 }
 
 void ArrayExpr::symbolize(Compiler *compiler) {
-    type->createLinkUnits(compiler->linkables, compiler->frame);
+    compiler->typesManager->add(type, compiler->frame);
 
     for(auto element: elements) {
         element->symbolize(compiler);

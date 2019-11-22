@@ -6,12 +6,8 @@
 #define RISOTTOV2_TYPEDESCRIPTOR_H
 
 
-#include <lib/tokenizer/Token.h>
-#include <lib/compiler/ReturnTypes.h>
-#include <lib/compiler/TypesTable.h>
-#include <lib/compiler/FunctionsTable.h>
 #include <lib/compiler/Compiler.h>
-#include "ParameterDefinition.h"
+#include <functional>
 
 class Compiler;
 
@@ -21,13 +17,11 @@ class TypeDescriptor {
 public:
     virtual std::string toString() = 0;
 
-    virtual TypeEntry *genType(Frame *frame) = 0;
+    virtual TypeDefinition *genType(Frame *frame) = 0;
 
     bool resolveType(Frame *frame);
 
-    virtual void createLinkUnits(std::vector<LinkUnit *> &linkables, Frame *frame) = 0;
-
-    void createSelfLinkUnit(std::vector<LinkUnit *> &linkables, Frame *frame);
+    virtual void createLinkUnits(TypesManager *typesManager, Frame *frame) = 0;
 
     TypeDefinition *getTypeDefinition();
 
@@ -36,7 +30,7 @@ public:
     virtual bool isSame(TypeDescriptor *type);
 
 protected:
-    TypeEntry *typeEntry = nullptr;
+    TypeDefinition *typeDef = nullptr;
 };
 
 class ArrayTypeDescriptor : public TypeDescriptor {
@@ -45,13 +39,13 @@ public:
 
     explicit ArrayTypeDescriptor(TypeDescriptor *element);
 
-    TypeEntry *genType(Frame *frame) override;
+    TypeDefinition *genType(Frame *frame) override;
 
     std::string toString() override;
 
     bool isSame(TypeDescriptor *type) override;
 
-    void createLinkUnits(std::vector<LinkUnit *> &linkables, Frame *frame) override;
+    void createLinkUnits(TypesManager *typesManager, Frame *frame) override;
 };
 
 class StructTypeDescriptor : public TypeDescriptor {
@@ -68,30 +62,33 @@ public:
 
     explicit StructTypeDescriptor(std::vector<Field> fields);
 
-    TypeEntry *genType(Frame *frame) override;
+    TypeDefinition *genType(Frame *frame) override;
 
     std::string toString() override;
 
     bool isSame(TypeDescriptor *type) override;
 
-    void createLinkUnits(std::vector<LinkUnit *> &linkables, Frame *frame) override;
+    void createLinkUnits(TypesManager *typesManager, Frame *frame) override;
 };
 
 class IdentifierTypeDescriptor : public TypeDescriptor {
 public:
     Token *name;
+    std::function<TypeDefinition *(Frame *frame)> typeDefGen = nullptr;
 
     explicit IdentifierTypeDescriptor(Token *name);
 
     IdentifierTypeDescriptor(const std::string &name, TypeDefinition *typeDef);
 
-    TypeEntry *genType(Frame *frame) override;
+    IdentifierTypeDescriptor(Token *name, std::function<TypeDefinition *(Frame *frame)> typeDefGen);
+
+    TypeDefinition *genType(Frame *frame) override;
 
     bool isSame(TypeDescriptor *type) override;
 
     std::string toString() override;
 
-    void createLinkUnits(std::vector<LinkUnit *> &linkables, Frame *frame) override;
+    void createLinkUnits(TypesManager *typesManager, Frame *frame) override;
 };
 
 class FunctionTypeDescriptor : public TypeDescriptor {
@@ -103,11 +100,11 @@ public:
 
     explicit FunctionTypeDescriptor(FunctionEntry *functionEntry);
 
-    TypeEntry *genType(Frame *frame) override;
+    TypeDefinition *genType(Frame *frame) override;
 
     std::string toString() override;
 
-    void createLinkUnits(std::vector<LinkUnit *> &linkables, Frame *frame) override;
+    void createLinkUnits(TypesManager *typesManager, Frame *frame) override;
 };
 
 

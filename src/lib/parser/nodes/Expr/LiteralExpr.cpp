@@ -56,7 +56,7 @@ std::vector<ByteResolver *> LiteralExpr::compile(Compiler *compiler) {
 TypeDescriptor *getTypeDescriptor(Compiler *compiler, std::string name) {
     auto typeDef = compiler->frame->findNamedType(name);
 
-    return new IdentifierTypeDescriptor(name, typeDef->definition);
+    return new IdentifierTypeDescriptor(name, typeDef->getTypeDefinition());
 }
 
 ReturnTypes LiteralExpr::computeReturnType(Compiler *compiler) {

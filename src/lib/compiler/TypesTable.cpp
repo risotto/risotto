@@ -2,37 +2,42 @@
 // Created by rvigee on 10/4/19.
 //
 
+#include <cassert>
 #include "TypesTable.h"
 #include "TypeDefinition.h"
-#include <utility>
-#include <cassert>
+#include "lib/parser/nodes/TypeDescriptor.h"
 
-TypeEntry::TypeEntry(std::string name, TypeDefinition *definition) : name(std::move(name)), definition(definition) {}
-
-TypeEntry::TypeEntry(TypeDefinition *definition): TypeEntry("", definition) {}
-
-TypeEntry *TypesTable::findNamed(const std::string &name) {
+TypeDescriptor *TypesTable::findNamed(const std::string &name) {
     assert(!name.empty());
 
     for (auto entry : entries) {
-        if (entry->name == name) {
-            return entry;
+        if (auto identifierDesc = dynamic_cast<IdentifierTypeDescriptor *>(entry)) {
+            if (identifierDesc->name->lexeme == name) {
+                return entry;
+            }
         }
     }
 
     return nullptr;
 }
 
-TypeEntry *TypesTable::add(TypeEntry *typeEntry) {
+TypeDescriptor *TypesTable::add(TypeDescriptor *typeEntry) {
+    auto entry = find(typeEntry);
+    if (entry) {
+        return entry;
+    }
+
     entries.push_back(typeEntry);
 
     return typeEntry;
 }
 
-TypeEntry *TypesTable::reg(const std::string &name) {
-    return add(name, nullptr);
-}
+TypeDescriptor *TypesTable::find(TypeDescriptor *desc) {
+    for (auto entry: entries) {
+        if (entry->isSame(desc)) {
+            return entry;
+        }
+    }
 
-TypeEntry *TypesTable::add(const std::string &name, TypeDefinition *typeDefinition) {
-    return add(new TypeEntry(name, typeDefinition));
+    return nullptr;
 }

@@ -88,7 +88,7 @@ std::vector<ByteResolver *> LogicalExpr::compile(Compiler *compiler) {
 }
 
 ReturnTypes LogicalExpr::computeReturnType(Compiler *compiler) {
-    return new IdentifierTypeDescriptor("bool", compiler->frame->types.findNamed("bool")->definition);
+    return new IdentifierTypeDescriptor("bool", compiler->frame->types.findNamed("bool")->getTypeDefinition());
 }
 
 void LogicalExpr::symbolize(Compiler *compiler) {
