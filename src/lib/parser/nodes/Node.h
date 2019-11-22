@@ -17,9 +17,7 @@ public:
 
     virtual std::vector<ByteResolver *> compile(Compiler *compiler) = 0;
 
-    virtual void symbolize(Compiler *compiler) {
-        throw std::logic_error("Unimplemented");
-    }
+    virtual void symbolize(Compiler *compiler) = 0;
 };
 
 
