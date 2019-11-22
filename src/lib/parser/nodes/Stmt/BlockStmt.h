@@ -7,10 +7,12 @@
 
 #include "lib/parser/nodes/Stmt.h"
 #include <vector>
+#include <lib/compiler/Frame.h>
 
 class BlockStmt: public Stmt {
 public:
     std::vector<Stmt *> stmts;
+    Frame *frame = nullptr;
 
     explicit BlockStmt(std::vector<Stmt *> stmts);
 

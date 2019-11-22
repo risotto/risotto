@@ -156,9 +156,9 @@ Chunk Compiler::compile() {
         while (it != linkables.end()) {
             auto linkable = *it;
 
-            auto entry = linkable->typeDesc->genType(linkable->frame);
-            if (entry) {
-                linkable->typeDesc->setTypeEntry(entry);
+            auto ok = linkable->typeDesc->resolveType(frame);
+
+            if (ok) {
                 hasAdvanced = true;
                 it = linkables.erase(it);
                 delete linkable;

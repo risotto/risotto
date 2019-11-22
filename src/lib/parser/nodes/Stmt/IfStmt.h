@@ -12,9 +12,9 @@
 class IfStmt: public Stmt {
 public:
     Expr *condition;
-    Stmt *thenBranch;
+    Stmt *thenBranch = nullptr;
     std::vector<IfStmt *> elseifs;
-    Stmt *elseBranch;
+    Stmt *elseBranch = nullptr;
 
     IfStmt(Expr *condition, Stmt *thenBranch, std::vector<IfStmt *> elseifs, Stmt *elseBranch);
 

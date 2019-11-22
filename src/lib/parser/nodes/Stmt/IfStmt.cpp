@@ -97,6 +97,7 @@ std::vector<ByteResolver *> IfStmt::compile(Compiler  *compiler) {
 
 void IfStmt::symbolize(Compiler *compiler) {
     condition->symbolize(compiler);
+    thenBranch->symbolize(compiler);
     for (auto elseIf: elseifs) {
         elseIf->symbolize(compiler);
     }

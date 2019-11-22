@@ -14,8 +14,7 @@ BlockStmt::BlockStmt(std::vector<Stmt *> stmts) : stmts(std::move(stmts)) {
 std::vector<ByteResolver *> BlockStmt::compile(Compiler *compiler) {
     auto bytes = std::vector<ByteResolver *>();
 
-    auto previousFrame = compiler->frame;
-    compiler->frame = new Frame(previousFrame);
+    compiler->frame = frame;
     bytes.push_back(new ByteResolver(OP_FRAME, nullptr));
 
     for (auto stmt : stmts) {
@@ -24,13 +23,18 @@ std::vector<ByteResolver *> BlockStmt::compile(Compiler *compiler) {
     }
 
     bytes.push_back(new ByteResolver(OP_FRAME_END, nullptr));
-    compiler->frame = previousFrame;
+    compiler->frame = compiler->frame->parent;
 
     return bytes;
 }
 
 void BlockStmt::symbolize(Compiler *compiler) {
+    frame = new Frame(compiler->frame);
+    compiler->frame = frame;
+
     for (auto stmt: stmts) {
         stmt->symbolize(compiler);
     }
+
+    compiler->frame = compiler->frame->parent;
 }

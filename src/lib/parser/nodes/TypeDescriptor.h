@@ -10,6 +10,7 @@
 #include <lib/compiler/ReturnTypes.h>
 #include <lib/compiler/TypesTable.h>
 #include <lib/compiler/FunctionsTable.h>
+#include <lib/compiler/Compiler.h>
 #include "ParameterDefinition.h"
 
 class Compiler;
@@ -22,11 +23,16 @@ public:
 
     virtual TypeEntry *genType(Frame *frame) = 0;
 
+    bool resolveType(Frame *frame);
+
+    virtual void createLinkUnits(std::vector<LinkUnit *> &linkables, Frame *frame) = 0;
+
+    void createSelfLinkUnit(std::vector<LinkUnit *> &linkables, Frame *frame);
+
     TypeDefinition *getTypeDefinition();
 
-    void setTypeEntry(TypeEntry *entry);
-
     bool canReceiveType(TypeDescriptor *type);
+
     virtual bool isSame(TypeDescriptor *type);
 
 protected:
@@ -44,6 +50,8 @@ public:
     std::string toString() override;
 
     bool isSame(TypeDescriptor *type) override;
+
+    void createLinkUnits(std::vector<LinkUnit *> &linkables, Frame *frame) override;
 };
 
 class StructTypeDescriptor : public TypeDescriptor {
@@ -63,6 +71,10 @@ public:
     TypeEntry *genType(Frame *frame) override;
 
     std::string toString() override;
+
+    bool isSame(TypeDescriptor *type) override;
+
+    void createLinkUnits(std::vector<LinkUnit *> &linkables, Frame *frame) override;
 };
 
 class IdentifierTypeDescriptor : public TypeDescriptor {
@@ -78,6 +90,8 @@ public:
     bool isSame(TypeDescriptor *type) override;
 
     std::string toString() override;
+
+    void createLinkUnits(std::vector<LinkUnit *> &linkables, Frame *frame) override;
 };
 
 class FunctionTypeDescriptor : public TypeDescriptor {
@@ -86,11 +100,14 @@ public:
     std::vector<TypeDescriptor *> returnTypes;
 
     FunctionTypeDescriptor(std::vector<ParameterDefinition *> params, std::vector<TypeDescriptor *> returnTypes);
+
     explicit FunctionTypeDescriptor(FunctionEntry *functionEntry);
 
     TypeEntry *genType(Frame *frame) override;
 
     std::string toString() override;
+
+    void createLinkUnits(std::vector<LinkUnit *> &linkables, Frame *frame) override;
 };
 
 

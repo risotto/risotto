@@ -14,7 +14,7 @@ std::vector<ByteResolver *> TypeStmt::compile(Compiler *compiler) {
 }
 
 void TypeStmt::symbolize(Compiler *compiler) {
-    compiler->linkables.push_back(new LinkUnit(typeDescriptor, compiler->frame));
+    typeDescriptor->createLinkUnits(compiler->linkables, compiler->frame);
 
     typeEntry = compiler->frame->types.reg(name->lexeme);
 }
