@@ -7,7 +7,7 @@
 
 extern "C" {
 #include <lib/vm/value.h>
-};
+}
 #include <string>
 #include "../../../lib/better-enums/enum.h"
 
