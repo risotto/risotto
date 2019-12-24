@@ -19,7 +19,7 @@ public:
 
     virtual TypeDefinition *genType(Frame *frame) = 0;
 
-    bool resolveType(Frame *frame);
+    bool resolveType(Frame *frame, bool allowFindType);
 
     virtual void createLinkUnits(TypesManager *typesManager, Frame *frame) = 0;
 
@@ -98,11 +98,11 @@ public:
 
     FunctionTypeDescriptor(std::vector<ParameterDefinition *> params, std::vector<TypeDescriptor *> returnTypes);
 
-    explicit FunctionTypeDescriptor(FunctionEntry *functionEntry);
-
     TypeDefinition *genType(Frame *frame) override;
 
     std::string toString() override;
+
+    bool isSame(TypeDescriptor *type) override;
 
     void createLinkUnits(TypesManager *typesManager, Frame *frame) override;
 };

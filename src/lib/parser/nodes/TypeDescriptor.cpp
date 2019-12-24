@@ -6,6 +6,7 @@
 #include <lib/compiler/CompilerError.h>
 #include <utility>
 #include <sstream>
+#include <cassert>
 #include "lib/compiler/Compiler.h"
 #include "lib/compiler/TypeDefinition.h"
 
@@ -21,12 +22,14 @@ IdentifierTypeDescriptor::IdentifierTypeDescriptor(const std::string &name, Type
     this->typeDef = typeDef;
 }
 
-IdentifierTypeDescriptor::IdentifierTypeDescriptor(Token *name, std::function<TypeDefinition *(Frame *frame)> typeDefGen): IdentifierTypeDescriptor(name) {
+IdentifierTypeDescriptor::IdentifierTypeDescriptor(Token *name,
+                                                   std::function<TypeDefinition *(Frame *frame)> typeDefGen)
+        : IdentifierTypeDescriptor(name) {
     this->typeDefGen = std::move(typeDefGen);
 }
 
 TypeDefinition *IdentifierTypeDescriptor::genType(Frame *frame) {
-    if(typeDefGen) {
+    if (typeDefGen) {
         return typeDefGen(frame);
     }
 
@@ -137,11 +140,6 @@ FunctionTypeDescriptor::FunctionTypeDescriptor(std::vector<ParameterDefinition *
                                                std::vector<TypeDescriptor *> returnTypes)
         : params(std::move(params)), returnTypes(std::move(returnTypes)) {}
 
-FunctionTypeDescriptor::FunctionTypeDescriptor(FunctionEntry *functionEntry) :
-        FunctionTypeDescriptor(functionEntry->params, functionEntry->returnTypes) {
-    typeDef = functionEntry->typeDefinition;
-}
-
 std::string FunctionTypeDescriptor::toString() {
     std::stringstream ss;
 
@@ -177,7 +175,7 @@ std::string FunctionTypeDescriptor::toString() {
 }
 
 TypeDefinition *FunctionTypeDescriptor::genType(Frame *frame) {
-    auto functionEntry = new FunctionEntry("", params, returnTypes);
+    auto functionEntry = new FunctionEntry("", this);
     auto typeDef = new FunctionTypeDefinition(functionEntry);
 
     return typeDef;
@@ -193,31 +191,78 @@ void FunctionTypeDescriptor::createLinkUnits(TypesManager *typesManager, Frame *
     }
 }
 
+bool FunctionTypeDescriptor::isSame(TypeDescriptor *type) {
+    if (TypeDescriptor::isSame(type)) {
+        return true;
+    }
+
+    if (auto functionType = dynamic_cast<FunctionTypeDescriptor *>(type)) {
+        if (params.size() != functionType->params.size()) {
+            return false;
+        }
+
+        if (returnTypes.size() != functionType->returnTypes.size()) {
+            return false;
+        }
+
+        for (int i = 0; i < params.size(); ++i) {
+            auto param = params[i];
+            auto functionParam = functionType->params[i];
+
+            if (!param->type->isSame(functionParam->type)) {
+                return false;
+            }
+        }
+
+        for (int i = 0; i < returnTypes.size(); ++i) {
+            auto returnType = returnTypes[i];
+            auto functionReturnType = functionType->returnTypes[i];
+
+            if (!returnType->isSame(functionReturnType)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    return false;
+}
+
 TypeDefinition *TypeDescriptor::getTypeDefinition() {
     return typeDef;
 }
 
 bool TypeDescriptor::canReceiveType(TypeDescriptor *type) {
-    return getTypeDefinition()->canReceiveType(type->getTypeDefinition());
+    auto typeDef = getTypeDefinition();
+    auto otherTypeDef = type->getTypeDefinition();
+
+    assert(typeDef != nullptr);
+    assert(otherTypeDef != nullptr);
+
+    return typeDef->canReceiveType(otherTypeDef);
 }
 
 bool TypeDescriptor::isSame(TypeDescriptor *type) {
     return this == type;
 }
 
-bool TypeDescriptor::resolveType(Frame *frame) {
+bool TypeDescriptor::resolveType(Frame *frame, bool allowFindType) {
     if (typeDef != nullptr) {
         return true;
     }
 
-    auto desc = frame->types.find(this);
-    if (desc) {
-        typeDef = desc->getTypeDefinition();
+    if (allowFindType) {
+        if (auto desc = frame->types.find(this)) {
+            typeDef = desc->getTypeDefinition();
+        } else {
+            typeDef = genType(frame);
+        }
     } else {
         typeDef = genType(frame);
     }
 
-    auto entry = frame->types.add(this);
+    auto entry = frame->types.add(this, allowFindType);
     this->typeDef = entry->typeDef;
 
     return typeDef != nullptr;

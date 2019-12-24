@@ -47,10 +47,10 @@ FunctionEntry *Utils::findMatchingFunctions(
         std::vector<TypeDescriptor *> argsTypes
 ) {
     for (auto entry : functions) {
-        if (entry->params.size() == argsTypes.size()) {
+        if (entry->descriptor->params.size() == argsTypes.size()) {
             auto compatible = true;
-            for (int i = 0; i < entry->params.size(); ++i) {
-                auto paramType = entry->params[i]->type;
+            for (int i = 0; i < entry->descriptor->params.size(); ++i) {
+                auto paramType = entry->descriptor->params[i]->type;
                 auto argType = argsTypes[i];
 
                 if (!paramType->canReceiveType(argType)) {

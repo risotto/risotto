@@ -14,16 +14,14 @@
 
 class TypeDefinition;
 
-class FunctionTypeDefinition;
+class FunctionTypeDescriptor;
 
 class FunctionEntry {
 public:
-    FunctionEntry(std::string name, std::vector<ParameterDefinition *> params, ReturnTypes returnTypes);
+    FunctionEntry(std::string name, FunctionTypeDescriptor *descriptor);
 
     std::string name;
-    std::vector<ParameterDefinition *> params;
-    ReturnTypes returnTypes;
-    FunctionTypeDefinition *typeDefinition = nullptr;
+    FunctionTypeDescriptor *descriptor;
 
     ByteResolver *firstByte = nullptr;
 
@@ -34,7 +32,7 @@ class NativeFunctionEntry : public FunctionEntry {
 public:
     NativeFunctionReturn (*fun)(Value[], int);
 
-    NativeFunctionEntry(std::string name, std::vector<ParameterDefinition *> params, ReturnTypes returnTypes,
+    NativeFunctionEntry(std::string name, FunctionTypeDescriptor *descriptor,
                         NativeFunctionReturn (*fun)(Value[], int));
 };
 

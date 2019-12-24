@@ -6,14 +6,18 @@
 #include "lib/parser/nodes/TypeDescriptor.h"
 #include <sstream>
 
-LinkUnit::LinkUnit(TypeDescriptor *typeDesc, Frame *frame) : typeDesc(typeDesc), frame(frame) {
+LinkUnit::LinkUnit(TypeDescriptor *typeDesc, Frame *frame, bool allowFindType) : typeDesc(typeDesc), frame(frame), allowFindType(allowFindType) {
 
 }
 
-void TypesManager::add(TypeDescriptor *typeDesc, Frame *frame) {
-    units.push_back(new LinkUnit(typeDesc, frame));
+void TypesManager::add(TypeDescriptor *typeDesc, Frame *frame, bool allowFindType) {
+    units.push_back(new LinkUnit(typeDesc, frame, allowFindType));
 
     typeDesc->createLinkUnits(this, frame);
+}
+
+void TypesManager::add(TypeDescriptor *typeDesc, Frame *frame) {
+    add(typeDesc, frame, true);
 }
 
 void TypesManager::link() {
@@ -26,7 +30,7 @@ void TypesManager::link() {
             auto unit = *it;
             auto typeDesc = unit->typeDesc;
 
-            auto ok = typeDesc->resolveType(unit->frame);
+            auto ok = typeDesc->resolveType(unit->frame, unit->allowFindType);
             if (ok) {
                 hasAdvanced = true;
                 it = units.erase(it);

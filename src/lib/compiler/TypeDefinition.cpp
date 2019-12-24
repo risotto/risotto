@@ -14,7 +14,7 @@ bool TypeDefinition::canReceiveType(TypeDefinition *type) {
 }
 
 void TypeDefinition::addSelf(ParameterDefinition *self, FunctionEntry *entry) {
-    entry->params.insert(entry->params.begin(), {self});
+    entry->descriptor->params.insert(entry->descriptor->params.begin(), {self});
 }
 
 FunctionEntry *TypeDefinition::addFunction(ParameterDefinition *self, FunctionEntry *entry) {
@@ -45,7 +45,7 @@ bool FunctionTypeDefinition::canReceiveType(TypeDefinition *type) {
     }
 
     if (auto otherFunction = dynamic_cast<FunctionTypeDefinition *>(type)) {
-        return Utils::typesMatch(this->entry->params, otherFunction->entry->params);
+        return Utils::typesMatch(this->entry->descriptor->params, otherFunction->entry->descriptor->params);
     }
 
     return false;

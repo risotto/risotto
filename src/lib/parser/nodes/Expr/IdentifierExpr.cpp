@@ -48,7 +48,7 @@ ReturnTypes IdentifierExpr::computeReturnType(Compiler *compiler) {
     auto candidateTypes = ReturnTypes();
 
     for (auto candidate : candidates) {
-        candidateTypes.push_back(new FunctionTypeDescriptor(candidate));
+        candidateTypes.push_back(candidate->descriptor);
     }
 
     auto response = compiler->frame->findVariable(name->lexeme);

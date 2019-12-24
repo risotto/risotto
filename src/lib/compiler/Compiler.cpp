@@ -23,8 +23,10 @@ extern "C" {
         SELF_RECEIVER("self", target), \
         new NativeFunctionEntry( \
             #op, \
-            {new ParameterDefinition("right", TYPE_DESC(param), true)}, \
-            {TYPE_DESC(return)}, \
+            new FunctionTypeDescriptor( \
+                {new ParameterDefinition("right", TYPE_DESC(param), true)}, \
+                {TYPE_DESC(return)} \
+            ), \
             functionName \
         ) \
     );
@@ -58,8 +60,10 @@ NATIVE_BINARY_OPERATOR_DECLARATION(string, +=, type, string, add_equal)
         SELF_RECEIVER("left", target), \
         new NativeFunctionEntry( \
             #op, \
-            {}, \
-            {TYPE_DESC(return)}, \
+            new FunctionTypeDescriptor( \
+                {}, \
+                {TYPE_DESC(return)} \
+            ), \
             functionName \
         ) \
     );
@@ -76,8 +80,10 @@ NATIVE_UNARY_PREFIX_OPERATOR_DECLARATION(target, --, return, decrement) \
     frame->functions.add( \
         new NativeFunctionEntry( \
             "println", \
-            {new ParameterDefinition("e", TYPE_DESC(type), true)}, \
-            {}, \
+            new FunctionTypeDescriptor( \
+                {new ParameterDefinition("e", TYPE_DESC(type), true)}, \
+                {} \
+            ), \
             println_##type \
         ) \
     );
@@ -115,8 +121,10 @@ Compiler::Compiler(std::vector<Stmt *> stmts) : stmts(std::move(stmts)) {
             SELF_RECEIVER("right", bool),
             new NativeFunctionEntry(
                     "!",
-                    {},
-                    {TYPE_DESC(bool)},
+                    new FunctionTypeDescriptor(
+                            {},
+                            {TYPE_DESC(bool)}
+                    ),
                     unary_prefix_bool_invert
             )
     );
@@ -129,8 +137,7 @@ Compiler::Compiler(std::vector<Stmt *> stmts) : stmts(std::move(stmts)) {
     frame->functions.add(
             new NativeFunctionEntry(
                     "vm_stats",
-                    {},
-                    {},
+                    new FunctionTypeDescriptor({}, {}),
                     vm_stats
             )
     );
@@ -138,8 +145,7 @@ Compiler::Compiler(std::vector<Stmt *> stmts) : stmts(std::move(stmts)) {
     frame->functions.add(
             new NativeFunctionEntry(
                     "gc",
-                    {},
-                    {},
+                    new FunctionTypeDescriptor({}, {}),
                     run_gc
             )
     );

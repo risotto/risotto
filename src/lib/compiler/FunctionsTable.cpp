@@ -6,20 +6,19 @@
 #include "lib/compiler/utils/Utils.h"
 #include "lib/compiler/ReturnTypes.h"
 #include "TypeDefinition.h"
+#include "lib/parser/nodes/TypeDescriptor.h"
 
 #include <utility>
 
-FunctionEntry::FunctionEntry(std::string name, std::vector<ParameterDefinition *> params, ReturnTypes returnTypes) :
-        name(std::move(name)), params(std::move(params)), returnTypes(std::move(returnTypes)) {
-    typeDefinition = new FunctionTypeDefinition(this);
+FunctionEntry::FunctionEntry(std::string name, FunctionTypeDescriptor *descriptor) :
+        name(std::move(name)), descriptor(descriptor) {
 }
 
 NativeFunctionEntry::NativeFunctionEntry(
         std::string name,
-        std::vector<ParameterDefinition *> params,
-        ReturnTypes returnTypes,
+        FunctionTypeDescriptor *descriptor,
         NativeFunctionReturn (*fun)(Value[], int)
-) : FunctionEntry(std::move(name), std::move(params), std::move(returnTypes)), fun(fun) {
+) : FunctionEntry(std::move(name), descriptor), fun(fun) {
 
 }
 
@@ -31,7 +30,7 @@ FunctionEntry *FunctionsTable::find(const std::string &name, const std::vector<T
 
 FunctionEntry *FunctionsTable::add(FunctionEntry *entry) {
     auto paramsTypes = std::vector<TypeDescriptor *>();
-    for (const auto &param: entry->params) {
+    for (const auto &param: entry->descriptor->params) {
         paramsTypes.push_back(param->type);
     }
 

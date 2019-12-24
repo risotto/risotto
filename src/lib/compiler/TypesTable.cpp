@@ -22,9 +22,15 @@ TypeDescriptor *TypesTable::findNamed(const std::string &name) {
 }
 
 TypeDescriptor *TypesTable::add(TypeDescriptor *typeEntry) {
-    auto entry = find(typeEntry);
-    if (entry) {
-        return entry;
+    return add(typeEntry, true);
+}
+
+TypeDescriptor *TypesTable::add(TypeDescriptor *typeEntry, bool allowFindType) {
+    if (allowFindType) {
+        auto entry = find(typeEntry);
+        if (entry) {
+            return entry;
+        }
     }
 
     entries.push_back(typeEntry);

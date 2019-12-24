@@ -22,7 +22,7 @@ public:
     std::vector<ParameterDefinition *> parameters;
     std::vector<Stmt *> body;
     Token *closeBlock;
-    Frame *bodyFrame;
+    Frame *bodyFrame = nullptr;
 
     bool autoRegister = true;
 
@@ -30,8 +30,8 @@ public:
             Token *type,
             ParameterDefinition *receiver,
             Token *name,
-            std::vector<TypeDescriptor *> returnTypes,
-            std::vector<ParameterDefinition *> parameters,
+            const std::vector<TypeDescriptor *>& returnTypes,
+            const std::vector<ParameterDefinition *>& parameters,
             std::vector<Stmt *> body,
             Token *closeBlock
     );
@@ -41,7 +41,7 @@ public:
     FunctionEntry *getFunctionEntry(Compiler *compiler);
 private:
     FunctionEntry *_functionEntry = nullptr;
-
+    FunctionTypeDescriptor *descriptor = nullptr;
 public:
     void symbolize(Compiler *compiler) override;
 };

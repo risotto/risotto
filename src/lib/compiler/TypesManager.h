@@ -12,16 +12,19 @@ class LinkUnit {
 public:
     TypeDescriptor *typeDesc;
     Frame *frame;
+    bool allowFindType;
+
     bool hasError = false;
     std::string lastError;
 
-    LinkUnit(TypeDescriptor *typeDesc, Frame *frame);
+    LinkUnit(TypeDescriptor *typeDesc, Frame *frame, bool allowFindType);
 };
 
 class TypesManager {
 private:
     std::vector<LinkUnit *> units;
 public:
+    void add(TypeDescriptor *typeDesc, Frame *frame, bool allowFindType);
     void add(TypeDescriptor *typeDesc, Frame *frame);
 
     void link();

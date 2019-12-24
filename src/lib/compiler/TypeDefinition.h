@@ -66,5 +66,4 @@ public:
 };
 
 
-
 #endif //RISOTTOV2_TypeDefinition_H

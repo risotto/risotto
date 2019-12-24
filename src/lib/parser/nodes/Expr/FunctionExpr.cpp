@@ -12,7 +12,7 @@ FunctionExpr::FunctionExpr(FunctionStmt *functionStmt) : functionStmt(functionSt
 ReturnTypes FunctionExpr::computeReturnType(Compiler *compiler) {
     auto functionEntry = functionStmt->getFunctionEntry(compiler);
 
-    return new FunctionTypeDescriptor(functionEntry);
+    return functionEntry->descriptor;
 }
 
 std::vector<ByteResolver *> FunctionExpr::compile(Compiler *compiler) {

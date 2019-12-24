@@ -21,6 +21,8 @@ public:
     TypeDescriptor *find(TypeDescriptor * desc);
 
     TypeDescriptor *add(TypeDescriptor *typeEntry);
+
+    TypeDescriptor *add(TypeDescriptor *typeEntry, bool allowFindType);
 };
 
 #endif //RISOTTOV2_TYPESTABLE_H

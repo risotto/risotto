@@ -15,29 +15,23 @@ FunctionStmt::FunctionStmt(
         Token *type,
         ParameterDefinition *receiver,
         Token *name,
-        std::vector<TypeDescriptor *> returnTypes,
-        std::vector<ParameterDefinition *> parameters,
+        const std::vector<TypeDescriptor *>& returnTypes,
+        const std::vector<ParameterDefinition *>& parameters,
         std::vector<Stmt *> body,
         Token *closeBlock
 ) : type(type),
     receiver(receiver),
     name(name),
-    returnTypes(std::move(returnTypes)),
-    parameters(std::move(parameters)),
+    returnTypes(returnTypes),
+    parameters(parameters),
     body(std::move(body)),
     closeBlock(closeBlock) {
-
+    descriptor = new FunctionTypeDescriptor(parameters, returnTypes);
 }
 
 FunctionEntry *FunctionStmt::getFunctionEntry(Compiler *compiler) {
     if (_functionEntry != nullptr) {
         return _functionEntry;
-    }
-
-    // Get return type
-    auto returnTypeReferences = ReturnTypes();
-    for (auto returnType : returnTypes) {
-        returnTypeReferences.push_back(returnType);
     }
 
     std::string nameStr;
@@ -46,11 +40,9 @@ FunctionEntry *FunctionStmt::getFunctionEntry(Compiler *compiler) {
     }
 
     // Register function
-    auto functionEntry = new FunctionEntry(
-            nameStr,
-            parameters,
-            returnTypeReferences
-    );
+    auto functionDef = dynamic_cast<FunctionTypeDefinition *>(descriptor->getTypeDefinition());
+    functionDef->entry->name = nameStr;
+    auto functionEntry = functionDef->entry;
 
     if (autoRegister) {
         if (receiver != nullptr) {
@@ -107,7 +99,7 @@ std::vector<ByteResolver *> FunctionStmt::compile(Compiler *compiler) {
     }
 
     // Ensure functions have a return TODO: add branches check
-    if (functionEntry->returnTypes.empty()) {
+    if (functionEntry->descriptor->returnTypes.empty()) {
         bytes.push_back(new ByteResolver(OP_RETURN, nullptr));
         bytes.push_back(new ByteResolver(0, nullptr)); // no frame to drop
         bytes.push_back(new ByteResolver(0, nullptr)); // no value to return
@@ -132,6 +124,10 @@ std::vector<ByteResolver *> FunctionStmt::compile(Compiler *compiler) {
 }
 
 void FunctionStmt::symbolize(Compiler *compiler) {
+    getFunctionEntry(compiler);
+
+    compiler->typesManager->add(descriptor, compiler->frame, false);
+
     for (auto param: parameters) {
         compiler->typesManager->add(param->type, compiler->frame);
     }
