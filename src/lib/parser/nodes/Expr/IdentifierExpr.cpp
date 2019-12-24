@@ -21,12 +21,16 @@ std::vector<ByteResolver *> IdentifierExpr::compile(Compiler *compiler) {
         throw CompilerError("Must resolve to a single symbol");
     }
 
-    if (auto functionTypeDef = dynamic_cast<FunctionTypeDefinition *>(returnType[0]->getTypeDefinition())) {
-        auto functionEntry = functionTypeDef->entry;
+    if (dynamic_cast<FunctionTypeDefinition *>(returnType[0]->getTypeDefinition())) {
+        auto candidates = compiler->frame->findFunctionsCandidates(name->lexeme);
 
-        Utils::loadFunctionEntryAddr(compiler, functionEntry, bytes);
+        if (!candidates.empty()) {
+            auto functionEntry = candidates[0];
 
-        return bytes;
+            Utils::loadFunctionEntryAddr(compiler, functionEntry, bytes);
+
+            return bytes;
+        }
     }
 
     auto response = compiler->frame->findVariable(name->lexeme);

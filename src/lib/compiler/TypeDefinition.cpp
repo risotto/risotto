@@ -35,7 +35,7 @@ FunctionEntry *TypeDefinition::addPrefix(ParameterDefinition *self, FunctionEntr
     return prefixes.add(entry);
 }
 
-FunctionTypeDefinition::FunctionTypeDefinition(FunctionEntry *function) : entry(function) {
+FunctionTypeDefinition::FunctionTypeDefinition(FunctionTypeDescriptor *descriptor) : descriptor(descriptor) {
 
 }
 
@@ -45,7 +45,7 @@ bool FunctionTypeDefinition::canReceiveType(TypeDefinition *type) {
     }
 
     if (auto otherFunction = dynamic_cast<FunctionTypeDefinition *>(type)) {
-        return Utils::typesMatch(this->entry->descriptor->params, otherFunction->entry->descriptor->params);
+        return Utils::typesMatch(this->descriptor->params, otherFunction->descriptor->params);
     }
 
     return false;

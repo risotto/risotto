@@ -13,7 +13,7 @@ std::vector<ByteResolver *> TypeStmt::compile(Compiler *compiler) {
 
 void TypeStmt::symbolize(Compiler *compiler) {
     TypeDescriptor *identifierDesc = new IdentifierTypeDescriptor(name, [this](Frame *frame){
-        return typeDescriptor->genType(frame);
+        return typeDescriptor->getTypeDefinition();
     });
     compiler->typesManager->add(typeDescriptor, compiler->frame);
     compiler->typesManager->add(identifierDesc, compiler->frame);

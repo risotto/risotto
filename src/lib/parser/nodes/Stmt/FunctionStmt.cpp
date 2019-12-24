@@ -6,6 +6,7 @@
 
 #include <utility>
 #include <lib/compiler/CompilerError.h>
+#include <cassert>
 #include "FunctionStmt.h"
 #include "BlockStmt.h"
 #include "lib/compiler/TypeDefinition.h"
@@ -15,8 +16,8 @@ FunctionStmt::FunctionStmt(
         Token *type,
         ParameterDefinition *receiver,
         Token *name,
-        const std::vector<TypeDescriptor *>& returnTypes,
-        const std::vector<ParameterDefinition *>& parameters,
+        const std::vector<TypeDescriptor *> &returnTypes,
+        const std::vector<ParameterDefinition *> &parameters,
         std::vector<Stmt *> body,
         Token *closeBlock
 ) : type(type),
@@ -30,60 +31,7 @@ FunctionStmt::FunctionStmt(
 }
 
 FunctionEntry *FunctionStmt::getFunctionEntry(Compiler *compiler) {
-    if (_functionEntry != nullptr) {
-        return _functionEntry;
-    }
-
-    std::string nameStr;
-    if (name != nullptr) {
-        nameStr = name->lexeme;
-    }
-
-    // Register function
-    auto functionDef = dynamic_cast<FunctionTypeDefinition *>(descriptor->getTypeDefinition());
-    functionDef->entry->name = nameStr;
-    auto functionEntry = functionDef->entry;
-
-    if (autoRegister) {
-        if (receiver != nullptr) {
-            auto receiverType = receiver->type->getTypeDefinition();
-
-            switch (type->type) {
-                case TokenType::FUNC:
-                    functionEntry = receiverType->addFunction(
-                            receiver,
-                            functionEntry
-                    );
-                    break;
-                case TokenType::OP:
-                    functionEntry = receiverType->addOperator(
-                            receiver,
-                            functionEntry
-                    );
-                    break;
-                case TokenType::NEW: {
-                    auto structType = dynamic_cast<StructTypeDefinition *>(receiverType);
-                    if (structType == nullptr) {
-                        throw CompilerError("Receiver must be a struct", receiver->name->position);
-                    }
-
-                    functionEntry = structType->addConstructor(
-                            receiver,
-                            functionEntry
-                    );
-                    break;
-                }
-                default:
-                    throw CompilerError("Unhandled function type");
-            }
-        } else {
-            functionEntry = compiler->frame->functions.add(functionEntry);
-        }
-    }
-
-    this->_functionEntry = functionEntry;
-
-    return functionEntry;
+    return _functionEntry;
 }
 
 std::vector<ByteResolver *> FunctionStmt::compile(Compiler *compiler) {
@@ -124,9 +72,15 @@ std::vector<ByteResolver *> FunctionStmt::compile(Compiler *compiler) {
 }
 
 void FunctionStmt::symbolize(Compiler *compiler) {
-    getFunctionEntry(compiler);
+    compiler->typesManager->addListener([this, compiler]() {
+        return registerFunction(compiler);
+    });
 
-    compiler->typesManager->add(descriptor, compiler->frame, false);
+    compiler->typesManager->add(descriptor, compiler->frame);
+
+    if (receiver != nullptr) {
+        compiler->typesManager->add(receiver->type, compiler->frame);
+    }
 
     for (auto param: parameters) {
         compiler->typesManager->add(param->type, compiler->frame);
@@ -134,10 +88,6 @@ void FunctionStmt::symbolize(Compiler *compiler) {
 
     for (auto returnType: returnTypes) {
         compiler->typesManager->add(returnType, compiler->frame);
-    }
-
-    if (receiver != nullptr) {
-        compiler->typesManager->add(receiver->type, compiler->frame);
     }
 
     // Create new frame
@@ -160,4 +110,56 @@ void FunctionStmt::symbolize(Compiler *compiler) {
 
     // Restore frame
     compiler->frame = compiler->frame->parent;
+}
+
+bool FunctionStmt::registerFunction(Compiler *compiler) {
+    std::string nameStr;
+    if (name != nullptr) {
+        nameStr = name->lexeme;
+    }
+
+    _functionEntry = new FunctionEntry(nameStr, descriptor);
+
+    if (autoRegister) {
+        if (receiver != nullptr) {
+            auto receiverType = receiver->type->getTypeDefinition();
+
+            if (receiverType == nullptr) {
+                return false;
+            }
+
+            switch (type->type) {
+                case TokenType::FUNC:
+                    _functionEntry = receiverType->addFunction(
+                            receiver,
+                            _functionEntry
+                    );
+                    break;
+                case TokenType::OP:
+                    _functionEntry = receiverType->addOperator(
+                            receiver,
+                            _functionEntry
+                    );
+                    break;
+                case TokenType::NEW: {
+                    auto structType = dynamic_cast<StructTypeDefinition *>(receiverType);
+                    if (structType == nullptr) {
+                        throw CompilerError("Receiver must be a struct", receiver->name->position);
+                    }
+
+                    _functionEntry = structType->addConstructor(
+                            receiver,
+                            _functionEntry
+                    );
+                    break;
+                }
+                default:
+                    throw CompilerError("Unhandled function type");
+            }
+        } else {
+            _functionEntry = compiler->frame->functions.add(_functionEntry);
+        }
+    }
+
+    return true;
 }

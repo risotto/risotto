@@ -31,14 +31,6 @@ std::vector<ByteResolver *> GetExpr::compile(Compiler *compiler) {
         throw CompilerError("Must resolve to a single symbol");
     }
 
-    if (auto functionTypeDef = dynamic_cast<FunctionTypeDefinition *>(returnType[0]->getTypeDefinition())) {
-        auto functionEntry = functionTypeDef->entry;
-
-        Utils::loadFunctionEntryAddr(compiler, functionEntry, bytes);
-
-        return bytes;
-    }
-
     auto calleeReturnType = callee->getReturnType(compiler);
 
     if (auto structDef = getStructTypeDefinition(calleeReturnType[0])) {

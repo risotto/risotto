@@ -46,9 +46,9 @@ public:
 
 class FunctionTypeDefinition : public TypeDefinition {
 public:
-    FunctionEntry *entry;
+    FunctionTypeDescriptor *descriptor;
 
-    explicit FunctionTypeDefinition(FunctionEntry *function);
+    explicit FunctionTypeDefinition(FunctionTypeDescriptor *descriptor);
 
     bool canReceiveType(TypeDefinition *type) override;
 };

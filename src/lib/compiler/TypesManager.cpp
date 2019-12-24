@@ -24,16 +24,16 @@ void TypesManager::link() {
     bool hasAdvanced;
     do {
         hasAdvanced = false;
-        auto it = units.begin();
+        auto uit = units.begin();
 
-        while (it != units.end()) {
-            auto unit = *it;
+        while (uit != units.end()) {
+            auto unit = *uit;
             auto typeDesc = unit->typeDesc;
 
             auto ok = typeDesc->resolveType(unit->frame, unit->allowFindType);
             if (ok) {
                 hasAdvanced = true;
-                it = units.erase(it);
+                uit = units.erase(uit);
                 delete unit;
             } else {
                 unit->hasError = true;
@@ -45,7 +45,22 @@ void TypesManager::link() {
                 }
 
                 unit->lastError = ss.str();
-                ++it;
+                ++uit;
+            }
+        }
+
+        if (hasAdvanced) {
+            auto lit = listeners.begin();
+            while (lit != listeners.end()) {
+                auto listener = *lit;
+
+                auto done = listener();
+
+                if (done) {
+                    lit = listeners.erase(lit);
+                } else {
+                    ++lit;
+                }
             }
         }
     } while (hasAdvanced && !units.empty());
@@ -61,4 +76,12 @@ void TypesManager::link() {
 
         throw std::logic_error("cannot link: \n" + ss.str());
     }
+
+    if (!listeners.empty()) {
+        throw std::logic_error("all listeners didnt finish");
+    }
+}
+
+void TypesManager::addListener(const std::function<bool()>& listener) {
+    listeners.push_back(listener);
 }

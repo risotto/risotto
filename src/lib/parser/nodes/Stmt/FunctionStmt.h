@@ -39,6 +39,7 @@ public:
     std::vector<ByteResolver *> compile(Compiler *compiler) override;
 
     FunctionEntry *getFunctionEntry(Compiler *compiler);
+    bool registerFunction(Compiler *compiler);
 private:
     FunctionEntry *_functionEntry = nullptr;
     FunctionTypeDescriptor *descriptor = nullptr;

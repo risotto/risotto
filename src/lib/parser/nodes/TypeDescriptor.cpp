@@ -175,10 +175,7 @@ std::string FunctionTypeDescriptor::toString() {
 }
 
 TypeDefinition *FunctionTypeDescriptor::genType(Frame *frame) {
-    auto functionEntry = new FunctionEntry("", this);
-    auto typeDef = new FunctionTypeDefinition(functionEntry);
-
-    return typeDef;
+    return new FunctionTypeDefinition(this);
 }
 
 void FunctionTypeDescriptor::createLinkUnits(TypesManager *typesManager, Frame *frame) {
@@ -267,4 +264,3 @@ bool TypeDescriptor::resolveType(Frame *frame, bool allowFindType) {
 
     return typeDef != nullptr;
 }
-
