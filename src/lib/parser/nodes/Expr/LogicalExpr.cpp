@@ -7,8 +7,8 @@ extern "C" {
 }
 #include <lib/compiler/Compiler.h>
 #include <lib/compiler/CompilerError.h>
+#include <lib/parser/nodes/TypeDescriptor.h>
 #include "LogicalExpr.h"
-#include "lib/compiler/TypeReference.h"
 #include "lib/compiler/ReturnTypes.h"
 
 LogicalExpr::LogicalExpr(Expr *left, Token *op, Expr *right): left(left), op(op), right(right) {
@@ -88,5 +88,10 @@ std::vector<ByteResolver *> LogicalExpr::compile(Compiler *compiler) {
 }
 
 ReturnTypes LogicalExpr::computeReturnType(Compiler *compiler) {
-    return new ConcreteTypeReference(compiler->frame->types.findNamed("bool")->definition);
+    return new IdentifierTypeDescriptor("bool", compiler->frame->types.findNamed("bool")->getTypeDefinition());
+}
+
+void LogicalExpr::symbolize(Compiler *compiler) {
+    left->symbolize(compiler);
+    right->symbolize(compiler);
 }

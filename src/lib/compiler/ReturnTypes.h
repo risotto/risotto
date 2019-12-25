@@ -5,19 +5,18 @@
 #ifndef RISOTTOV2_RETURNTYPES_H
 #define RISOTTOV2_RETURNTYPES_H
 
+#include <vector>
 
-#include "TypeReference.h"
+class TypeDescriptor;
 
-class ReturnTypes : public std::vector<TypeReference *> {
+class ReturnTypes : public std::vector<TypeDescriptor *> {
 public:
-    using std::vector<TypeReference *>::vector;
+    using std::vector<TypeDescriptor *>::vector;
 
-    ReturnTypes(TypeReference *ref);
-    ReturnTypes(std::vector<TypeReference *> refs);
+    ReturnTypes(TypeDescriptor *ref);
+    ReturnTypes(std::vector<TypeDescriptor *> refs);
 
     bool single();
-
-    ReturnTypes onlyFunctions();
 };
 
 #endif //RISOTTOV2_RETURNTYPES_H

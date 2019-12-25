@@ -2,55 +2,48 @@
 // Created by rvigee on 10/4/19.
 //
 
+#include <cassert>
 #include "TypesTable.h"
 #include "TypeDefinition.h"
-#include <utility>
+#include "lib/parser/nodes/TypeDescriptor.h"
 
-TypeEntry *TypesTable::findNamed(const std::string &name) {
+TypeDescriptor *TypesTable::findNamed(const std::string &name) {
+    assert(!name.empty());
+
     for (auto entry : entries) {
-        if (entry->name == name) {
-            return entry;
+        if (auto identifierDesc = dynamic_cast<IdentifierTypeDescriptor *>(entry)) {
+            if (identifierDesc->name->lexeme == name) {
+                return entry;
+            }
         }
     }
 
     return nullptr;
 }
 
-TypeEntry *TypesTable::add(const std::string& name) {
-    auto entry = new ConcreteTypeDefinition(name);
-
-    return add(name, entry);
+TypeDescriptor *TypesTable::add(TypeDescriptor *typeEntry) {
+    return add(typeEntry, true);
 }
 
-TypeDefinition *TypesTable::add(TypeDefinition *typeDefinition) {
-    definitions.push_back(typeDefinition);
+TypeDescriptor *TypesTable::add(TypeDescriptor *typeEntry, bool allowFindType) {
+    if (allowFindType) {
+        auto entry = find(typeEntry);
+        if (entry) {
+            return entry;
+        }
+    }
 
-    return typeDefinition;
+    entries.push_back(typeEntry);
+
+    return typeEntry;
 }
 
-TypeEntry *TypesTable::add(const std::string& name, TypeDefinition *typeDefinition) {
-    typeDefinition = add(typeDefinition);
-
-    auto entry = new TypeEntry(name, typeDefinition);
-    entries.push_back(entry);
-
-    return entry;
-}
-
-TypeDefinition *TypesTable::addVirtual(const std::string &id, TypeDefinition *typeDefinition) {
-    virtualEntries.insert(std::make_pair(id, typeDefinition));
-
-    return typeDefinition;
-}
-
-TypeDefinition *TypesTable::findVirtual(const std::string &name) {
-    auto it = virtualEntries.find(name);
-
-    if (it != virtualEntries.end()) {
-        return it->second;
+TypeDescriptor *TypesTable::find(TypeDescriptor *desc) {
+    for (auto entry: entries) {
+        if (entry->isSame(desc)) {
+            return entry;
+        }
     }
 
     return nullptr;
 }
-
-TypeEntry::TypeEntry(std::string name, TypeDefinition *definition) : name(std::move(name)), definition(definition) {}

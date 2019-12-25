@@ -94,3 +94,14 @@ std::vector<ByteResolver *> IfStmt::compile(Compiler  *compiler) {
 
     return bytes;
 }
+
+void IfStmt::symbolize(Compiler *compiler) {
+    condition->symbolize(compiler);
+    thenBranch->symbolize(compiler);
+    for (auto elseIf: elseifs) {
+        elseIf->symbolize(compiler);
+    }
+    if (elseBranch) {
+        elseBranch->symbolize(compiler);
+    }
+}

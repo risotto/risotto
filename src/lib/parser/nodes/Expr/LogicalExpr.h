@@ -8,7 +8,6 @@
 
 #include <lib/parser/nodes/Expr.h>
 #include <lib/tokenizer/Token.h>
-#include "lib/compiler/TypeReference.h"
 #include "lib/compiler/ReturnTypes.h"
 
 class LogicalExpr: public Expr {
@@ -26,6 +25,8 @@ public:
     generateAnd(std::vector<ByteResolver *> leftBytes, std::vector<ByteResolver *> rightBytes, Compiler *compiler);
 
     std::vector<ByteResolver *> compile(Compiler *compiler) override;
+
+    void symbolize(Compiler *compiler) override;
 
 protected:
     ReturnTypes computeReturnType(Compiler *compiler) override;

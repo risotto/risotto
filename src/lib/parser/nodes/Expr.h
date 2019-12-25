@@ -6,10 +6,10 @@
 #define RISOTTOV2_EXPR_H
 
 
-#include <lib/compiler/TypesTable.h>
 #include "Node.h"
-#include "lib/compiler/TypeReference.h"
+#include <lib/compiler/TypesTable.h>
 #include "lib/compiler/ReturnTypes.h"
+#include "lib/compiler/Compiler.h"
 #include <vector>
 
 class Expr : public Node {

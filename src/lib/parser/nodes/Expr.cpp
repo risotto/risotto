@@ -3,7 +3,6 @@
 //
 
 #include "Expr.h"
-#include "lib/compiler/TypeReference.h"
 #include "lib/compiler/ReturnTypes.h"
 
 ReturnTypes Expr::getReturnType(Compiler *compiler) {

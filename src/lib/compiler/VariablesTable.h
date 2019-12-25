@@ -8,15 +8,13 @@
 #include <string>
 #include "TypesTable.h"
 
-class TypeReference;
-
 class VariableEntry {
 public:
     std::string name;
-    TypeReference *typeRef;
+    TypeDescriptor *typeRef;
     int index;
 
-    VariableEntry(std::string name, TypeReference *typeRef, int index);
+    VariableEntry(std::string name, TypeDescriptor *typeRef, int index);
 };
 
 class VariablesTable {
@@ -27,7 +25,7 @@ private:
 public:
     VariableEntry *find(const std::string &name);
 
-    VariableEntry *add(std::string name, TypeReference *typeRef);
+    VariableEntry *add(std::string name, TypeDescriptor *typeRef);
 
     [[nodiscard]] iterator begin() const { return entries.begin(); }
 

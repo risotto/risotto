@@ -6,11 +6,15 @@
       <file path="$PROJECT_DIR$/src" />
     </sourceRoots>
     <excludeRoots>
+      <file path="$PROJECT_DIR$/cmake-build-coverage" />
       <file path="$PROJECT_DIR$/cmake-build-coverage-gnu" />
+      <file path="$PROJECT_DIR$/cmake-build-coverage-gnu-7" />
       <file path="$PROJECT_DIR$/cmake-build-debug" />
       <file path="$PROJECT_DIR$/cmake-build-debug-gnu" />
+      <file path="$PROJECT_DIR$/cmake-build-debug-gnu-7" />
       <file path="$PROJECT_DIR$/cmake-build-release" />
       <file path="$PROJECT_DIR$/cmake-build-release-gnu" />
+      <file path="$PROJECT_DIR$/cmake-build-release-gnu-7" />
       <file path="$PROJECT_DIR$/lib" />
     </excludeRoots>
   </component>

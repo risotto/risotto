@@ -18,6 +18,8 @@ public:
     VarDeclStmt(std::vector<Token *> identifiers, Token *op, Expr *value);
 
     std::vector<ByteResolver *> compile(Compiler *compiler) override;
+
+    void symbolize(Compiler *compiler) override;
 };
 
 

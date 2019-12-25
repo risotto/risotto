@@ -9,23 +9,13 @@ extern "C" {
 #include "GetExpr.h"
 #include <lib/compiler/CompilerError.h>
 #include <lib/compiler/utils/Utils.h>
+#include <lib/parser/nodes/TypeDescriptor.h>
 #include "lib/compiler/Compiler.h"
-#include "lib/compiler/TypeReference.h"
 #include "lib/compiler/ReturnTypes.h"
 #include "lib/compiler/TypeDefinition.h"
 
-StructTypeDefinition *getStructTypeDefinition(TypeReference *typeRef) {
-    if (auto structRef = dynamic_cast<StructTypeReference *>(typeRef)) {
-        return structRef->definition;
-    }
-
-    if (auto concreteRef = dynamic_cast<ConcreteTypeReference *>(typeRef)) {
-        if (auto structRef = dynamic_cast<StructTypeDefinition *>(concreteRef->definition)) {
-            return structRef;
-        }
-    }
-
-    return nullptr;
+StructTypeDefinition *getStructTypeDefinition(TypeDescriptor *typeRef) {
+    return dynamic_cast<StructTypeDefinition *>(typeRef->getTypeDefinition());
 }
 
 GetExpr::GetExpr(Expr *callee, Token *identifier) : callee(callee), identifier(identifier) {
@@ -39,16 +29,6 @@ std::vector<ByteResolver *> GetExpr::compile(Compiler *compiler) {
 
     if (!returnType.single()) {
         throw CompilerError("Must resolve to a single symbol");
-    }
-
-    if (auto concrete = dynamic_cast<ConcreteTypeReference *>(returnType[0])) {
-        if (auto functionTypeDef = dynamic_cast<FunctionTypeDefinition *>(concrete->definition)) {
-            auto functionEntry = functionTypeDef->entry;
-
-            Utils::loadFunctionEntryAddr(compiler, functionEntry, bytes);
-
-            return bytes;
-        }
     }
 
     auto calleeReturnType = callee->getReturnType(compiler);
@@ -77,21 +57,6 @@ ReturnTypes GetExpr::computeReturnType(Compiler *compiler) {
 
     auto returnTypes = ReturnTypes();
 
-    std::vector<FunctionEntry *> functionsCandidates;
-    if (auto receiver = dynamic_cast<ReceiverTypeReference *>(calleeType[0])) {
-        functionsCandidates = receiver->findFunctionsCandidates(compiler->frame, identifier->lexeme);
-    } else {
-        auto virtualType = compiler->frame->findVirtualType(calleeType[0]);
-
-        if (virtualType != nullptr) {
-            functionsCandidates = virtualType->functions.findCandidates(identifier->lexeme);
-        }
-    }
-
-    for (auto candidate : functionsCandidates) {
-        returnTypes.push_back(new ConcreteTypeReference(candidate->typeDefinition));
-    }
-
     if (auto structDef = getStructTypeDefinition(calleeType[0])) {
         auto field = structDef->fields.find(identifier->lexeme);
 
@@ -101,4 +66,8 @@ ReturnTypes GetExpr::computeReturnType(Compiler *compiler) {
     }
 
     return returnTypes;
+}
+
+void GetExpr::symbolize(Compiler *compiler) {
+    callee->symbolize(compiler);
 }

@@ -6,6 +6,7 @@
 #include <utility>
 #include <map>
 #include <sstream>
+#include <string.h>
 #include "Tokenizer.h"
 #include "SyntaxError.h"
 
@@ -33,7 +34,7 @@ namespace literal_to_value_data {
     template<>
     ValueData convert<std::string>(std::string str) {
         char *cstr = new char[str.length() + 1];
-        std::strcpy(cstr, str.c_str());
+        strcpy(cstr, str.c_str());
 
         return ValueData{._str = cstr};
     }
@@ -299,7 +300,7 @@ void Tokenizer::identifier() {
 
     auto text = src.substr(start, current - start);
 
-    TokenType type = TokenType::_from_index(0); // Just has to be something, will be replaced immediately...
+    TokenType type;
 
     if (keywords.find(text) == keywords.end()) {
         type = TokenType::IDENTIFIER;

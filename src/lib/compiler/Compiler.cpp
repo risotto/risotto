@@ -6,21 +6,27 @@
 #include "TypeDefinition.h"
 
 #include <utility>
+#include <sstream>
+#include <lib/parser/nodes/TypeDescriptor.h>
 
 extern "C" {
 #include <lib/vm/native_functions.h>
 }
 
-#define TYPE_REF(type) new ConcreteTypeReference(type##Entry->definition)
+#define TYPE_ENTRY(type) type##Entry
+#define ENTRY_DEF(entry) entry->getTypeDefinition()
+#define TYPE_DESC(type) new IdentifierTypeDescriptor(#type, ENTRY_DEF(TYPE_ENTRY(type)))
+#define SELF_RECEIVER(name, type) new ParameterDefinition(name, TYPE_DESC(type), true)
 
 #define NATIVE_BINARY_DECLARATION_NAMED(target, op, param, return, functionName) \
-    target##Entry->definition->addOperator( \
-        "self", \
-        true, \
+    ENTRY_DEF(TYPE_ENTRY(target))->addOperator( \
+        SELF_RECEIVER("self", target), \
         new NativeFunctionEntry( \
             #op, \
-            {FunctionEntryParameter("right", TYPE_REF(param))}, \
-            {TYPE_REF(return)}, \
+            new FunctionTypeDescriptor( \
+                {new ParameterDefinition("right", TYPE_DESC(param), true)}, \
+                {TYPE_DESC(return)} \
+            ), \
             functionName \
         ) \
     );
@@ -50,13 +56,14 @@ NATIVE_BINARY_OPERATOR_DECLARATION(type, +, string, string, add) \
 NATIVE_BINARY_OPERATOR_DECLARATION(string, +=, type, string, add_equal)
 
 #define NATIVE_UNARY_OPERATOR_DECLARATION(target, op, return, functionName) \
-    target##Entry->definition->addPrefix( \
-        "self", \
-        true, \
+    ENTRY_DEF(TYPE_ENTRY(target))->addPrefix( \
+        SELF_RECEIVER("left", target), \
         new NativeFunctionEntry( \
             #op, \
-            {}, \
-            {TYPE_REF(return)}, \
+            new FunctionTypeDescriptor( \
+                {}, \
+                {TYPE_DESC(return)} \
+            ), \
             functionName \
         ) \
     );
@@ -73,21 +80,24 @@ NATIVE_UNARY_PREFIX_OPERATOR_DECLARATION(target, --, return, decrement) \
     frame->functions.add( \
         new NativeFunctionEntry( \
             "println", \
-            {FunctionEntryParameter("e", TYPE_REF(type))}, \
-            {}, \
+            new FunctionTypeDescriptor( \
+                {new ParameterDefinition("e", TYPE_DESC(type), true)}, \
+                {} \
+            ), \
             println_##type \
         ) \
     );
 
 Compiler::Compiler(std::vector<Stmt *> stmts) : stmts(std::move(stmts)) {
     frame = new Frame();
+    typesManager = new TypesManager();
 
     initChunk(&chunk);
 
-    auto intEntry = frame->types.add("int");
-    auto doubleEntry = frame->types.add("double");
-    auto boolEntry = frame->types.add("bool");
-    auto stringEntry = frame->types.add("string");
+    auto intEntry = frame->types.add(new IdentifierTypeDescriptor("int", new ScalarTypeDefinition("int")));
+    auto doubleEntry = frame->types.add(new IdentifierTypeDescriptor("double", new ScalarTypeDefinition("double")));
+    auto boolEntry = frame->types.add(new IdentifierTypeDescriptor("bool", new ScalarTypeDefinition("bool")));
+    auto stringEntry = frame->types.add(new IdentifierTypeDescriptor("string", new ScalarTypeDefinition("string")));
 
     NATIVE_BINARY_OPERATOR_MATH_DECLARATIONS(int, int, int)
     NATIVE_BINARY_OPERATOR_MATH_DECLARATIONS(int, double, double)
@@ -107,13 +117,14 @@ Compiler::Compiler(std::vector<Stmt *> stmts) : stmts(std::move(stmts)) {
     NATIVE_BINARY_OPERATOR_DECLARATION(string, +, string, string, add)
     NATIVE_BINARY_OPERATOR_DECLARATION(string, +=, string, string, add_equal)
 
-    boolEntry->definition->addPrefix(
-            "self",
-            true,
+    ENTRY_DEF(TYPE_ENTRY(bool))->addPrefix(
+            SELF_RECEIVER("right", bool),
             new NativeFunctionEntry(
                     "!",
-                    {},
-                    {TYPE_REF(bool)},
+                    new FunctionTypeDescriptor(
+                            {},
+                            {TYPE_DESC(bool)}
+                    ),
                     unary_prefix_bool_invert
             )
     );
@@ -124,25 +135,29 @@ Compiler::Compiler(std::vector<Stmt *> stmts) : stmts(std::move(stmts)) {
     NATIVE_PRINT(string)
 
     frame->functions.add(
-        new NativeFunctionEntry(
-            "vm_stats",
-            {},
-            {},
-            vm_stats
-        )
+            new NativeFunctionEntry(
+                    "vm_stats",
+                    new FunctionTypeDescriptor({}, {}),
+                    vm_stats
+            )
     );
 
     frame->functions.add(
-        new NativeFunctionEntry(
-            "gc",
-            {},
-            {},
-            run_gc
-        )
+            new NativeFunctionEntry(
+                    "gc",
+                    new FunctionTypeDescriptor({}, {}),
+                    run_gc
+            )
     );
 }
 
 Chunk Compiler::compile() {
+    for (auto stmt: stmts) {
+        stmt->symbolize(this);
+    }
+
+    typesManager->link();
+
     for (auto stmt: stmts) {
         auto stmtBytes = stmt->compile(this);
         bytes.insert(bytes.end(), stmtBytes.begin(), stmtBytes.end());

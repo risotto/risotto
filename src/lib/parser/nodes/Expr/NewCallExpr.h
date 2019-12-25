@@ -6,13 +6,14 @@
 #define RISOTTOV2_NEWCALLEXPR_H
 
 
+#include <lib/compiler/TypeDefinition.h>
 #include "IdentifierCallExpr.h"
 
 class NewCallExpr: public IdentifierCallExpr {
 public:
     NewCallExpr(Token *identifier, Token *rParen, const std::vector<Expr *> &args);
 
-    std::vector<TypeReference *> getArgumentsTypes(Compiler *compiler) override;
+    std::vector<TypeDescriptor *> getArgumentsTypes(Compiler *compiler) override;
 
     void loadArgs(Compiler *compiler, std::vector<ByteResolver *> &bytes) override;
 

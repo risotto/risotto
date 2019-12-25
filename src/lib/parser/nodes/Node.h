@@ -16,6 +16,8 @@ public:
     virtual ~Node() = default;
 
     virtual std::vector<ByteResolver *> compile(Compiler *compiler) = 0;
+
+    virtual void symbolize(Compiler *compiler) = 0;
 };
 
 

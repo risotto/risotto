@@ -2,21 +2,20 @@
 // Created by raphael on 21/06/18.
 //
 
-#include <lib/parser/Parser.h>
-#include <lib/tokenizer/Tokenizer.h>
-#include <lib/compiler/Compiler.h>
-#include <fstream>
-#include <iostream>
-#include "Risotto.h"
-#include <iomanip>
-#include <chrono>
-#include <sstream>
-#include <lib/tokenizer/TokensPrinter.h>
-#include <lib/parser/ASTPrinter.h>
-
 extern "C" {
 #include <lib/vm/debug.h>
 }
+
+#include <fstream>
+#include <lib/tokenizer/TokensPrinter.h>
+#include <lib/tokenizer/Tokenizer.h>
+#include <lib/parser/nodes/Stmt.h>
+#include <lib/parser/ASTPrinter.h>
+#include <lib/parser/Parser.h>
+#include <iostream>
+#include <chrono>
+#include <sstream>
+#include "Risotto.h"
 
 Risotto::Risotto(unsigned int flags) : flags(flags) {}
 

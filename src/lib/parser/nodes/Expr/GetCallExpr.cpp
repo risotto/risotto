@@ -6,6 +6,7 @@
 #include "GetCallExpr.h"
 #include "lib/compiler/Compiler.h"
 #include "lib/compiler/TypeDefinition.h"
+#include "lib/parser/nodes/TypeDescriptor.h"
 
 GetCallExpr::GetCallExpr(Expr *callee, Token *op, Token *identifier, Token *rParen, const std::vector<Expr *> &args)
         : MixedCallExpr(rParen, args), callee(callee), op(op), identifier(identifier) {}
@@ -23,7 +24,7 @@ std::vector<Expr *> GetCallExpr::getArguments(Compiler *compiler) {
 FunctionNotFoundError GetCallExpr::getFunctionNotFoundError(Compiler *compiler) {
     auto leftReturnType = callee->getReturnType(compiler);
     auto argsTypes = getArgumentsTypes(compiler);
-    auto actualArgsTypes = std::vector<TypeReference *>(argsTypes.begin() + 1, argsTypes.end());
+    auto actualArgsTypes = std::vector<TypeDescriptor *>(argsTypes.begin() + 1, argsTypes.end());
 
     return FunctionNotFoundError(leftReturnType[0]->toString() + "." + identifier->lexeme + "({{args}})", actualArgsTypes, identifier);
 }
@@ -39,17 +40,15 @@ FunctionEntry *GetCallExpr::getFunctionEntry(Compiler *compiler) {
         throw CompilerError("Return type has to be single", identifier->position);
     }
 
-    auto returnTypes = ReturnTypes();
-
-    if (auto receiver = dynamic_cast<ReceiverTypeReference *>(calleeType[0])) {
-        auto functionsCandidates = receiver->findFunctionsCandidates(compiler->frame, identifier->lexeme);
-
-        return Utils::findMatchingFunctions(functionsCandidates, getArgumentsTypes(compiler));
-    }
-
-    return nullptr;
+    auto functionsCandidates = calleeType[0]->getTypeDefinition()->functions.findCandidates(identifier->lexeme);
+    return Utils::findMatchingFunctions(functionsCandidates, getArgumentsTypes(compiler));
 }
 
 void GetCallExpr::loadVariableEntryAddr(Compiler *compiler, std::vector<ByteResolver *> &bytes) {
     throw CompilerError("Unimplemented", identifier->position);
+}
+
+void GetCallExpr::symbolize(Compiler *compiler) {
+    callee->symbolize(compiler);
+    MixedCallExpr::symbolize(compiler);
 }

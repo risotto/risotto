@@ -6,9 +6,9 @@
 
 #include <utility>
 #include <lib/compiler/CompilerError.h>
+#include <cassert>
 #include "FunctionStmt.h"
 #include "BlockStmt.h"
-#include "lib/compiler/TypeReference.h"
 #include "lib/compiler/TypeDefinition.h"
 #include "lib/compiler/ReturnTypes.h"
 
@@ -16,114 +16,28 @@ FunctionStmt::FunctionStmt(
         Token *type,
         ParameterDefinition *receiver,
         Token *name,
-        std::vector<TypeDescriptor *> returnTypes,
-        std::vector<ParameterDefinition> parameters,
+        const std::vector<TypeDescriptor *> &returnTypes,
+        const std::vector<ParameterDefinition *> &parameters,
         std::vector<Stmt *> body,
         Token *closeBlock
-) : type(type), receiver(receiver), name(name), returnTypes(std::move(returnTypes)), parameters(std::move(parameters)),
+) : type(type),
+    receiver(receiver),
+    name(name),
+    returnTypes(returnTypes),
+    parameters(parameters),
     body(std::move(body)),
     closeBlock(closeBlock) {
-
+    descriptor = new FunctionTypeDescriptor(parameters, returnTypes);
 }
 
 FunctionEntry *FunctionStmt::getFunctionEntry(Compiler *compiler) {
-    if (_functionEntry != nullptr) {
-        return _functionEntry;
-    }
-
-    // Get return type
-    auto returnTypeReferences = ReturnTypes();
-    for (auto returnType : returnTypes) {
-        returnTypeReferences.push_back(returnType->toTypeReference(compiler));
-    }
-
-    auto entryParameters = std::vector<FunctionEntryParameter>();
-    for (auto parameter : parameters) {
-        entryParameters.emplace_back(parameter.name->lexeme, parameter.type->toTypeReference(compiler));
-    }
-
-    std::string nameStr;
-    if (name != nullptr) {
-        nameStr = name->lexeme;
-    }
-
-    // Register function
-    auto functionEntry = new FunctionEntry(
-            nameStr,
-            entryParameters,
-            returnTypeReferences
-    );
-
-    if (autoRegister) {
-        if (receiver != nullptr) {
-            TypeDefinition *receiverType;
-            if (auto identifierTypeDesc = dynamic_cast<IdentifierTypeDescriptor *>(receiver->type)) {
-                receiverType = compiler->frame->findNamedType(identifierTypeDesc->name->lexeme);
-            } else {
-                receiverType = compiler->frame->findOrCreateVirtualType(
-                        receiver->type->toTypeReference(compiler),
-                        compiler
-                );
-            }
-
-            if (receiverType == nullptr) {
-                throw CompilerError("Cannot find type for " + receiver->type->toString(), receiver->name->position);
-            }
-
-            switch (type->type) {
-                case TokenType::FUNC:
-                    functionEntry = receiverType->addFunction(
-                            receiver->name->lexeme,
-                            receiver->asReference,
-                            functionEntry
-                    );
-                    break;
-                case TokenType::OP:
-                    functionEntry = receiverType->addOperator(
-                            receiver->name->lexeme,
-                            receiver->asReference,
-                            functionEntry
-                    );
-                    break;
-                case TokenType::NEW: {
-                    auto structType = dynamic_cast<StructTypeDefinition *>(receiverType);
-                    if (structType == nullptr) {
-                        throw CompilerError("Receiver must be a struct", receiver->name->position);
-                    }
-
-                    functionEntry = structType->addConstructor(
-                            receiver->name->lexeme,
-                            receiver->asReference,
-                            functionEntry
-                    );
-                    break;
-                }
-                default:
-                    throw CompilerError("Unhandled function type");
-            }
-        } else {
-            functionEntry = compiler->frame->functions.add(functionEntry);
-        }
-    }
-
-    this->_functionEntry = functionEntry;
-
-    return functionEntry;
+    return _functionEntry;
 }
 
 std::vector<ByteResolver *> FunctionStmt::compile(Compiler *compiler) {
     auto functionEntry = getFunctionEntry(compiler);
 
-    // Keep reference previous frame
-    auto previousFrame = compiler->frame;
-
-    // Create new frame
-    compiler->frame = new Frame(previousFrame, FUNCTION);
-
-    // Declare parameters
-    for (const auto &param : functionEntry->params) {
-        compiler->frame->variables.add(param.name, param.type);
-    }
+    compiler->frame = bodyFrame;
 
     auto bytes = std::vector<ByteResolver *>();
 
@@ -133,14 +47,14 @@ std::vector<ByteResolver *> FunctionStmt::compile(Compiler *compiler) {
     }
 
     // Ensure functions have a return TODO: add branches check
-    if (functionEntry->returnTypes.empty()) {
+    if (functionEntry->descriptor->returnTypes.empty()) {
         bytes.push_back(new ByteResolver(OP_RETURN, nullptr));
         bytes.push_back(new ByteResolver(0, nullptr)); // no frame to drop
         bytes.push_back(new ByteResolver(0, nullptr)); // no value to return
     }
 
     // Restore frame
-    compiler->frame = previousFrame;
+    compiler->frame = compiler->frame->parent;
 
     // Save entrypoint of functions
     functionEntry->firstByte = bytes.front();
@@ -155,4 +69,97 @@ std::vector<ByteResolver *> FunctionStmt::compile(Compiler *compiler) {
     });
 
     return bytes;
+}
+
+void FunctionStmt::symbolize(Compiler *compiler) {
+    compiler->typesManager->addListener([this, compiler]() {
+        return registerFunction(compiler);
+    });
+
+    compiler->typesManager->add(descriptor, compiler->frame);
+
+    if (receiver != nullptr) {
+        compiler->typesManager->add(receiver->type, compiler->frame);
+    }
+
+    for (auto param: parameters) {
+        compiler->typesManager->add(param->type, compiler->frame);
+    }
+
+    for (auto returnType: returnTypes) {
+        compiler->typesManager->add(returnType, compiler->frame);
+    }
+
+    // Create new frame
+    bodyFrame = new Frame(compiler->frame, FUNCTION);
+
+    compiler->frame = bodyFrame;
+
+    if (receiver != nullptr) {
+        compiler->frame->variables.add(receiver->name->lexeme, receiver->type);
+    }
+
+    // Declare parameters
+    for (const auto &param : parameters) {
+        compiler->frame->variables.add(param->name->lexeme, param->type);
+    }
+
+    for (auto stmt : body) {
+        stmt->symbolize(compiler);
+    }
+
+    // Restore frame
+    compiler->frame = compiler->frame->parent;
+}
+
+bool FunctionStmt::registerFunction(Compiler *compiler) {
+    std::string nameStr;
+    if (name != nullptr) {
+        nameStr = name->lexeme;
+    }
+
+    _functionEntry = new FunctionEntry(nameStr, descriptor);
+
+    if (autoRegister) {
+        if (receiver != nullptr) {
+            auto receiverType = receiver->type->getTypeDefinition();
+
+            if (receiverType == nullptr) {
+                return false;
+            }
+
+            switch (type->type) {
+                case TokenType::FUNC:
+                    _functionEntry = receiverType->addFunction(
+                            receiver,
+                            _functionEntry
+                    );
+                    break;
+                case TokenType::OP:
+                    _functionEntry = receiverType->addOperator(
+                            receiver,
+                            _functionEntry
+                    );
+                    break;
+                case TokenType::NEW: {
+                    auto structType = dynamic_cast<StructTypeDefinition *>(receiverType);
+                    if (structType == nullptr) {
+                        throw CompilerError("Receiver must be a struct", receiver->name->position);
+                    }
+
+                    _functionEntry = structType->addConstructor(
+                            receiver,
+                            _functionEntry
+                    );
+                    break;
+                }
+                default:
+                    throw CompilerError("Unhandled function type");
+            }
+        } else {
+            _functionEntry = compiler->frame->functions.add(_functionEntry);
+        }
+    }
+
+    return true;
 }

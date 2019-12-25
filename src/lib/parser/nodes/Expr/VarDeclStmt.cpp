@@ -27,3 +27,7 @@ std::vector<ByteResolver *> VarDeclStmt::compile(Compiler *compiler) {
 
     return value->compile(compiler);
 }
+
+void VarDeclStmt::symbolize(Compiler *compiler) {
+    value->symbolize(compiler);
+}

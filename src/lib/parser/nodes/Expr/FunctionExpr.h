@@ -8,15 +8,16 @@
 
 #include <lib/parser/nodes/Expr.h>
 #include <lib/parser/nodes/Stmt/FunctionStmt.h>
-#include "lib/compiler/TypeReference.h"
 #include "lib/compiler/ReturnTypes.h"
 
 class FunctionExpr: public Expr {
 public:
     FunctionStmt *functionStmt;
 
-    FunctionExpr(FunctionStmt *functionStmt);
-protected:
+    explicit FunctionExpr(FunctionStmt *functionStmt);
+
+    void symbolize(Compiler *compiler) override;
+
 public:
     std::vector<ByteResolver *> compile(Compiler *compiler) override;
 

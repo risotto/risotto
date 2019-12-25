@@ -6,6 +6,7 @@
 
 #include <utility>
 #include <sstream>
+#include <lib/parser/nodes/TypeDescriptor.h>
 
 CompilerError::CompilerError(const std::string &message) {
     this->message = message;
@@ -29,7 +30,7 @@ std::string replace_str(std::string str, const std::string &from, const std::str
 }
 
 std::string
-format(const std::string &tpl, const std::vector<TypeReference *> *argsTypes) {
+format(const std::string &tpl, const std::vector<TypeDescriptor *> *argsTypes) {
     std::stringstream argsss;
 
     if (argsTypes != nullptr) {
@@ -51,7 +52,7 @@ format(const std::string &tpl, const std::vector<TypeReference *> *argsTypes) {
 
 FunctionNotFoundError::FunctionNotFoundError(
         const std::string &tpl,
-        const std::vector<TypeReference *> &argsTypes,
+        const std::vector<TypeDescriptor *> &argsTypes,
         Token *hook
 ) : CompilerError(format(tpl, &argsTypes), hook->position) {
 

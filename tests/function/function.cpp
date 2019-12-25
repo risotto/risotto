@@ -14,6 +14,14 @@ TEST(Functions, Fib) {
     EXPECT_STDOUT("75025\n75025\n");
 }
 
+TEST(Functions, OutOfOrder) {
+    INIT_TEST;
+
+    risotto.runFile(INPUT("ooo"));
+
+    EXPECT_STDOUT("1\n2\nMy Name\n");
+}
+
 TEST(Functions, Arguments) {
     INIT_TEST;
 

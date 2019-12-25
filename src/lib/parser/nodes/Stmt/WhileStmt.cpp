@@ -39,3 +39,8 @@ std::vector<ByteResolver *> WhileStmt::compile(Compiler *compiler) {
 
     return bytes;
 }
+
+void WhileStmt::symbolize(Compiler *compiler) {
+    condition->symbolize(compiler);
+    body->symbolize(compiler);
+}

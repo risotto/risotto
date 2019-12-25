@@ -17,6 +17,9 @@ public:
     TypeStmt(Token *name, TypeDescriptor *typeDescriptor);
 
     std::vector<ByteResolver *> compile(Compiler *compiler) override;
+
+    void symbolize(Compiler *compiler) override;
+
 };
 
 

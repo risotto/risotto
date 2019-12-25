@@ -6,36 +6,32 @@
 #include "lib/compiler/utils/Utils.h"
 #include "lib/compiler/ReturnTypes.h"
 #include "TypeDefinition.h"
+#include "lib/parser/nodes/TypeDescriptor.h"
 
 #include <utility>
 
-FunctionEntryParameter::FunctionEntryParameter(std::string name, TypeReference * type) : FunctionEntryParameter(std::move(name), type, false) {}
-FunctionEntryParameter::FunctionEntryParameter(std::string name, TypeReference * type, bool asReference) : name(std::move(name)), type(type), asReference(asReference) {}
-
-FunctionEntry::FunctionEntry(std::string name, std::vector<FunctionEntryParameter> params, ReturnTypes returnTypes) :
-        name(std::move(name)), params(std::move(params)), returnTypes(std::move(returnTypes)) {
-    typeDefinition = new FunctionTypeDefinition(this);
+FunctionEntry::FunctionEntry(std::string name, FunctionTypeDescriptor *descriptor) :
+        name(std::move(name)), descriptor(descriptor) {
 }
 
 NativeFunctionEntry::NativeFunctionEntry(
         std::string name,
-        std::vector<FunctionEntryParameter> params,
-        ReturnTypes returnTypes,
+        FunctionTypeDescriptor *descriptor,
         NativeFunctionReturn (*fun)(Value[], int)
-) : FunctionEntry(std::move(name), std::move(params), std::move(returnTypes)), fun(fun) {
+) : FunctionEntry(std::move(name), descriptor), fun(fun) {
 
 }
 
-FunctionEntry *FunctionsTable::find(const std::string &name, const std::vector<TypeReference * > &argsTypes) {
+FunctionEntry *FunctionsTable::find(const std::string &name, const std::vector<TypeDescriptor *> &argsTypes) {
     auto functionsWithName = findCandidates(name);
 
     return Utils::findMatchingFunctions(functionsWithName, argsTypes);
 }
 
 FunctionEntry *FunctionsTable::add(FunctionEntry *entry) {
-    auto paramsTypes = std::vector<TypeReference *>();
-    for (const auto& param: entry->params) {
-        paramsTypes.push_back(param.type);
+    auto paramsTypes = std::vector<TypeDescriptor *>();
+    for (const auto &param: entry->descriptor->params) {
+        paramsTypes.push_back(param->type);
     }
 
     auto existingFunction = find(entry->name, paramsTypes);

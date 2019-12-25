@@ -1,9 +1,9 @@
 [submodule "lib/googletest"]
 	path = lib/googletest
 	url = https://github.com/google/googletest.git
-[submodule "lib/better-enums"]
-	path = lib/better-enums
-	url = https://github.com/aantron/better-enums.git
 [submodule "lib/cxxopts"]
 	path = lib/cxxopts
 	url = https://github.com/jarro2783/cxxopts.git
+[submodule "lib/wise_enum"]
+	path = lib/wise_enum
+	url = https://github.com/quicknir/wise_enum.git

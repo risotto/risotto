@@ -7,6 +7,7 @@
 
 
 #include "Token.h"
+#include <vector>
 
 class TokensPrinter {
 public:

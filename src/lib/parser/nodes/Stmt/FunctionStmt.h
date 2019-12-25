@@ -19,21 +19,32 @@ public:
     ParameterDefinition *receiver;
     Token *name;
     std::vector<TypeDescriptor *> returnTypes;
-    std::vector<ParameterDefinition> parameters;
+    std::vector<ParameterDefinition *> parameters;
     std::vector<Stmt *> body;
     Token *closeBlock;
+    Frame *bodyFrame = nullptr;
 
     bool autoRegister = true;
 
-    FunctionStmt(Token *type, ParameterDefinition *receiver, Token *name, std::vector<TypeDescriptor *> returnTypes,
-                 std::vector<ParameterDefinition> parameters, std::vector<Stmt *> body,
-                 Token *closeBlock);
+    FunctionStmt(
+            Token *type,
+            ParameterDefinition *receiver,
+            Token *name,
+            const std::vector<TypeDescriptor *>& returnTypes,
+            const std::vector<ParameterDefinition *>& parameters,
+            std::vector<Stmt *> body,
+            Token *closeBlock
+    );
 
     std::vector<ByteResolver *> compile(Compiler *compiler) override;
 
     FunctionEntry *getFunctionEntry(Compiler *compiler);
+    bool registerFunction(Compiler *compiler);
 private:
     FunctionEntry *_functionEntry = nullptr;
+    FunctionTypeDescriptor *descriptor = nullptr;
+public:
+    void symbolize(Compiler *compiler) override;
 };
 
 

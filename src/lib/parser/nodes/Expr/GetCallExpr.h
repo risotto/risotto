@@ -21,6 +21,8 @@ public:
 
     FunctionNotFoundError getFunctionNotFoundError(Compiler *compiler) override;
 
+    void symbolize(Compiler *compiler) override;
+
 protected:
     VariableEntry *getVariableEntry(Compiler *compiler) override;
 

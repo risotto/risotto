@@ -7,10 +7,11 @@ extern "C" {
 }
 
 #include <lib/compiler/CompilerError.h>
+#include <lib/parser/nodes/TypeDescriptor.h>
 #include "LiteralExpr.h"
 #include "lib/compiler/Compiler.h"
-#include "lib/compiler/TypeReference.h"
 #include "lib/compiler/ReturnTypes.h"
+#include "../lib/wise_enum/wise_enum.h"
 
 LiteralExpr::LiteralExpr(Token *value) : value(value) {
 
@@ -25,7 +26,7 @@ Value literalToValue(Token *value) {
         case TokenType::STRING:
             return s2v(value->value._str);
         default:
-            throw CompilerError("Unhandled type " + std::string(value->type._to_string()));
+            throw CompilerError("Unhandled type " + std::string(wise_enum::to_string(value->type)));
     }
 }
 
@@ -53,24 +54,29 @@ std::vector<ByteResolver *> LiteralExpr::compile(Compiler *compiler) {
     return bytes;
 }
 
-TypeDefinition *LiteralExpr::computeReturnTypeDefinition(Compiler *compiler) {
-    switch (value->type) {
-        case TokenType::FALSE:
-        case TokenType::TRUE:
-            return compiler->frame->findNamedType("bool");
-        case TokenType::NIL:
-            throw CompilerError("Cannot get type of nil ");
-        case TokenType::INT:
-            return compiler->frame->findNamedType("int");
-        case TokenType::DOUBLE:
-            return compiler->frame->findNamedType("double");
-        case TokenType::STRING:
-            return compiler->frame->findNamedType("string");
-        default:
-            throw CompilerError("Unhandled type " + std::string(value->type._to_string()));
-    }
+TypeDescriptor *getTypeDescriptor(Compiler *compiler, std::string name) {
+    auto typeDef = compiler->frame->findNamedType(name);
+
+    return new IdentifierTypeDescriptor(name, typeDef->getTypeDefinition());
 }
 
 ReturnTypes LiteralExpr::computeReturnType(Compiler *compiler) {
-    return new ConcreteTypeReference(computeReturnTypeDefinition(compiler));
+    switch (value->type) {
+        case TokenType::FALSE:
+        case TokenType::TRUE:
+            return getTypeDescriptor(compiler, "bool");
+        case TokenType::NIL:
+            throw CompilerError("Cannot get type of nil ");
+        case TokenType::INT:
+            return getTypeDescriptor(compiler, "int");
+        case TokenType::DOUBLE:
+            return getTypeDescriptor(compiler, "double");
+        case TokenType::STRING:
+            return getTypeDescriptor(compiler, "string");
+        default:
+            throw CompilerError("Unhandled type " + std::string(wise_enum::to_string(value->type)));
+    }}
+
+void LiteralExpr::symbolize(Compiler *compiler) {
+    // noop
 }
