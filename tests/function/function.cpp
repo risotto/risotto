@@ -19,7 +19,7 @@ TEST(Functions, OutOfOrder) {
 
     risotto.runFile(INPUT("ooo"));
 
-    EXPECT_STDOUT("1\n2\n");
+    EXPECT_STDOUT("1\n2\nMy Name\n");
 }
 
 TEST(Functions, Arguments) {
