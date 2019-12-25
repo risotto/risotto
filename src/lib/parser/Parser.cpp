@@ -42,7 +42,7 @@ Token *Parser::advance() {
 }
 
 bool Parser::isAtEnd() {
-    return peek()->type._value == TokenType::TOKEN_EOF;
+    return peek()->type == TokenType::TOKEN_EOF;
 }
 
 template<class ...Types>
@@ -149,7 +149,7 @@ Stmt *Parser::declaration() {
 
     if (match(TokenType::FUNC, TokenType::OP, TokenType::NEW)) {
         auto type = previous();
-        auto isConstructor = type->type._value == TokenType::NEW;
+        auto isConstructor = type->type == TokenType::NEW;
 
         auto isNamed = !isConstructor;
 
