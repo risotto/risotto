@@ -5,7 +5,9 @@
 #ifndef RISOTTOV2_TOKENTYPE_H
 #define RISOTTOV2_TOKENTYPE_H
 
-enum TokenType {
+#include "../lib/wise_enum/wise_enum.h"
+
+WISE_ENUM(TokenType,
 // Single-character tokens.
             LEFT_PAREN, RIGHT_PAREN, LEFT_CURLY, RIGHT_CURLY, LEFT_SQUARED, RIGHT_SQUARED,
     COMMA, DOT, MINUS, PLUS, PERCENT, SEMICOLON, COLON, SLASH, STAR,
@@ -33,6 +35,6 @@ enum TokenType {
     RETURN, THIS, TRUE, WHILE, NEW, TYPE, STRUCT, OP,
 
     TOKEN_EOF
-};
+);
 
 #endif //RISOTTOV2_TOKENTYPE_H

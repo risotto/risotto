@@ -11,7 +11,7 @@ extern "C" {
 #include "LiteralExpr.h"
 #include "lib/compiler/Compiler.h"
 #include "lib/compiler/ReturnTypes.h"
-#include "../lib/magic_enum/include/magic_enum.hpp"
+#include "../lib/wise_enum/wise_enum.h"
 
 LiteralExpr::LiteralExpr(Token *value) : value(value) {
 
@@ -26,7 +26,7 @@ Value literalToValue(Token *value) {
         case TokenType::STRING:
             return s2v(value->value._str);
         default:
-            throw CompilerError("Unhandled type " + std::string(magic_enum::enum_name(value->type)));
+            throw CompilerError("Unhandled type " + std::string(wise_enum::to_string(value->type)));
     }
 }
 
@@ -74,7 +74,7 @@ ReturnTypes LiteralExpr::computeReturnType(Compiler *compiler) {
         case TokenType::STRING:
             return getTypeDescriptor(compiler, "string");
         default:
-            throw CompilerError("Unhandled type " + std::string(magic_enum::enum_name(value->type)));
+            throw CompilerError("Unhandled type " + std::string(wise_enum::to_string(value->type)));
     }}
 
 void LiteralExpr::symbolize(Compiler *compiler) {
