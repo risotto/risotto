@@ -55,7 +55,7 @@ TEST(Functions, MultipleReturns) {
 }
 
 TEST(Functions, NonExistingFunction) {
-    INIT_RISOTTO
+    INIT_RISOTTO;
 
     try {
         risotto.run("I_do_not_exist(1, 1.1, 1.2)");
@@ -68,7 +68,7 @@ TEST(Functions, NonExistingFunction) {
 }
 
 TEST(Functions, NonExistingBoundFunction) {
-    INIT_RISOTTO
+    INIT_RISOTTO;
 
     try {
         risotto.run("1.xxx(1.2)");
@@ -81,7 +81,7 @@ TEST(Functions, NonExistingBoundFunction) {
 }
 
 TEST(Functions, NonExistingBinaryOperator) {
-    INIT_RISOTTO
+    INIT_RISOTTO;
 
     try {
         risotto.run("1 * \"hello\"");
@@ -94,7 +94,7 @@ TEST(Functions, NonExistingBinaryOperator) {
 }
 
 TEST(Functions, NonExistingUnaryOperator) {
-    INIT_RISOTTO
+    INIT_RISOTTO;
 
     try {
         risotto.run("-\"hello\"");
