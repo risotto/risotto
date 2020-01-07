@@ -53,7 +53,7 @@ bool FunctionTypeDefinition::canReceiveType(TypeDefinition *type) {
     }
 
     if (auto otherFunction = dynamic_cast<FunctionTypeDefinition *>(type)) {
-        return Utils::typesMatch(this->descriptor->params, otherFunction->descriptor->params);
+        return Utils::typesMatch(this->descriptor->params, otherFunction->descriptor->params, Utils::TypesCompatible);
     }
 
     return false;

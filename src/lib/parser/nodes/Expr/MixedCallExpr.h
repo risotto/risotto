@@ -54,7 +54,7 @@ T MixedCallExpr::act(
                 params.push_back(param->type);
             }
 
-            if (Utils::typesMatch(params, getArgumentsTypes(compiler))) {
+            if (Utils::typesMatch(params, getArgumentsTypes(compiler), Utils::TypesCompatible)) {
                 return variableActor(functionRef);
             }
         }

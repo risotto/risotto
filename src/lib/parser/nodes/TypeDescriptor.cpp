@@ -7,6 +7,7 @@
 #include <utility>
 #include <sstream>
 #include <cassert>
+#include <lib/compiler/utils/Utils.h>
 #include "lib/compiler/Compiler.h"
 #include "lib/compiler/TypeDefinition.h"
 
@@ -196,37 +197,18 @@ bool FunctionTypeDescriptor::isSame(TypeDescriptor *type) {
     }
 
     if (auto functionType = dynamic_cast<FunctionTypeDescriptor *>(type)) {
-        if (params.size() != functionType->params.size()) {
+        auto shouldSkipFirst = this->isMethod;
+        if (!Utils::typesMatch(params, functionType->params, [shouldSkipFirst](int i, TypeDescriptor *l, TypeDescriptor *r) {
+            if (i == 0 && shouldSkipFirst) {
+                return true;
+            }
+
+            return Utils::TypesSame(i, l, r);
+        })) {
             return false;
         }
 
-        if (returnTypes.size() != functionType->returnTypes.size()) {
-            return false;
-        }
-
-        for (int i = 0; i < params.size(); ++i) {
-            if (i == 0 && isMethod) {
-                continue;
-            }
-
-            auto param = params[i];
-            auto functionParam = functionType->params[i];
-
-            if (!param->type->isSame(functionParam->type)) {
-                return false;
-            }
-        }
-
-        for (int i = 0; i < returnTypes.size(); ++i) {
-            auto returnType = returnTypes[i];
-            auto functionReturnType = functionType->returnTypes[i];
-
-            if (!returnType->isSame(functionReturnType)) {
-                return false;
-            }
-        }
-
-        return true;
+        return Utils::typesMatch(returnTypes, functionType->returnTypes, Utils::TypesSame);
     }
 
     return false;
@@ -317,7 +299,7 @@ bool InterfaceTypeDescriptor::isSame(TypeDescriptor *type) {
             auto has = false;
 
             for (auto otherFunc: otherInterface->functions) {
-                if (func->name == otherFunc->name && func->descriptor->isSame(otherFunc->descriptor)) {
+                if (func->isSame(otherFunc)) {
                     has = true;
                     break;
                 }

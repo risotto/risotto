@@ -12,6 +12,7 @@ extern "C" {
 #include "lib/compiler/Compiler.h"
 #include <lib/parser/nodes/TypeDescriptor.h>
 #include <cassert>
+#include <utility>
 
 std::vector<FunctionEntry *>
 Utils::findCandidatesFunctions(const std::vector<FunctionEntry *> &functions, const std::string &name) {
@@ -79,8 +80,9 @@ FunctionEntry *Utils::findMatchingFunctions(
 }
 
 bool Utils::typesMatch(
-        const std::vector<ParameterDefinition *> &params,
-        std::vector<ParameterDefinition *> args
+        std::vector<ParameterDefinition *> &params,
+        std::vector<ParameterDefinition *> args,
+        const std::function<bool(int i, TypeDescriptor *, TypeDescriptor *)>& comparator
 ) {
     if (params.size() != args.size()) {
         return false;
@@ -105,10 +107,14 @@ bool Utils::typesMatch(
         }
     }
 
-    return typesMatch(paramsTypes, argsTypes);
+    return typesMatch(paramsTypes, argsTypes, comparator);
 }
 
-bool Utils::typesMatch(const std::vector<TypeDescriptor *> &params, std::vector<TypeDescriptor *> args) {
+bool Utils::typesMatch(
+        std::vector<TypeDescriptor *> &params,
+        std::vector<TypeDescriptor *> args,
+        const std::function<bool(int i, TypeDescriptor *, TypeDescriptor *)>& comparator
+) {
     if (params.size() != args.size()) {
         return false;
     }
@@ -117,7 +123,7 @@ bool Utils::typesMatch(const std::vector<TypeDescriptor *> &params, std::vector<
         auto paramType = params[i];
         auto argType = args[i];
 
-        if (!paramType->canReceiveType(argType)) {
+        if (!comparator(i, paramType, argType)) {
             return false;
         }
     }
@@ -139,4 +145,12 @@ std::vector<TypeDescriptor *> Utils::getTypes(const std::vector<Expr *> &exprs, 
     }
 
     return exprsTypes;
+}
+
+bool Utils::TypesCompatible(int i, TypeDescriptor *l, TypeDescriptor *r) {
+    return l->canReceiveType(r);
+}
+
+bool Utils::TypesSame(int i, TypeDescriptor *l, TypeDescriptor *r) {
+    return l->isSame(r);
 }
