@@ -111,10 +111,36 @@ TypeDescriptor *Parser::typeDesc() {
         return new StructTypeDescriptor(fields);
     }
 
+    if (match(TokenType::INTERFACE)) {
+        consume(TokenType::LEFT_CURLY, "Expect '{'");
+
+        auto functions = enumeration<FunctionEntry *>([this]() {
+            return functionSignature<FunctionEntry *>(
+                    TokenType::FUNC,
+                    false,
+                    true,
+                    [](FUNCTION_SIGNATURE_FACTORY_ARGS) {
+                        auto desc = new FunctionTypeDescriptor(true, std::move(parameters), std::move(returnTypes));
+
+                        return new DeclarationFunctionEntry(name->lexeme, desc);
+                    }
+            );
+        }, TokenType::SEMICOLON, TokenType::RIGHT_CURLY);
+
+        consume(TokenType::RIGHT_CURLY, "Expect '}'");
+
+        return new InterfaceTypeDescriptor(functions);
+    }
+
     if (match(TokenType::FUNC)) {
-        return functionSignature<FunctionTypeDescriptor *>(false, false, [](FUNCTION_SIGNATURE_FACTORY_ARGS) {
-            return new FunctionTypeDescriptor(std::move(parameters), std::move(returnTypes));
-        });
+        return functionSignature<FunctionTypeDescriptor *>(
+                previous()->type,
+                false,
+                false,
+                [](FUNCTION_SIGNATURE_FACTORY_ARGS) {
+                    return new FunctionTypeDescriptor(receiver != nullptr, std::move(parameters), std::move(returnTypes));
+                }
+        );
     }
 
     if (match(TokenType::IDENTIFIER)) {
@@ -169,11 +195,11 @@ Stmt *Parser::declaration() {
             }
 
             return new FunctionStmt(
-                    type,
+                    typeDecl,
                     receiver,
                     name,
-                    std::move(returnTypes),
-                    std::move(parameters),
+                    returnTypes,
+                    parameters,
                     std::move(body),
                     closeBlock
             );
@@ -198,11 +224,17 @@ Stmt *Parser::type() {
 
 Stmt *Parser::varDecl() {
     auto c = current;
-    if (match(TokenType::IDENTIFIER)) {
-        auto identifiers = std::vector<Token *>({previous()});
-        while (match(TokenType::COMMA)) {
-            identifiers.push_back(consume(TokenType::IDENTIFIER, "Expect identifier."));
-        }
+    if (check(TokenType::IDENTIFIER)) {
+        auto identifiers = enumeration<std::pair<Token *, TypeDescriptor *>>([this]() {
+            auto identifier = consume(TokenType::IDENTIFIER, "Expect identifier.");
+
+            auto type = typeDesc();
+
+            return std::make_pair<Token *, TypeDescriptor *>(
+                    reinterpret_cast<Token *&&>(identifier),
+                    reinterpret_cast<TypeDescriptor *&&>(type)
+            );
+        }, TokenType::COMMA, TokenType::COLON_EQUAL);
 
         if (match(TokenType::COLON_EQUAL)) {
             auto op = previous();
@@ -220,9 +252,8 @@ Stmt *Parser::varDecl() {
 }
 
 template<typename T>
-T Parser::functionSignature(bool canHaveReceiver, bool isNamed, const FunctionSignatureFactory<T> &f) {
-    auto type = previous();
-
+T
+Parser::functionSignature(TokenType type, bool canHaveReceiver, bool canBeNamed, const FunctionSignatureFactory<T> &f) {
     ParameterDefinition *receiver = nullptr;
     if (canHaveReceiver && match(TokenType::LEFT_PAREN)) {
         receiver = parameter();
@@ -231,8 +262,8 @@ T Parser::functionSignature(bool canHaveReceiver, bool isNamed, const FunctionSi
     }
 
     Token *name = nullptr;
-    if (isNamed) {
-        switch (type->type) {
+    if (canBeNamed) {
+        switch (type) {
             case TokenType::FUNC:
                 name = consume(TokenType::IDENTIFIER, "Expect function name.");
                 break;
@@ -240,11 +271,18 @@ T Parser::functionSignature(bool canHaveReceiver, bool isNamed, const FunctionSi
                 name = advance(); // anything
                 break;
             default:
-                throw ParseError("Unexpected function type", type);
+                throw ParseError("Unexpected function type: " + std::string(wise_enum::to_string(type)), peek(0));
         }
     }
 
-    consume(TokenType::LEFT_PAREN, "Expect '(' after function name.");
+    auto endStr = std::string("");
+    if (canBeNamed) {
+        endStr = " after function name";
+    } else if (canHaveReceiver) {
+        endStr = " after receiver";
+    }
+
+    consume(TokenType::LEFT_PAREN, "Expect '('" + endStr + ".");
 
     auto parameters = enumeration<ParameterDefinition *>([this]() {
         return parameter();
@@ -272,13 +310,20 @@ T Parser::functionSignature(bool canHaveReceiver, bool isNamed, const FunctionSi
 
 template<typename T>
 T Parser::function(bool canHaveReceiver, bool isNamed, const FunctionFactory<T> &f) {
-    return functionSignature<T>(canHaveReceiver, isNamed, [this, f](FUNCTION_SIGNATURE_FACTORY_ARGS) {
-        auto closeBlock = consume(TokenType::LEFT_CURLY, "Expect '{'.");
+    auto typeDecl = previous();
 
-        std::vector<Stmt *> body = block();
+    return functionSignature<T>(
+            typeDecl->type,
+            canHaveReceiver,
+            isNamed,
+            [this, f, typeDecl](FUNCTION_SIGNATURE_FACTORY_ARGS) {
+                auto closeBlock = consume(TokenType::LEFT_CURLY, "Expect '{'.");
 
-        return f(type, receiver, name, returnTypes, parameters, body, closeBlock);
-    });
+                std::vector<Stmt *> body = block();
+
+                return f(typeDecl, type, receiver, name, returnTypes, parameters, body, closeBlock);
+            }
+    );
 }
 
 ParameterDefinition *Parser::parameter() {
@@ -434,11 +479,11 @@ Expr *Parser::expression() {
     if (match(TokenType::FUNC)) {
         auto functionStmt = function<FunctionStmt *>(false, false, [](FUNCTION_FACTORY_ARGS) {
             return new FunctionStmt(
-                    type,
+                    typeDecl,
                     receiver,
                     name,
-                    std::move(returnTypes),
-                    std::move(parameters),
+                    returnTypes,
+                    parameters,
                     std::move(body),
                     closeBlock
             );
@@ -597,8 +642,8 @@ Expr *Parser::call() {
                 expr = new IdentifierCallExpr(identifierExpr->name, rParen, args);
             } else if (auto getExpr = dynamic_cast<GetExpr *>(expr)) {
                 expr = new GetCallExpr(getExpr->callee, rParen, getExpr->identifier, rParen, args);
-            }  else {
-                expr = new CallExpr(expr, rParen, args);
+            } else {
+                throw error(peek(), "Invalid call");
             }
         } else if (match(TokenType::DOT)) {
             auto identifier = consume(TokenType::IDENTIFIER, "Expect identifier.");

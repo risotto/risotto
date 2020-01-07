@@ -14,6 +14,18 @@ FunctionEntry::FunctionEntry(std::string name, FunctionTypeDescriptor *descripto
         name(std::move(name)), descriptor(descriptor) {
 }
 
+bool FunctionEntry::isSame(FunctionEntry *other) {
+    if (this == other) {
+        return true;
+    }
+
+    if (name != other->name) {
+        return false;
+    }
+
+    return descriptor->isSame(other->descriptor);
+}
+
 NativeFunctionEntry::NativeFunctionEntry(
         std::string name,
         FunctionTypeDescriptor *descriptor,

@@ -93,8 +93,6 @@ if (auto V = dynamic_cast<T *>(stmt)) { \
         DC(GetCallExpr)
         DC(FunctionExpr)
 
-        DC(CallExpr)
-
         return print(dynamic_cast<Node *>(stmt));
     }
 
@@ -133,6 +131,7 @@ if (auto V = dynamic_cast<T *>(stmt)) { \
         std::stringstream ss;
 
         ss << "FunctionStmt" << std::endl;
+        ss << indent("+Type: " + stmt->type->lexeme, 1) << std::endl;
         if (stmt->receiver) {
             ss << indent("+Receiver: " + stmt->receiver->type->toString(), 1) << std::endl;
         }
@@ -236,19 +235,6 @@ if (auto V = dynamic_cast<T *>(stmt)) { \
     }
 
     template<>
-    std::string print<CallExpr *>(CallExpr *stmt) {
-        std::stringstream ss;
-
-        ss << "CallExpr" << std::endl;
-        ss << indent("+Callee:", 1) << std::endl;
-        ss << indent(print(stmt->callee), 2);
-        ss << indent("+Args:", 1) << std::endl;
-        ss << indent(print(stmt->args), 2);
-
-        return ss.str();
-    }
-
-    template<>
     std::string print<ExpressionStmt *>(ExpressionStmt *stmt) {
         std::stringstream ss;
 
@@ -265,7 +251,7 @@ if (auto V = dynamic_cast<T *>(stmt)) { \
         ss << "GetExpr" << std::endl;
         ss << indent("+Callee:", 1) << std::endl;
         ss << indent(print(stmt->callee), 2);
-        ss << indent("+Identifier: " + stmt->identifier->lexeme, 1);
+        ss << indent("+Identifier: " + stmt->identifier->lexeme, 1) << std::endl;
 
         return ss.str();
     }
@@ -277,7 +263,13 @@ if (auto V = dynamic_cast<T *>(stmt)) { \
         ss << "VarDeclStmt" << std::endl;
         ss << indent("+Identifiers:", 1) << std::endl;
         for (auto id : stmt->identifiers) {
-            ss << indent("- " + id->lexeme, 2) << std::endl;
+            ss << indent("- " + id.first->lexeme + ": ", 2);
+            if (id.second == nullptr) {
+                ss << "<inferred>";
+            } else {
+                ss << id.second->toString();
+            }
+            ss << std::endl;
         }
         ss << indent("+Value:", 1) << std::endl;
         ss << indent(print(stmt->value), 2);
@@ -330,7 +322,7 @@ if (auto V = dynamic_cast<T *>(stmt)) { \
         ss << "TypeStmt" << std::endl;
         ss << indent("+Name: ", 1) + stmt->name->lexeme << std::endl;
         ss << indent("+Descriptor:", 1) << std::endl;
-        ss << indent(stmt->typeDescriptor->toString(), 2);
+        ss << indent(stmt->typeDescriptor->toString(), 2) << std::endl;
 
         return ss.str();
     }
@@ -353,7 +345,7 @@ if (auto V = dynamic_cast<T *>(stmt)) { \
 
         ss << "GetCallExpr" << std::endl;
         ss << indent("+Callee: ", 1) << std::endl;
-        ss << indent(print(stmt->callee), 2) << std::endl;
+        ss << indent(print(stmt->callee), 2);
         ss << indent("+Identifier: ", 1) + stmt->identifier->lexeme << std::endl;
         ss << indent("+Args:", 1) << std::endl;
         ss << indent(print(stmt->args), 2);

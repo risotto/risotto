@@ -24,6 +24,7 @@ extern "C" {
         new NativeFunctionEntry( \
             #op, \
             new FunctionTypeDescriptor( \
+                true, \
                 {new ParameterDefinition("right", TYPE_DESC(param), true)}, \
                 {TYPE_DESC(return)} \
             ), \
@@ -59,8 +60,9 @@ NATIVE_BINARY_OPERATOR_DECLARATION(string, +=, type, string, add_equal)
     ENTRY_DEF(TYPE_ENTRY(target))->addPrefix( \
         SELF_RECEIVER("left", target), \
         new NativeFunctionEntry( \
-            #op, \
+           #op, \
             new FunctionTypeDescriptor( \
+                true, \
                 {}, \
                 {TYPE_DESC(return)} \
             ), \
@@ -81,6 +83,7 @@ NATIVE_UNARY_PREFIX_OPERATOR_DECLARATION(target, --, return, decrement) \
         new NativeFunctionEntry( \
             "println", \
             new FunctionTypeDescriptor( \
+                false, \
                 {new ParameterDefinition("e", TYPE_DESC(type), true)}, \
                 {} \
             ), \
@@ -120,8 +123,9 @@ Compiler::Compiler(std::vector<Stmt *> stmts) : stmts(std::move(stmts)) {
     ENTRY_DEF(TYPE_ENTRY(bool))->addPrefix(
             SELF_RECEIVER("right", bool),
             new NativeFunctionEntry(
-                    "!",
+                   "!",
                     new FunctionTypeDescriptor(
+                            true, \
                             {},
                             {TYPE_DESC(bool)}
                     ),
@@ -136,8 +140,8 @@ Compiler::Compiler(std::vector<Stmt *> stmts) : stmts(std::move(stmts)) {
 
     frame->functions.add(
             new NativeFunctionEntry(
-                    "vm_stats",
-                    new FunctionTypeDescriptor({}, {}),
+                   "vm_stats",
+                    new FunctionTypeDescriptor(false, {}, {}),
                     vm_stats
             )
     );
@@ -145,7 +149,7 @@ Compiler::Compiler(std::vector<Stmt *> stmts) : stmts(std::move(stmts)) {
     frame->functions.add(
             new NativeFunctionEntry(
                     "gc",
-                    new FunctionTypeDescriptor({}, {}),
+                    new FunctionTypeDescriptor(false, {}, {}),
                     run_gc
             )
     );
@@ -178,6 +182,8 @@ Chunk Compiler::compile() {
 
         delete b;
     }
+
+    typesManager->generateVEntries(this);
 
     return chunk;
 }

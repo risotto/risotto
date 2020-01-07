@@ -31,15 +31,15 @@ typedef enum {
     OP_FRAME,
     OP_FRAME_END,
     OP_ARRAY,
-    OP_NATIVE_CALL,
     OP_ARRAY_INSERT,
     OP_TRUE,
     OP_FALSE,
     OP_EQ_NIL,
     OP_NEQ_NIL,
     OP_DYNAMIC_LOAD_INSTANCE,
+    OP_RESOLVE_ADDR,
 
-    Last = OP_DYNAMIC_LOAD_INSTANCE,
+    Last = OP_RESOLVE_ADDR,
 } OpCode;
 
 typedef struct {

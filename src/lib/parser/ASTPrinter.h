@@ -75,9 +75,6 @@ namespace ASTPrinter {
     std::string print<BlockStmt *>(BlockStmt *stmt);
 
     template<>
-    std::string print<CallExpr *>(CallExpr *stmt);
-
-    template<>
     std::string print<ExpressionStmt *>(ExpressionStmt *stmt);
 
     template<>

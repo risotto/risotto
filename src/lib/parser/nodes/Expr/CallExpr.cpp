@@ -29,7 +29,7 @@ std::vector<ByteResolver *> BaseCallExpr::compile(Compiler *compiler) {
     auto argc = argsTypes.size();
 
     bytes.push_back(new ByteResolver(OpCode::OP_CALL, &rParen->position));
-    bytes.push_back(new ByteResolver(static_cast<int>(argc), nullptr));
+    bytes.push_back(new ByteResolver(argc, nullptr));
 
     for (int i = 0; i < argc; ++i) {
         bytes.push_back(new ByteResolver(isArgumentReference(compiler, i), nullptr));
@@ -71,7 +71,7 @@ FunctionNotFoundError BaseCallExpr::getFunctionNotFoundError(Compiler *compiler)
 
     auto argumentsTypes = getArgumentsTypes(compiler);
 
-    throw FunctionNotFoundError("func ({{args}})", argumentsTypes, rParen);
+    return FunctionNotFoundError("func ({{args}})", argumentsTypes, rParen);
 }
 
 std::vector<Expr *> BaseCallExpr::getArguments(Compiler *compiler) {
@@ -82,46 +82,4 @@ void BaseCallExpr::symbolize(Compiler *compiler) {
     for (auto arg: args) {
         arg->symbolize(compiler);
     }
-}
-
-CallExpr::CallExpr(Expr *callee, Token *rParen, const std::vector<Expr *> &args) :
-        BaseCallExpr(rParen, args), callee(callee) {
-}
-
-ReturnTypes CallExpr::computeReturnType(Compiler *compiler) {
-    auto calleeType = callee->getReturnType(compiler);
-
-    if (!calleeType.single()) {
-        throw CompilerError("Callee type must be single");
-    }
-
-    if (auto functionType = dynamic_cast<FunctionTypeDescriptor *>(calleeType[0])) {
-        return functionType->returnTypes;
-    }
-
-    throw CompilerError("Return type must be a function");
-}
-
-bool CallExpr::isArgumentReference(Compiler *compiler, int i) {
-    auto calleeType = callee->getReturnType(compiler);
-
-    if (!calleeType.single()) {
-        throw CompilerError("Callee type must be single");
-    }
-
-    if (auto functionType = dynamic_cast<FunctionTypeDescriptor *>(calleeType[0])) {
-        return functionType->params[i]->asReference;
-    }
-
-    throw CompilerError("Return type must be a function");
-}
-
-void CallExpr::loadCallAddr(Compiler *compiler, std::vector<ByteResolver *> &bytes) {
-    auto calleeBytes = callee->compile(compiler);
-    bytes.insert(bytes.end(), calleeBytes.begin(), calleeBytes.end());
-}
-
-void CallExpr::symbolize(Compiler *compiler) {
-    callee->symbolize(compiler);
-    BaseCallExpr::symbolize(compiler);
 }

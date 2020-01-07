@@ -38,7 +38,11 @@ void NewCallExpr::loadArgs(Compiler *compiler, std::vector<ByteResolver *> &byte
 
     auto structTypeDef = getStructTypeDef(compiler);
 
-    bytes.push_back(new ByteResolver(OP_NEW, nullptr));
+    auto v = p2v(structTypeDef->vtable);
+    auto vtableAddr = compiler->registerConst(v);
+
+    bytes.push_back(new ByteResolver(OP_NEW, &identifier->position));
+    bytes.push_back(new ByteResolver(vtableAddr, nullptr));
     bytes.push_back(new ByteResolver(structTypeDef->fields.size(), nullptr));
 }
 
@@ -48,5 +52,5 @@ FunctionNotFoundError NewCallExpr::getFunctionNotFoundError(Compiler *compiler) 
     auto argumentsTypes = getArgumentsTypes(compiler);
     auto actualArgsTypes = std::vector<TypeDescriptor *>(argumentsTypes.begin() + 1, argumentsTypes.end());
 
-    throw FunctionNotFoundError("new " + identifier->lexeme + "({{args}})", actualArgsTypes, rParen);
+    return FunctionNotFoundError("new " + identifier->lexeme + "({{args}})", actualArgsTypes, rParen);
 }

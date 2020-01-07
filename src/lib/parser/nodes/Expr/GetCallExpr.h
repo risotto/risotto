@@ -6,7 +6,6 @@
 #define RISOTTOV2_GETCALLEXPR_H
 
 
-#include "CallExpr.h"
 #include "MixedCallExpr.h"
 
 class GetCallExpr: public MixedCallExpr {

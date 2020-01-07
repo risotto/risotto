@@ -89,17 +89,32 @@ static int biIntInstruction(const char *name, const char *l1, const char *l2, Ch
 }
 
 static int callInstruction(const char *name, Chunk *chunk, int offset) {
+//    bool needReso = chunk->code[offset + 1];
+//    int c = chunk->code[offset + 2];
+//    printf("%-11s C:%-3d %i\n", name, c, needReso);
+//
+//    return offset + 3 + c;
+
     int c = chunk->code[offset + 1];
-    printf("%-11s C:%-3d \n", name, c);
+    printf("%-11s C:%-3d\n", name, c);
 
     return offset + 2 + c;
 }
 
-static int nativeCallInstruction(const char *name, Chunk *chunk, int offset) {
-    int c = chunk->code[offset + 1];
-    printf("%-11s C:%-3d \n", name, c);
+static int newInstruction(const char *name, Chunk *chunk, int offset) {
+//    bool needReso = chunk->code[offset + 1];
+//    int c = chunk->code[offset + 2];
+//    printf("%-11s C:%-3d %i\n", name, c, needReso);
+//
+//    return offset + 3 + c;
 
-    return offset + 2 + c;
+    int vtableAddr = chunk->code[offset + 1];
+    int c = chunk->code[offset + 2];
+    printf("%-11s VA: ", name);
+    printValue(chunk->constants.object.values[vtableAddr]);
+    printf(" C:%-3d\n", c);
+
+    return offset + 3 + c;
 }
 
 static int intInstruction(const char *name, Chunk *chunk, int offset) {
@@ -132,7 +147,6 @@ char *getName(OP_T instruction) {
         NAME(OP_DYNAMIC_LOAD_INSTANCE)
         NAME(OP_ARRAY_INSERT)
         NAME(OP_CALL)
-        NAME(OP_NATIVE_CALL)
         NAME(OP_POP)
         NAME(OP_COPY)
         NAME(OP_NIL)
@@ -141,6 +155,7 @@ char *getName(OP_T instruction) {
         NAME(OP_EQ_NIL)
         NAME(OP_NEQ_NIL)
         NAME(OP_NEW)
+        NAME(OP_RESOLVE_ADDR)
     }
 
     return "Unknown opcode";
@@ -188,6 +203,8 @@ int disassembleInstruction(Chunk *chunk, int offset) {
             return intInstruction(getName(instruction), chunk, offset);
         case OP_LOAD_GLOBAL:
             return intInstruction(getName(instruction), chunk, offset);
+        case OP_RESOLVE_ADDR    :
+            return intInstruction(getName(instruction), chunk, offset);
         case OP_LOAD_STACK:
             return intInstruction(getName(instruction), chunk, offset);
         case OP_LOAD_LOCAL:
@@ -202,8 +219,6 @@ int disassembleInstruction(Chunk *chunk, int offset) {
             return intInstruction(getName(instruction), chunk, offset);
         case OP_CALL:
             return callInstruction(getName(instruction), chunk, offset);
-        case OP_NATIVE_CALL:
-            return nativeCallInstruction(getName(instruction), chunk, offset);
         case OP_POP:
             return intInstruction(getName(instruction), chunk, offset);
         case OP_COPY:
@@ -219,10 +234,29 @@ int disassembleInstruction(Chunk *chunk, int offset) {
         case OP_NEQ_NIL:
             return simpleInstruction(getName(instruction), offset);
         case OP_NEW:
-            return intInstruction(getName(instruction), chunk, offset);
+            return newInstruction(getName(instruction), chunk, offset);
         default:
             printf("Unknown opcode %d\n", instruction);
             return offset + 1;
     }
 }
 
+void printVtable(Value v) {
+    if (v.vtable == NULL) {
+        printf("<null>\n");
+        return;
+    }
+
+    printf("==== vtable %p ====\n", v.vtable);
+    printf("%-4s %-4s %s\n", "i", "va", "a");
+
+    int i;
+    vtable_entry *entry;
+    vec_foreach_ptr(&v.vtable->addrs, entry, i) {
+            printf("%-4d %-4d ", i, entry->vaddr);
+            printValue(*entry->addr);
+            printf("\n");
+        }
+
+    printf("================\n");
+}

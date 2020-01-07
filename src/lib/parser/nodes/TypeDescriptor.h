@@ -17,9 +17,9 @@ class TypeDescriptor {
 public:
     virtual std::string toString() = 0;
 
-    virtual TypeDefinition *genType(Frame *frame) = 0;
+    virtual TypeDefinition *genType(TypesManager *typesManager, Frame *frame) = 0;
 
-    bool resolveType(Frame *frame, bool allowFindType);
+    bool resolveType(TypesManager *typesManager, Frame *frame, bool allowFindType);
 
     virtual void createLinkUnits(TypesManager *typesManager, Frame *frame) = 0;
 
@@ -39,7 +39,7 @@ public:
 
     explicit ArrayTypeDescriptor(TypeDescriptor *element);
 
-    TypeDefinition *genType(Frame *frame) override;
+    TypeDefinition *genType(TypesManager *typesManager, Frame *frame) override;
 
     std::string toString() override;
 
@@ -62,7 +62,7 @@ public:
 
     explicit StructTypeDescriptor(std::vector<Field> fields);
 
-    TypeDefinition *genType(Frame *frame) override;
+    TypeDefinition *genType(TypesManager *typesManager, Frame *frame) override;
 
     std::string toString() override;
 
@@ -82,7 +82,7 @@ public:
 
     IdentifierTypeDescriptor(Token *name, std::function<TypeDefinition *(Frame *frame)> typeDefGen);
 
-    TypeDefinition *genType(Frame *frame) override;
+    TypeDefinition *genType(TypesManager *typesManager, Frame *frame) override;
 
     bool isSame(TypeDescriptor *type) override;
 
@@ -93,12 +93,28 @@ public:
 
 class FunctionTypeDescriptor : public TypeDescriptor {
 public:
+    bool isMethod;
     std::vector<ParameterDefinition *> params;
     std::vector<TypeDescriptor *> returnTypes;
 
-    FunctionTypeDescriptor(std::vector<ParameterDefinition *> params, std::vector<TypeDescriptor *> returnTypes);
+    FunctionTypeDescriptor(bool isMethod, std::vector<ParameterDefinition *> params, std::vector<TypeDescriptor *> returnTypes);
 
-    TypeDefinition *genType(Frame *frame) override;
+    TypeDefinition *genType(TypesManager *typesManager, Frame *frame) override;
+
+    std::string toString() override;
+
+    bool isSame(TypeDescriptor *type) override;
+
+    void createLinkUnits(TypesManager *typesManager, Frame *frame) override;
+};
+
+class InterfaceTypeDescriptor : public TypeDescriptor {
+public:
+    std::vector<FunctionEntry *> functions;
+
+    explicit InterfaceTypeDescriptor(std::vector<FunctionEntry *> functions);
+
+    TypeDefinition *genType(TypesManager *typesManager, Frame *frame) override;
 
     std::string toString() override;
 

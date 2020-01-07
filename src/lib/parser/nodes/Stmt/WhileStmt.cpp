@@ -2,7 +2,9 @@
 // Created by rvigee on 10/7/19.
 //
 
+extern "C" {
 #include <lib/vm/chunk.h>
+}
 #include "WhileStmt.h"
 #include "lib/compiler/Compiler.h"
 

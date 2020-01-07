@@ -2,11 +2,9 @@
 // Created by rvigee on 10/16/19.
 //
 
-#include <lib/compiler/utils/Utils.h>
+#include <cassert>
 #include "GetCallExpr.h"
-#include "lib/compiler/Compiler.h"
-#include "lib/compiler/TypeDefinition.h"
-#include "lib/parser/nodes/TypeDescriptor.h"
+#include <lib/compiler/utils/Utils.h>
 
 GetCallExpr::GetCallExpr(Expr *callee, Token *op, Token *identifier, Token *rParen, const std::vector<Expr *> &args)
         : MixedCallExpr(rParen, args), callee(callee), op(op), identifier(identifier) {}
@@ -40,7 +38,10 @@ FunctionEntry *GetCallExpr::getFunctionEntry(Compiler *compiler) {
         throw CompilerError("Return type has to be single", identifier->position);
     }
 
-    auto functionsCandidates = calleeType[0]->getTypeDefinition()->functions.findCandidates(identifier->lexeme);
+    auto typeDef = calleeType[0]->getTypeDefinition();
+    assert(typeDef != nullptr);
+    auto functionsCandidates = typeDef->functions.findCandidates(identifier->lexeme);
+
     return Utils::findMatchingFunctions(functionsCandidates, getArgumentsTypes(compiler));
 }
 

@@ -10,11 +10,17 @@
 #include "FunctionsTable.h"
 #include "VariablesTable.h"
 
+class InterfaceTypeDescriptor;
+
 class TypeDefinition {
 public:
     FunctionsTable functions = FunctionsTable();
     FunctionsTable operators = FunctionsTable();
     FunctionsTable prefixes = FunctionsTable();
+
+    struct vtable *vtable;
+
+    TypeDefinition();
 
     virtual bool canReceiveType(TypeDefinition *type);
 
@@ -26,6 +32,8 @@ public:
 
     virtual ~TypeDefinition() = default;
 
+    virtual bool isSame(TypeDefinition *other);
+
 protected:
     static void addSelf(ParameterDefinition *self, FunctionEntry *entry);
 };
@@ -35,6 +43,8 @@ public:
     TypeDescriptor *element;
 
     explicit ArrayTypeDefinition(TypeDescriptor *element);
+
+    bool isSame(TypeDefinition *other) override;
 };
 
 class ScalarTypeDefinition : public TypeDefinition {
@@ -42,6 +52,8 @@ public:
     std::string name;
 
     explicit ScalarTypeDefinition(std::string name);
+
+    bool isSame(TypeDefinition *other) override;
 };
 
 class FunctionTypeDefinition : public TypeDefinition {
@@ -51,6 +63,8 @@ public:
     explicit FunctionTypeDefinition(FunctionTypeDescriptor *descriptor);
 
     bool canReceiveType(TypeDefinition *type) override;
+
+    bool isSame(TypeDefinition *other) override;
 };
 
 class StructTypeDefinition : public TypeDefinition {
@@ -65,5 +79,14 @@ public:
     int getFieldIndex(VariableEntry *entry);
 };
 
+class InterfaceTypeDefinition : public TypeDefinition {
+public:
+    InterfaceTypeDescriptor *descriptor;
+
+    explicit InterfaceTypeDefinition(InterfaceTypeDescriptor *descriptor,
+                                     const std::vector<FunctionEntry *> &functions);
+
+    bool canReceiveType(TypeDefinition *type) override;
+};
 
 #endif //RISOTTOV2_TypeDefinition_H

@@ -36,5 +36,5 @@ FunctionNotFoundError IdentifierCallExpr::getFunctionNotFoundError(Compiler *com
 
     auto argumentsTypes = getArgumentsTypes(compiler);
 
-    throw FunctionNotFoundError(identifier->lexeme + "({{args}})", argumentsTypes, rParen);
+    return FunctionNotFoundError(identifier->lexeme + "({{args}})", argumentsTypes, rParen);
 }

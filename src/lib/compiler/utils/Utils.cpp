@@ -11,6 +11,8 @@ extern "C" {
 #include "lib/compiler/FunctionsTable.h"
 #include "lib/compiler/Compiler.h"
 #include <lib/parser/nodes/TypeDescriptor.h>
+#include <cassert>
+#include <utility>
 
 std::vector<FunctionEntry *>
 Utils::findCandidatesFunctions(const std::vector<FunctionEntry *> &functions, const std::string &name) {
@@ -26,14 +28,23 @@ Utils::findCandidatesFunctions(const std::vector<FunctionEntry *> &functions, co
 }
 
 void Utils::loadFunctionEntryAddr(Compiler *compiler, FunctionEntry *entry, std::vector<ByteResolver *> &bytes) {
-    bytes.push_back(new ByteResolver(OP_CONST, nullptr));
+    if (auto interfaceEntry = dynamic_cast<DeclarationFunctionEntry *>(entry)) {
+        // Load object
+        bytes.push_back(new ByteResolver(OP_LOAD_STACK, nullptr));
+        bytes.push_back(new ByteResolver(0, nullptr));
 
-    if (auto nativeEntry = dynamic_cast<NativeFunctionEntry *>(entry)) {
-        auto v = p2v((void *) nativeEntry->fun);
-        auto addr = compiler->registerConst(v);
+        bytes.push_back(new ByteResolver(OP_RESOLVE_ADDR, nullptr));
+        auto vaddr = interfaceEntry->addr;
+        bytes.push_back(new ByteResolver(vaddr, nullptr));
+    } else if (auto nativeEntry = dynamic_cast<NativeFunctionEntry *>(entry)) {
+        bytes.push_back(new ByteResolver(OP_CONST, nullptr));
+        bytes.push_back(new ByteResolver([nativeEntry](Compiler *c) {
+            auto v = p2v((void *) nativeEntry->fun);
 
-        bytes.push_back(new ByteResolver(addr, nullptr));
+            return c->registerConst(v);
+        }, nullptr));
     } else {
+        bytes.push_back(new ByteResolver(OP_CONST, nullptr));
         bytes.push_back(new ByteResolver([entry](Compiler *c) {
             auto v = i2v(c->getAddr(entry->firstByte));
 
@@ -53,7 +64,7 @@ FunctionEntry *Utils::findMatchingFunctions(
                 auto paramType = entry->descriptor->params[i]->type;
                 auto argType = argsTypes[i];
 
-                if (!paramType->canReceiveType(argType)) {
+                if (!argType->canReceiveType(paramType)) {
                     compatible = false;
                     break;
                 }
@@ -69,8 +80,9 @@ FunctionEntry *Utils::findMatchingFunctions(
 }
 
 bool Utils::typesMatch(
-        const std::vector<ParameterDefinition *> &params,
-        std::vector<ParameterDefinition *> args
+        std::vector<ParameterDefinition *> &params,
+        std::vector<ParameterDefinition *> args,
+        const std::function<bool(int i, TypeDescriptor *, TypeDescriptor *)>& comparator
 ) {
     if (params.size() != args.size()) {
         return false;
@@ -95,10 +107,14 @@ bool Utils::typesMatch(
         }
     }
 
-    return typesMatch(paramsTypes, argsTypes);
+    return typesMatch(paramsTypes, argsTypes, comparator);
 }
 
-bool Utils::typesMatch(const std::vector<TypeDescriptor *> &params, std::vector<TypeDescriptor *> args) {
+bool Utils::typesMatch(
+        std::vector<TypeDescriptor *> &params,
+        std::vector<TypeDescriptor *> args,
+        const std::function<bool(int i, TypeDescriptor *, TypeDescriptor *)>& comparator
+) {
     if (params.size() != args.size()) {
         return false;
     }
@@ -107,7 +123,7 @@ bool Utils::typesMatch(const std::vector<TypeDescriptor *> &params, std::vector<
         auto paramType = params[i];
         auto argType = args[i];
 
-        if (!paramType->canReceiveType(argType)) {
+        if (!comparator(i, paramType, argType)) {
             return false;
         }
     }
@@ -129,4 +145,12 @@ std::vector<TypeDescriptor *> Utils::getTypes(const std::vector<Expr *> &exprs, 
     }
 
     return exprsTypes;
+}
+
+bool Utils::TypesCompatible(int i, TypeDescriptor *l, TypeDescriptor *r) {
+    return l->canReceiveType(r);
+}
+
+bool Utils::TypesSame(int i, TypeDescriptor *l, TypeDescriptor *r) {
+    return l->isSame(r);
 }

@@ -12,5 +12,6 @@ void disassembleChunk(Chunk* chunk, const char* name);
 int disassembleInstruction(Chunk* chunk, int i);
 char *getName(OP_T instruction);
 
+void printVtable(Value v);
 
 #endif //RISOTTOVM_DEBUG_H
