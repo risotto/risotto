@@ -10,7 +10,7 @@
 
 #define DGET(value, type) (value).data._##type
 #define TGET(value) (value).type
-#define NEW_VALUE(name) Value (name) = {};
+#define NEW_VALUE(name) Value (name) = {}
 #define IS_VALUE_REF(value) (TGET(value) == T_VALUE_REF)
 #define TYPECHECK(value, t) typecheck(value, t)
 #define ACCESS_VALUE_REF(value) ((Value *) DGET(value, p))
@@ -57,7 +57,7 @@ typedef NativeFunctionReturn (*NativeFunction)(Value *, int);
 
 typedef struct {
     int vaddr;
-    Value addr;
+    Value *addr;
 } vtable_entry;
 
 typedef vec_t(vtable_entry) vtable_entry_vec_t;

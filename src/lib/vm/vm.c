@@ -212,7 +212,7 @@ static InterpretResult run() {
                 vtable_entry *entry;
                 vec_foreach_ptr(&v.vtable->addrs, entry, i) {
                         if (entry->vaddr == vaddr) {
-                            push(entry->addr);
+                            push(vp2v(entry->addr));
                             found = true;
                             break;
                         }

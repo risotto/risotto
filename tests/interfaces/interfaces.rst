@@ -1,5 +1,5 @@
 type Human interface {
-    Role() string;
+    Role(greet string) string;
 }
 
 // Student
@@ -11,22 +11,21 @@ new (s &Student) () Student {
     return s
 }
 
-func (s &Student) Role() string {
-    return "Student"
+func (s &Student) Role(greet string) string {
+    return greet+" Student"
 }
 
 // Teacher
 
 type Teacher struct {
-    name string
 }
 
 new (t &Teacher) () Teacher {
     return t
 }
 
-func (t &Teacher) Role() string {
-    return "Teacher"
+func (t &Teacher) Role(greet string) string {
+    return greet+" Teacher"
 }
 
 // Test
@@ -34,5 +33,5 @@ func (t &Teacher) Role() string {
 s Human := new Student()
 t Human := new Teacher()
 
-println(s.Role())
-println(t.Role())
+println(s.Role("Hey!"))
+println(t.Role("Hello."))

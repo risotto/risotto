@@ -11,5 +11,5 @@ TEST(Interfaces, Interfaces) {
 
     risotto.runFile(INPUT("interfaces"));
 
-    EXPECT_STDOUT("Student\nTeacher\n");
+    EXPECT_STDOUT("Hey! Student\nHello. Teacher\n");
 }

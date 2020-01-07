@@ -22,7 +22,7 @@ public:
 
     std::string name;
     FunctionTypeDescriptor *descriptor;
-    int addr = -1;
+    std::vector<int> vaddrs;
 
     ByteResolver *firstByte = nullptr;
 
@@ -32,7 +32,9 @@ public:
 };
 
 class DeclarationFunctionEntry : public FunctionEntry {
+public:
     using FunctionEntry::FunctionEntry;
+    int addr = -1;
 };
 
 class NativeFunctionEntry : public FunctionEntry {

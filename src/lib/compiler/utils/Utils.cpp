@@ -29,12 +29,12 @@ Utils::findCandidatesFunctions(const std::vector<FunctionEntry *> &functions, co
 void Utils::loadFunctionEntryAddr(Compiler *compiler, FunctionEntry *entry, std::vector<ByteResolver *> &bytes) {
     if (auto interfaceEntry = dynamic_cast<DeclarationFunctionEntry *>(entry)) {
         // Load object
-        bytes.push_back(new ByteResolver(OP_LOAD_LOCAL, nullptr));
-        bytes.push_back(new ByteResolver(0, nullptr)); // frames distance
-        bytes.push_back(new ByteResolver(0, nullptr)); // index
+        bytes.push_back(new ByteResolver(OP_LOAD_STACK, nullptr));
+        bytes.push_back(new ByteResolver(0, nullptr));
 
         bytes.push_back(new ByteResolver(OP_RESOLVE_ADDR, nullptr));
-        bytes.push_back(new ByteResolver(interfaceEntry->addr, nullptr));
+        auto vaddr = interfaceEntry->addr;
+        bytes.push_back(new ByteResolver(vaddr, nullptr));
     } else if (auto nativeEntry = dynamic_cast<NativeFunctionEntry *>(entry)) {
         bytes.push_back(new ByteResolver(OP_CONST, nullptr));
         bytes.push_back(new ByteResolver([nativeEntry](Compiler *c) {

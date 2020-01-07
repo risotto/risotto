@@ -100,8 +100,8 @@ void TypesManager::registerType(TypeDefinition *t) {
 }
 
 void TypesManager::registerFunction(TypeDefinition *receiver, FunctionEntry *function) {
-    if (dynamic_cast<DeclarationFunctionEntry *>(function)) {
-        function->addr = interfaceFunction++;
+    if (auto declEntry = dynamic_cast<DeclarationFunctionEntry *>(function)) {
+        declEntry->addr = interfaceFunction++;
     } else {
         functions.insert(std::make_pair(receiver, function));
     }
@@ -123,9 +123,9 @@ void TypesManager::computeImplementations() {
 
                 for (auto function: type->functions.entries) {
                     for (auto iFunction: interface->functions.entries) {
-                        if (dynamic_cast<DeclarationFunctionEntry *>(iFunction) != nullptr) {
+                        if (auto declEntry = dynamic_cast<DeclarationFunctionEntry *>(iFunction)) {
                             if (function->isSame(iFunction)) {
-                                function->addr = iFunction->addr;
+                                function->vaddrs.push_back(declEntry->addr);
                             }
                         }
                     }
@@ -149,9 +149,14 @@ void TypesManager::generateVEntry(Compiler *compiler, TypeDefinition *receiver, 
         addr = i2v(compiler->getAddr(function->firstByte));
     }
 
-    auto entry = vtable_entry{
-            .vaddr = function->addr,
-            .addr = addr,
-    };
-    vec_push(&receiver->vtable->addrs, entry);
+    auto paddr = static_cast<Value *>(malloc(sizeof(Value)));
+    *paddr = addr;
+
+    for (auto vaddr: function->vaddrs) {
+        auto entry = vtable_entry{
+                .vaddr = vaddr,
+                .addr = paddr,
+        };
+        vec_push(&receiver->vtable->addrs, entry);
+    }
 }
