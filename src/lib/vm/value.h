@@ -6,6 +6,7 @@
 #define RISOTTOVM_VALUE_H
 
 #include "common.h"
+#include "../lib/vec/src/vec.h"
 
 #define DGET(value, type) (value).data._##type
 #define TGET(value) (value).type
@@ -37,9 +38,12 @@ typedef union {
     bool _bool;
 } ValueData;
 
+typedef struct vtable vtable;
+
 typedef struct {
     ValueData data; // TODO: should be a pointer
     ValueType type;
+    vtable *vtable;
 } Value;
 
 typedef struct {
@@ -50,6 +54,18 @@ typedef struct {
 // This is super confusing syntax:
 // Creates a type `NativeFunction` which is a function `NativeFunctionReturn (Value *, int)`
 typedef NativeFunctionReturn (*NativeFunction)(Value *, int);
+
+typedef struct {
+    int vaddr;
+    Value addr;
+} vtable_entry;
+
+typedef vec_t(vtable_entry) vtable_entry_vec_t;
+
+struct vtable {
+    unsigned int size;
+    vtable_entry_vec_t addrs;
+};
 
 typedef struct Object Object;
 

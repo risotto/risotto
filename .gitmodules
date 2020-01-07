@@ -7,3 +7,6 @@
 [submodule "lib/wise_enum"]
 	path = lib/wise_enum
 	url = https://github.com/quicknir/wise_enum.git
+[submodule "lib/vec"]
+	path = lib/vec
+	url = https://github.com/rxi/vec.git

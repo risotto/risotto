@@ -6,8 +6,8 @@
 #define RISOTTOV2_GETCALLEXPR_H
 
 
-#include "CallExpr.h"
 #include "MixedCallExpr.h"
+#include "CallExpr.h"
 
 class GetCallExpr: public MixedCallExpr {
 public:
@@ -22,6 +22,8 @@ public:
     FunctionNotFoundError getFunctionNotFoundError(Compiler *compiler) override;
 
     void symbolize(Compiler *compiler) override;
+
+    bool needAddrResolution(Compiler *compiler) override;
 
 protected:
     VariableEntry *getVariableEntry(Compiler *compiler) override;

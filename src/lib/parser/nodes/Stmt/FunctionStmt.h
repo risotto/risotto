@@ -41,7 +41,7 @@ public:
     FunctionEntry *getFunctionEntry(Compiler *compiler);
     bool registerFunction(Compiler *compiler);
 private:
-    FunctionEntry *_functionEntry = nullptr;
+    FunctionEntry *functionEntry = nullptr;
     FunctionTypeDescriptor *descriptor = nullptr;
 public:
     void symbolize(Compiler *compiler) override;

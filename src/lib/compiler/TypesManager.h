@@ -6,7 +6,9 @@
 #define RISOTTOV2_TYPESMANAGER_H
 
 
+#include <set>
 #include "Frame.h"
+#include "TypeDefinition.h"
 
 class LinkUnit {
 public:
@@ -24,6 +26,16 @@ class TypesManager {
 private:
     std::vector<LinkUnit *> units;
     std::vector<std::function<bool()>> listeners;
+
+    int interfaceFunction = 0;
+
+    std::set<InterfaceTypeDefinition *> interfaces;
+    std::set<TypeDefinition *> types;
+    std::set<std::pair<TypeDefinition *, FunctionEntry *>> functions;
+
+    std::map<TypeDefinition *, std::vector<InterfaceTypeDefinition *>> implements;
+    std::map<InterfaceTypeDefinition *, std::vector<TypeDefinition *>> implementedBy;
+
 public:
     void add(TypeDescriptor *typeDesc, Frame *frame, bool allowFindType);
     void add(TypeDescriptor *typeDesc, Frame *frame);
@@ -31,6 +43,12 @@ public:
     void addListener(const std::function<bool()>& f);
 
     void link();
+
+    void registerType(TypeDefinition *t);
+    void registerFunction(TypeDefinition *receiver, FunctionEntry *function);
+    void generateVEntry(Compiler *compiler, TypeDefinition *receiver, FunctionEntry *function);
+    void generateVEntries(Compiler *compiler);
+    void computeImplementations();
 };
 
 

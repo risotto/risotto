@@ -27,11 +27,11 @@ FunctionStmt::FunctionStmt(
     parameters(parameters),
     body(std::move(body)),
     closeBlock(closeBlock) {
-    descriptor = new FunctionTypeDescriptor(parameters, returnTypes);
+    descriptor = new FunctionTypeDescriptor(receiver != nullptr, parameters, returnTypes);
 }
 
 FunctionEntry *FunctionStmt::getFunctionEntry(Compiler *compiler) {
-    return _functionEntry;
+    return functionEntry;
 }
 
 std::vector<ByteResolver *> FunctionStmt::compile(Compiler *compiler) {
@@ -118,7 +118,7 @@ bool FunctionStmt::registerFunction(Compiler *compiler) {
         nameStr = name->lexeme;
     }
 
-    _functionEntry = new FunctionEntry(nameStr, descriptor);
+    functionEntry = new FunctionEntry(nameStr, descriptor);
 
     if (autoRegister) {
         if (receiver != nullptr) {
@@ -130,15 +130,15 @@ bool FunctionStmt::registerFunction(Compiler *compiler) {
 
             switch (type->type) {
                 case TokenType::FUNC:
-                    _functionEntry = receiverType->addFunction(
+                    functionEntry = receiverType->addFunction(
                             receiver,
-                            _functionEntry
+                            functionEntry
                     );
                     break;
                 case TokenType::OP:
-                    _functionEntry = receiverType->addOperator(
+                    functionEntry = receiverType->addOperator(
                             receiver,
-                            _functionEntry
+                            functionEntry
                     );
                     break;
                 case TokenType::NEW: {
@@ -147,17 +147,19 @@ bool FunctionStmt::registerFunction(Compiler *compiler) {
                         throw CompilerError("Receiver must be a struct", receiver->name->position);
                     }
 
-                    _functionEntry = structType->addConstructor(
+                    functionEntry = structType->addConstructor(
                             receiver,
-                            _functionEntry
+                            functionEntry
                     );
                     break;
                 }
                 default:
                     throw CompilerError("Unhandled function type");
             }
+
+            compiler->typesManager->registerFunction(receiverType, functionEntry);
         } else {
-            _functionEntry = compiler->frame->functions.add(_functionEntry);
+            functionEntry = compiler->frame->functions.add(functionEntry);
         }
     }
 

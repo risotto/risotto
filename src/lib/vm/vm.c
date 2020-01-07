@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include "value.h"
+#include "../lib/vec/src/vec.h"
 
 #ifdef DEBUG_TRACE_EXECUTION
 #include "debug.h"
@@ -132,6 +133,10 @@ static InterpretResult run() {
         if (traceExec) {
             printf("          ");
             for (Value *slot = vm.stack; slot < vm.sp; slot++) {
+                if (vm.fp == slot) {
+                    printf("#");
+                }
+
                 printf("[ ");
                 printValue(*slot);
                 printf(" ]");
@@ -188,15 +193,46 @@ static InterpretResult run() {
                 }
                 break;
             }
+            case OP_RESOLVE_ADDR: {
+                OP_T vaddr = READ_BYTE();
+
+                Value v = followRefV(popp());
+
+#ifdef DEBUG_TRACE_EXECUTION
+                if (traceExec) {
+                    printVtable(v);
+               }
+#endif
+                if (v.vtable == NULL) {
+                    ERROR("vtable is null")
+                }
+
+                bool found = false;
+                int i;
+                vtable_entry *entry;
+                vec_foreach_ptr(&v.vtable->addrs, entry, i) {
+                        if (entry->vaddr == vaddr) {
+                            push(entry->addr);
+                            found = true;
+                            break;
+                        }
+                    }
+
+                if (!found) {
+                    ERROR("Unable to find addr")
+                }
+                break;
+            }
             case OP_CALL: {
-                // we expect all args to be on the stack
-                Value f = followRefV(popp());
                 int argc = READ_BYTE(); // ... and next one as number of arguments to load ...
 
+                // we expect all args to be on the stack
                 bool refs[argc];
                 for (int i = 0; i < argc; ++i) {
                     refs[i] = (bool) READ_BYTE();
                 }
+
+                Value f = followRefV(popp());
 
                 switch (f.type) {
                     case T_INT: { // Function
@@ -322,6 +358,7 @@ static InterpretResult run() {
                 break;
             }
             case OP_NEW: {
+                vtable *vtable = v2p(READ_CONSTANT());
                 OP_T size = READ_BYTE();
 
                 Object *instance = malloc(sizeof(*instance));
@@ -335,7 +372,10 @@ static InterpretResult run() {
 
                 registerObject(instance);
 
-                push(o2v(instance));
+                Value ov = o2v(instance);
+                ov.vtable = vtable;
+
+                push(ov);
                 break;
             }
             case OP_SET: {

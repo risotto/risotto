@@ -28,7 +28,7 @@ IdentifierTypeDescriptor::IdentifierTypeDescriptor(Token *name,
     this->typeDefGen = std::move(typeDefGen);
 }
 
-TypeDefinition *IdentifierTypeDescriptor::genType(Frame *frame) {
+TypeDefinition *IdentifierTypeDescriptor::genType(TypesManager *typesManager, Frame *frame) {
     if (typeDefGen) {
         return typeDefGen(frame);
     }
@@ -62,7 +62,7 @@ std::string ArrayTypeDescriptor::toString() {
     return "[]" + element->toString();
 }
 
-TypeDefinition *ArrayTypeDescriptor::genType(Frame *frame) {
+TypeDefinition *ArrayTypeDescriptor::genType(TypesManager *typesManager, Frame *frame) {
     return new ArrayTypeDefinition(element);
 }
 
@@ -98,7 +98,7 @@ std::string StructTypeDescriptor::toString() {
     return ss.str();
 }
 
-TypeDefinition *StructTypeDescriptor::genType(Frame *frame) {
+TypeDefinition *StructTypeDescriptor::genType(TypesManager *typesManager, Frame *frame) {
     auto structFields = VariablesTable();
     for (auto field: fields) {
         structFields.add(field.name->lexeme, field.type);
@@ -136,9 +136,11 @@ bool StructTypeDescriptor::isSame(TypeDescriptor *type) {
 
 StructTypeDescriptor::Field::Field(Token *name, TypeDescriptor *type) : name(name), type(type) {}
 
-FunctionTypeDescriptor::FunctionTypeDescriptor(std::vector<ParameterDefinition *> params,
-                                               std::vector<TypeDescriptor *> returnTypes)
-        : params(std::move(params)), returnTypes(std::move(returnTypes)) {}
+FunctionTypeDescriptor::FunctionTypeDescriptor(
+        bool isMethod,
+        std::vector<ParameterDefinition *> params,
+        std::vector<TypeDescriptor *> returnTypes
+) : isMethod(isMethod), params(std::move(params)), returnTypes(std::move(returnTypes)) {}
 
 std::string FunctionTypeDescriptor::toString() {
     std::stringstream ss;
@@ -174,7 +176,7 @@ std::string FunctionTypeDescriptor::toString() {
     return ss.str();
 }
 
-TypeDefinition *FunctionTypeDescriptor::genType(Frame *frame) {
+TypeDefinition *FunctionTypeDescriptor::genType(TypesManager *typesManager, Frame *frame) {
     return new FunctionTypeDefinition(this);
 }
 
@@ -203,6 +205,10 @@ bool FunctionTypeDescriptor::isSame(TypeDescriptor *type) {
         }
 
         for (int i = 0; i < params.size(); ++i) {
+            if (i == 0 && isMethod) {
+                continue;
+            }
+
             auto param = params[i];
             auto functionParam = functionType->params[i];
 
@@ -244,7 +250,7 @@ bool TypeDescriptor::isSame(TypeDescriptor *type) {
     return this == type;
 }
 
-bool TypeDescriptor::resolveType(Frame *frame, bool allowFindType) {
+bool TypeDescriptor::resolveType(TypesManager *typesManager, Frame *frame, bool allowFindType) {
     if (typeDef != nullptr) {
         return true;
     }
@@ -253,14 +259,87 @@ bool TypeDescriptor::resolveType(Frame *frame, bool allowFindType) {
         if (auto desc = frame->types.find(this)) {
             typeDef = desc->getTypeDefinition();
         } else {
-            typeDef = genType(frame);
+            typeDef = genType(typesManager, frame);
         }
     } else {
-        typeDef = genType(frame);
+        typeDef = genType(typesManager, frame);
     }
 
     auto entry = frame->types.add(this, allowFindType);
     this->typeDef = entry->typeDef;
 
     return typeDef != nullptr;
+}
+
+InterfaceTypeDescriptor::InterfaceTypeDescriptor(std::vector<FunctionEntry *> functions) :
+        functions(std::move(functions)) {
+}
+
+TypeDefinition *InterfaceTypeDescriptor::genType(TypesManager *typesManager, Frame *frame) {
+    auto def = new InterfaceTypeDefinition(this, functions);
+
+    for (auto function: functions) {
+        typesManager->registerFunction(def, function);
+    }
+
+    return def;
+}
+
+std::string InterfaceTypeDescriptor::toString() {
+    std::stringstream ss;
+
+    ss << "interface {";
+
+    if (!functions.empty()) {
+        ss << "\n";
+
+        for (auto func: functions) {
+            ss << func->name << ":" << func->descriptor->toString() << "\n";
+        }
+    }
+
+    ss << "}";
+
+    return ss.str();
+}
+
+bool InterfaceTypeDescriptor::isSame(TypeDescriptor *type) {
+    if (TypeDescriptor::isSame(type)) {
+        return true;
+    }
+
+    if (auto otherInterface = dynamic_cast<InterfaceTypeDescriptor *>(type)) {
+        if (functions.size() != otherInterface->functions.size()) {
+            return false;
+        }
+
+        for (auto func : functions) {
+            auto has = false;
+
+            for (auto otherFunc: otherInterface->functions) {
+                if (func->name == otherFunc->name && func->descriptor->isSame(otherFunc->descriptor)) {
+                    has = true;
+                    break;
+                }
+            }
+
+            if (!has) {
+                return false;
+            }
+        }
+    }
+
+    return false;
+}
+
+void InterfaceTypeDescriptor::createLinkUnits(TypesManager *typesManager, Frame *frame) {
+    for (const auto &func: functions) {
+        for (auto param: func->descriptor->params) {
+            typesManager->add(param->type, frame);
+        }
+
+        for (auto returnType: func->descriptor->returnTypes) {
+            typesManager->add(returnType, frame);
+        }
+    }
 }

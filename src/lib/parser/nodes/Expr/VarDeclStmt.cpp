@@ -8,7 +8,7 @@
 #include <lib/compiler/CompilerError.h>
 #include <lib/compiler/Compiler.h>
 
-VarDeclStmt::VarDeclStmt(std::vector<Token *> identifiers, Token *op, Expr *value) :
+VarDeclStmt::VarDeclStmt(std::vector<std::pair<Token *, TypeDescriptor *>> identifiers, Token *op, Expr *value) :
         identifiers(std::move(identifiers)), op(op), value(value) {}
 
 std::vector<ByteResolver *> VarDeclStmt::compile(Compiler *compiler) {
@@ -20,9 +20,9 @@ std::vector<ByteResolver *> VarDeclStmt::compile(Compiler *compiler) {
 
     for (int i = 0; i < identifiers.size(); ++i) {
         auto identifier = identifiers[i];
-        auto type = valueReturnType[i];
+        auto type = identifier.second ? identifier.second : valueReturnType[i];
 
-        compiler->frame->variables.add(identifier->lexeme, type);
+        compiler->frame->variables.add(identifier.first->lexeme, type);
     }
 
     return value->compile(compiler);
@@ -30,4 +30,10 @@ std::vector<ByteResolver *> VarDeclStmt::compile(Compiler *compiler) {
 
 void VarDeclStmt::symbolize(Compiler *compiler) {
     value->symbolize(compiler);
+
+    for (auto id: identifiers) {
+        if (id.second != nullptr) {
+            compiler->typesManager->add(id.second, compiler->frame);
+        }
+    }
 }

@@ -14,7 +14,7 @@
 #include "lib/parser/nodes/TypeDescriptor.h"
 
 #define FUNCTION_SIGNATURE_FACTORY_ARGS \
-    Token *type, \
+    TokenType type, \
     ParameterDefinition *receiver, \
     Token *name, \
     std::vector<TypeDescriptor *> returnTypes, \
@@ -24,6 +24,7 @@ template<typename T>
 using FunctionSignatureFactory = std::function<T(FUNCTION_SIGNATURE_FACTORY_ARGS)>;
 
 #define FUNCTION_FACTORY_ARGS \
+    Token *typeDecl, \
     FUNCTION_SIGNATURE_FACTORY_ARGS, \
     std::vector<Stmt *> body, \
     Token *closeBlock
@@ -115,7 +116,7 @@ private:
     T function(bool canHaveReceiver, bool isNamed, const FunctionFactory<T>& f);
 
     template<typename T>
-    T functionSignature(bool canHaveReceiver, bool isNamed, const FunctionSignatureFactory<T>& f);
+    T functionSignature(TokenType type, bool canHaveReceiver, bool canBeNamed, const FunctionSignatureFactory<T>& f);
 
     ParameterDefinition *parameter();
 

@@ -11,6 +11,7 @@ extern "C" {
 #include "lib/compiler/FunctionsTable.h"
 #include "lib/compiler/Compiler.h"
 #include <lib/parser/nodes/TypeDescriptor.h>
+#include <cassert>
 
 std::vector<FunctionEntry *>
 Utils::findCandidatesFunctions(const std::vector<FunctionEntry *> &functions, const std::string &name) {
@@ -26,14 +27,23 @@ Utils::findCandidatesFunctions(const std::vector<FunctionEntry *> &functions, co
 }
 
 void Utils::loadFunctionEntryAddr(Compiler *compiler, FunctionEntry *entry, std::vector<ByteResolver *> &bytes) {
-    bytes.push_back(new ByteResolver(OP_CONST, nullptr));
+    if (auto interfaceEntry = dynamic_cast<DeclarationFunctionEntry *>(entry)) {
+        // Load object
+        bytes.push_back(new ByteResolver(OP_LOAD_LOCAL, nullptr));
+        bytes.push_back(new ByteResolver(0, nullptr)); // frames distance
+        bytes.push_back(new ByteResolver(0, nullptr)); // index
 
-    if (auto nativeEntry = dynamic_cast<NativeFunctionEntry *>(entry)) {
-        auto v = p2v((void *) nativeEntry->fun);
-        auto addr = compiler->registerConst(v);
+        bytes.push_back(new ByteResolver(OP_RESOLVE_ADDR, nullptr));
+        bytes.push_back(new ByteResolver(interfaceEntry->addr, nullptr));
+    } else if (auto nativeEntry = dynamic_cast<NativeFunctionEntry *>(entry)) {
+        bytes.push_back(new ByteResolver(OP_CONST, nullptr));
+        bytes.push_back(new ByteResolver([nativeEntry](Compiler *c) {
+            auto v = p2v((void *) nativeEntry->fun);
 
-        bytes.push_back(new ByteResolver(addr, nullptr));
+            return c->registerConst(v);
+        }, nullptr));
     } else {
+        bytes.push_back(new ByteResolver(OP_CONST, nullptr));
         bytes.push_back(new ByteResolver([entry](Compiler *c) {
             auto v = i2v(c->getAddr(entry->firstByte));
 
@@ -53,7 +63,7 @@ FunctionEntry *Utils::findMatchingFunctions(
                 auto paramType = entry->descriptor->params[i]->type;
                 auto argType = argsTypes[i];
 
-                if (!paramType->canReceiveType(argType)) {
+                if (!argType->canReceiveType(paramType)) {
                     compatible = false;
                     break;
                 }

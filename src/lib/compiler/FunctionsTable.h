@@ -22,18 +22,28 @@ public:
 
     std::string name;
     FunctionTypeDescriptor *descriptor;
+    int addr = -1;
 
     ByteResolver *firstByte = nullptr;
 
     virtual ~FunctionEntry() = default;
+
+    virtual bool isSame(FunctionEntry *other);
+};
+
+class DeclarationFunctionEntry : public FunctionEntry {
+    using FunctionEntry::FunctionEntry;
 };
 
 class NativeFunctionEntry : public FunctionEntry {
 public:
     NativeFunctionReturn (*fun)(Value[], int);
 
-    NativeFunctionEntry(std::string name, FunctionTypeDescriptor *descriptor,
-                        NativeFunctionReturn (*fun)(Value[], int));
+    NativeFunctionEntry(
+            std::string name,
+            FunctionTypeDescriptor *descriptor,
+            NativeFunctionReturn (*fun)(Value[], int)
+    );
 };
 
 class FunctionsTable {

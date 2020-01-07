@@ -75,6 +75,7 @@ TEST(TypesDescriptor, Function) {
     );
 
     auto typeDesc = new FunctionTypeDescriptor(
+            false,
             {
                     new ParameterDefinition(
                             new Token(

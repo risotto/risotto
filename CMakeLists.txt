@@ -59,22 +59,24 @@ if (CMAKE_VERSION VERSION_LESS 2.8.11)
 endif ()
 
 file(GLOB_RECURSE LIB_WISE_ENUM_SRC RELATIVE ${CMAKE_SOURCE_DIR} "lib/wise_enum/wise_enum.h")
+file(GLOB_RECURSE LIB_VEC_SRC RELATIVE ${CMAKE_SOURCE_DIR} "lib/vec/src/*")
 file(GLOB_RECURSE LIB_CXXOPTS_SRC RELATIVE ${CMAKE_SOURCE_DIR} "lib/cxxopts/include/cxxopts.hpp")
 
 file(GLOB_RECURSE RISOTTO_LIB_SRC RELATIVE ${CMAKE_SOURCE_DIR} "src/lib/*.c" "src/lib/*.cpp" "src/lib/*.h")
 
 set(CMD_COMMON ${LIB_CXXOPTS_SRC})
+set(LIB_COMMON ${LIB_WISE_ENUM_SRC} ${LIB_VEC_SRC})
 
 file(GLOB_RECURSE CMD_SRC RELATIVE ${CMAKE_SOURCE_DIR} "src/cmd/cmd.cpp" )
 
 # LIBRARY
 
-add_library(risotto_lib STATIC ${LIB_WISE_ENUM_SRC} ${RISOTTO_LIB_SRC})
+add_library(risotto_lib STATIC ${LIB_COMMON} ${RISOTTO_LIB_SRC})
 target_include_directories(risotto_lib PUBLIC ${CMAKE_SOURCE_DIR}/src)
 
 # DEBUG LIBRARY
 
-add_library(risotto_lib_debug STATIC ${LIB_WISE_ENUM_SRC} ${RISOTTO_LIB_SRC})
+add_library(risotto_lib_debug STATIC ${LIB_COMMON} ${RISOTTO_LIB_SRC})
 target_compile_definitions(risotto_lib_debug PUBLIC DEBUG_TRACE_EXECUTION)
 target_include_directories(risotto_lib_debug PUBLIC ${CMAKE_SOURCE_DIR}/src)
 

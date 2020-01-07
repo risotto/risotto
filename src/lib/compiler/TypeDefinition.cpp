@@ -35,6 +35,14 @@ FunctionEntry *TypeDefinition::addPrefix(ParameterDefinition *self, FunctionEntr
     return prefixes.add(entry);
 }
 
+TypeDefinition::TypeDefinition() : vtable(new struct vtable) {
+    vec_init(vtable);
+}
+
+bool TypeDefinition::isSame(TypeDefinition *other) {
+    return this == other;
+}
+
 FunctionTypeDefinition::FunctionTypeDefinition(FunctionTypeDescriptor *descriptor) : descriptor(descriptor) {
 
 }
@@ -51,11 +59,39 @@ bool FunctionTypeDefinition::canReceiveType(TypeDefinition *type) {
     return false;
 }
 
+bool FunctionTypeDefinition::isSame(TypeDefinition *other) {
+    if (TypeDefinition::isSame(other)) {
+        return true;
+    }
+
+    if (auto otherFunction = dynamic_cast<FunctionTypeDefinition *>(other)) {
+        return descriptor->isSame(otherFunction->descriptor);
+    }
+
+    return false;
+}
+
 ArrayTypeDefinition::ArrayTypeDefinition(TypeDescriptor *element) : element(element) {
 
 }
 
+bool ArrayTypeDefinition::isSame(TypeDefinition *other) {
+    if (TypeDefinition::isSame(other)) {
+        return true;
+    }
+
+    if (auto otherArray = dynamic_cast<ArrayTypeDefinition *>(other)) {
+        return element->getTypeDefinition()->isSame(otherArray->element->getTypeDefinition());
+    }
+
+    return false;
+}
+
 ScalarTypeDefinition::ScalarTypeDefinition(std::string name) : name(std::move(name)) {}
+
+bool ScalarTypeDefinition::isSame(TypeDefinition *other) {
+    return TypeDefinition::isSame(other);
+}
 
 StructTypeDefinition::StructTypeDefinition(VariablesTable fields) : fields(std::move(fields)) {}
 
@@ -78,4 +114,38 @@ int StructTypeDefinition::getFieldIndex(VariableEntry *entry) {
     }
 
     return -1;
+}
+
+InterfaceTypeDefinition::InterfaceTypeDefinition(InterfaceTypeDescriptor *descriptor,
+                                                 const std::vector<FunctionEntry *> &functions) : descriptor(
+        descriptor) {
+    for (auto function: functions) {
+        this->addFunction(
+                new ParameterDefinition("i", descriptor, true),
+                function
+        );
+    }
+}
+
+bool InterfaceTypeDefinition::canReceiveType(TypeDefinition *type) {
+    if (TypeDefinition::canReceiveType(type)) {
+        return true;
+    }
+
+    for (auto func : functions.entries) {
+        auto has = false;
+
+        for (auto otherFunc: type->functions.entries) {
+            if (func->isSame(otherFunc)) {
+                has = true;
+                break;
+            }
+        }
+
+        if (!has) {
+            return false;
+        }
+    }
+
+    return true;
 }

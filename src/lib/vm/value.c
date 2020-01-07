@@ -221,6 +221,7 @@ Value copy(Value v) {
 
     nv.data = v.data;
     nv.type = v.type;
+    nv.vtable = v.vtable;
 
     if (TYPECHECK(nv, T_ARRAY) || TYPECHECK(nv, T_OBJECT)) {
         Object *object = v2o(nv);
