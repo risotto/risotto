@@ -2,12 +2,9 @@
 // Created by rvigee on 10/16/19.
 //
 
+#include <cassert>
 #include "GetCallExpr.h"
 #include <lib/compiler/utils/Utils.h>
-#include <cassert>
-#include "lib/compiler/Compiler.h"
-#include "lib/compiler/TypeDefinition.h"
-#include "lib/parser/nodes/TypeDescriptor.h"
 
 GetCallExpr::GetCallExpr(Expr *callee, Token *op, Token *identifier, Token *rParen, const std::vector<Expr *> &args)
         : MixedCallExpr(rParen, args), callee(callee), op(op), identifier(identifier) {}

@@ -4,7 +4,6 @@
 
 #include "MixedCallExpr.h"
 
-#include <lib/compiler/utils/Utils.h>
 #include <lib/compiler/Compiler.h>
 
 MixedCallExpr::MixedCallExpr(Token *rParen, const std::vector<Expr *> &args)
@@ -24,36 +23,6 @@ bool MixedCallExpr::isArgumentReference(Compiler *compiler, int i) {
     }, [i](FunctionEntry *functionEntry) {
         return functionEntry->descriptor->params[i]->asReference;
     });
-}
-
-template<typename T>
-T MixedCallExpr::act(
-        Compiler *compiler,
-        const std::function<T(FunctionTypeDescriptor *)> &variableActor,
-        const std::function<T(FunctionEntry *)> &functionActor
-) {
-    auto variableEntry = getVariableEntry(compiler);
-
-    if (variableEntry) {
-        if (auto functionRef = dynamic_cast<FunctionTypeDescriptor *>(variableEntry->typeRef)) {
-            auto params = std::vector<TypeDescriptor *>();
-            for (const auto &param: functionRef->params) {
-                params.push_back(param->type);
-            }
-
-            if (Utils::typesMatch(params, getArgumentsTypes(compiler))) {
-                return variableActor(functionRef);
-            }
-        }
-    }
-
-    auto functionEntry = getFunctionEntry(compiler);
-
-    if (functionEntry) {
-        return functionActor(functionEntry);
-    }
-
-    throw getFunctionNotFoundError(compiler);
 }
 
 void MixedCallExpr::loadCallAddr(Compiler *compiler, std::vector<ByteResolver *> &bytes) {

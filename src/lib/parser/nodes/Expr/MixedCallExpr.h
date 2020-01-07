@@ -12,6 +12,7 @@
 #include <lib/compiler/FunctionsTable.h>
 #include <lib/parser/nodes/TypeDescriptor.h>
 #include "CallExpr.h"
+#include <lib/compiler/utils/Utils.h>
 
 class MixedCallExpr : public BaseCallExpr {
 public:
@@ -38,5 +39,34 @@ protected:
     ReturnTypes computeReturnType(Compiler *compiler) override;
 };
 
+template<typename T>
+T MixedCallExpr::act(
+        Compiler *compiler,
+        const std::function<T(FunctionTypeDescriptor *)> &variableActor,
+        const std::function<T(FunctionEntry *)> &functionActor
+) {
+    auto variableEntry = getVariableEntry(compiler);
+
+    if (variableEntry) {
+        if (auto functionRef = dynamic_cast<FunctionTypeDescriptor *>(variableEntry->typeRef)) {
+            auto params = std::vector<TypeDescriptor *>();
+            for (const auto &param: functionRef->params) {
+                params.push_back(param->type);
+            }
+
+            if (Utils::typesMatch(params, getArgumentsTypes(compiler))) {
+                return variableActor(functionRef);
+            }
+        }
+    }
+
+    auto functionEntry = getFunctionEntry(compiler);
+
+    if (functionEntry) {
+        return functionActor(functionEntry);
+    }
+
+    throw getFunctionNotFoundError(compiler);
+}
 
 #endif //RISOTTOV2_MIXEDCALLEXPR_H

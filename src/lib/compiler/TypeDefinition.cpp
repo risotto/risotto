@@ -116,9 +116,10 @@ int StructTypeDefinition::getFieldIndex(VariableEntry *entry) {
     return -1;
 }
 
-InterfaceTypeDefinition::InterfaceTypeDefinition(InterfaceTypeDescriptor *descriptor,
-                                                 const std::vector<FunctionEntry *> &functions) : descriptor(
-        descriptor) {
+InterfaceTypeDefinition::InterfaceTypeDefinition(
+        InterfaceTypeDescriptor *descriptor,
+        const std::vector<FunctionEntry *> &functions
+) : descriptor(descriptor) {
     for (auto function: functions) {
         this->addFunction(
                 new ParameterDefinition("i", descriptor, true),
