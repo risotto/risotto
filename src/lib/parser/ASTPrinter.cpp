@@ -93,8 +93,6 @@ if (auto V = dynamic_cast<T *>(stmt)) { \
         DC(GetCallExpr)
         DC(FunctionExpr)
 
-        DC(CallExpr)
-
         return print(dynamic_cast<Node *>(stmt));
     }
 
@@ -232,19 +230,6 @@ if (auto V = dynamic_cast<T *>(stmt)) { \
 
         ss << "BlockStmt" << std::endl;
         ss << indent(print(stmt->stmts), 1);
-
-        return ss.str();
-    }
-
-    template<>
-    std::string print<CallExpr *>(CallExpr *stmt) {
-        std::stringstream ss;
-
-        ss << "CallExpr" << std::endl;
-        ss << indent("+Callee:", 1) << std::endl;
-        ss << indent(print(stmt->callee), 2);
-        ss << indent("+Args:", 1) << std::endl;
-        ss << indent(print(stmt->args), 2);
 
         return ss.str();
     }

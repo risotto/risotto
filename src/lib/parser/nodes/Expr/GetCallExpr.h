@@ -22,8 +22,6 @@ public:
 
     void symbolize(Compiler *compiler) override;
 
-    bool needAddrResolution(Compiler *compiler) override;
-
 protected:
     VariableEntry *getVariableEntry(Compiler *compiler) override;
 

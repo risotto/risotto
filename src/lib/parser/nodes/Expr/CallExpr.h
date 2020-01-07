@@ -34,25 +34,6 @@ public:
     virtual void loadArgs(Compiler *compiler, std::vector<ByteResolver *> &bytes);
 
     void symbolize(Compiler *compiler) override;
-
-    virtual bool needAddrResolution(Compiler *compiler);
 };
-
-class CallExpr : public BaseCallExpr {
-public:
-    Expr *callee;
-
-    CallExpr(Expr *callee, Token *rParen, const std::vector<Expr *>& args);
-
-    bool isArgumentReference(Compiler *compiler, int i) override;
-
-    void loadCallAddr(Compiler *compiler, std::vector<ByteResolver *> &bytes) override;
-
-    void symbolize(Compiler *compiler) override;
-
-protected:
-    ReturnTypes computeReturnType(Compiler *compiler) override;
-};
-
 
 #endif //RISOTTOV2_CALLEXPR_H

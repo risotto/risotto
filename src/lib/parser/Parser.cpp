@@ -643,7 +643,7 @@ Expr *Parser::call() {
             } else if (auto getExpr = dynamic_cast<GetExpr *>(expr)) {
                 expr = new GetCallExpr(getExpr->callee, rParen, getExpr->identifier, rParen, args);
             } else {
-                expr = new CallExpr(expr, rParen, args);
+                throw error(peek(), "Invalid call");
             }
         } else if (match(TokenType::DOT)) {
             auto identifier = consume(TokenType::IDENTIFIER, "Expect identifier.");

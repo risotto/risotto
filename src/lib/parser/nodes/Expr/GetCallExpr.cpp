@@ -53,11 +53,3 @@ void GetCallExpr::symbolize(Compiler *compiler) {
     callee->symbolize(compiler);
     MixedCallExpr::symbolize(compiler);
 }
-
-bool GetCallExpr::needAddrResolution(Compiler *compiler) {
-    return act<bool>(compiler, [](FunctionTypeDescriptor *functionDesc) {
-        return false;
-    }, [](FunctionEntry *functionEntry) {
-        return dynamic_cast<DeclarationFunctionEntry *>(functionEntry) != nullptr;
-    });
-}
