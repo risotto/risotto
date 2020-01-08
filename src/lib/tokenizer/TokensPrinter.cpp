@@ -63,8 +63,8 @@ void TokensPrinter::print(std::vector<Token *> tokens) {
 
         std::cout << " : ";
 
-        std::cout << std::left << std::setw(13);
-        std::cout << token->type;
+        std::cout << std::left << std::setw(18);
+        std::cout << wise_enum::to_string(token->type);
 
         std::cout << "| " << token->lexeme << "\n";
 

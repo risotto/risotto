@@ -2,6 +2,10 @@
 // Created by rvigee on 10/8/19.
 //
 
+extern "C" {
+#include "lib/vm/native_functions.h"
+}
+
 #include "TypeDescriptor.h"
 #include <lib/compiler/CompilerError.h>
 #include <utility>
@@ -64,7 +68,52 @@ std::string ArrayTypeDescriptor::toString() {
 }
 
 TypeDefinition *ArrayTypeDescriptor::genType(TypesManager *typesManager, Frame *frame) {
-    return new ArrayTypeDefinition(element);
+    auto def = new ArrayTypeDefinition(element);
+
+    // TODO: Remove when generic in place
+
+    auto intDesc = frame->findNamedType("int");
+
+    def->addOperator(
+            new ParameterDefinition("a", this, true),
+            new NativeFunctionEntry(
+                    "[]",
+                    new FunctionTypeDescriptor(
+                            true,
+                            {new ParameterDefinition("i", intDesc, false)},
+                            {element}
+                    ),
+                    array_at
+            )
+    );
+
+    def->addFunction(
+            new ParameterDefinition("a", this, true),
+            new NativeFunctionEntry(
+                    "push",
+                    new FunctionTypeDescriptor(
+                            true,
+                            {new ParameterDefinition("e", element, false)},
+                            {}
+                    ),
+                    array_add
+            )
+    );
+
+    def->addFunction(
+            new ParameterDefinition("a", this, true),
+            new NativeFunctionEntry(
+                    "size",
+                    new FunctionTypeDescriptor(
+                            true,
+                            {},
+                            {intDesc}
+                    ),
+                    array_size
+            )
+    );
+
+    return def;
 }
 
 bool ArrayTypeDescriptor::isSame(TypeDescriptor *type) {
@@ -198,13 +247,14 @@ bool FunctionTypeDescriptor::isSame(TypeDescriptor *type) {
 
     if (auto functionType = dynamic_cast<FunctionTypeDescriptor *>(type)) {
         auto shouldSkipFirst = this->isMethod;
-        if (!Utils::typesMatch(params, functionType->params, [shouldSkipFirst](int i, TypeDescriptor *l, TypeDescriptor *r) {
-            if (i == 0 && shouldSkipFirst) {
-                return true;
-            }
+        if (!Utils::typesMatch(params, functionType->params,
+                               [shouldSkipFirst](int i, TypeDescriptor *l, TypeDescriptor *r) {
+                                   if (i == 0 && shouldSkipFirst) {
+                                       return true;
+                                   }
 
-            return Utils::TypesSame(i, l, r);
-        })) {
+                                   return Utils::TypesSame(i, l, r);
+                               })) {
             return false;
         }
 

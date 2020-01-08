@@ -36,7 +36,6 @@ typedef enum {
     OP_FALSE,
     OP_EQ_NIL,
     OP_NEQ_NIL,
-    OP_DYNAMIC_LOAD_INSTANCE,
     OP_RESOLVE_ADDR,
 
     Last = OP_RESOLVE_ADDR,

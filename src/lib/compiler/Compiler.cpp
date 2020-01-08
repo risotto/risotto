@@ -97,10 +97,10 @@ Compiler::Compiler(std::vector<Stmt *> stmts) : stmts(std::move(stmts)) {
 
     initChunk(&chunk);
 
-    auto intEntry = frame->types.add(new IdentifierTypeDescriptor("int", new ScalarTypeDefinition("int")));
-    auto doubleEntry = frame->types.add(new IdentifierTypeDescriptor("double", new ScalarTypeDefinition("double")));
-    auto boolEntry = frame->types.add(new IdentifierTypeDescriptor("bool", new ScalarTypeDefinition("bool")));
-    auto stringEntry = frame->types.add(new IdentifierTypeDescriptor("string", new ScalarTypeDefinition("string")));
+    auto TYPE_ENTRY(int) = frame->types.add(new IdentifierTypeDescriptor("int", new ScalarTypeDefinition("int")));
+    auto TYPE_ENTRY(double) = frame->types.add(new IdentifierTypeDescriptor("double", new ScalarTypeDefinition("double")));
+    auto TYPE_ENTRY(bool) = frame->types.add(new IdentifierTypeDescriptor("bool", new ScalarTypeDefinition("bool")));
+    auto TYPE_ENTRY(string) = frame->types.add(new IdentifierTypeDescriptor("string", new ScalarTypeDefinition("string")));
 
     NATIVE_BINARY_OPERATOR_MATH_DECLARATIONS(int, int, int)
     NATIVE_BINARY_OPERATOR_MATH_DECLARATIONS(int, double, double)

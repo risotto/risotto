@@ -52,6 +52,7 @@ void freeVM() {
 void registerObject(Object *object) {
     if (vm.numObjects >= vm.maxObjects) gc();
 
+    object->marked = 0;
     object->next = vm.firstObject;
     vm.firstObject = object;
 
@@ -352,18 +353,12 @@ static InterpretResult run() {
                 loadInstance(addr);
                 break;
             }
-            case OP_DYNAMIC_LOAD_INSTANCE: {
-                int index = v2i(pop());
-                loadInstance(index);
-                break;
-            }
             case OP_NEW: {
                 vtable *vtable = v2p(READ_CONSTANT());
                 OP_T size = READ_BYTE();
 
                 Object *instance = malloc(sizeof(*instance));
                 instance->size = size;
-                instance->marked = 0;
                 instance->values = malloc(size * sizeof(*instance->values));
 
                 for (int i = 0; i < size; ++i) {

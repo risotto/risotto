@@ -144,7 +144,6 @@ char *getName(OP_T instruction) {
         NAME(OP_LOAD_LOCAL)
         NAME(OP_LOAD_INSTANCE)
         NAME(OP_ARRAY)
-        NAME(OP_DYNAMIC_LOAD_INSTANCE)
         NAME(OP_ARRAY_INSERT)
         NAME(OP_CALL)
         NAME(OP_POP)
@@ -213,8 +212,6 @@ int disassembleInstruction(Chunk *chunk, int offset) {
             return intInstruction(getName(instruction), chunk, offset);
         case OP_ARRAY:
             return intInstruction(getName(instruction), chunk, offset);
-        case OP_DYNAMIC_LOAD_INSTANCE:
-            return simpleInstruction(getName(instruction), offset);
         case OP_ARRAY_INSERT:
             return intInstruction(getName(instruction), chunk, offset);
         case OP_CALL:
