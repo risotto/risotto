@@ -134,17 +134,19 @@ bool InterfaceTypeDefinition::canReceiveType(TypeDefinition *type) {
     }
 
     for (auto func : functions.entries) {
-        auto has = false;
+        if (dynamic_cast<DeclarationFunctionEntry *>(func) != nullptr) {
+            auto has = false;
 
-        for (auto otherFunc: type->functions.entries) {
-            if (func->isSame(otherFunc)) {
-                has = true;
-                break;
+            for (auto otherFunc: type->functions.entries) {
+                if (func->isSame(otherFunc)) {
+                    has = true;
+                    break;
+                }
             }
-        }
 
-        if (!has) {
-            return false;
+            if (!has) {
+                return false;
+            }
         }
     }
 

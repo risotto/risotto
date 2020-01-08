@@ -37,6 +37,15 @@ protected:
     virtual void loadVariableEntryAddr(Compiler *compiler, std::vector<ByteResolver *> &bytes) = 0;
 
     ReturnTypes computeReturnType(Compiler *compiler) override;
+
+private:
+    enum ActStatus {
+        ACT_UNKNOWN, ACT_VARIABLE, ACT_FUNCTION
+    };
+
+    ActStatus actStatus = ACT_UNKNOWN;
+    FunctionTypeDescriptor *actVariableFunctionDesc = nullptr;
+    FunctionEntry *actFunctionEntry = nullptr;
 };
 
 template<typename T>
@@ -45,28 +54,44 @@ T MixedCallExpr::act(
         const std::function<T(FunctionTypeDescriptor *)> &variableActor,
         const std::function<T(FunctionEntry *)> &functionActor
 ) {
-    auto variableEntry = getVariableEntry(compiler);
+    switch (actStatus) {
+        case ACT_UNKNOWN: {
+            auto variableEntry = getVariableEntry(compiler);
 
-    if (variableEntry) {
-        if (auto functionRef = dynamic_cast<FunctionTypeDescriptor *>(variableEntry->typeRef)) {
-            auto params = std::vector<TypeDescriptor *>();
-            for (const auto &param: functionRef->params) {
-                params.push_back(param->type);
+            if (variableEntry) {
+                actVariableFunctionDesc = dynamic_cast<FunctionTypeDescriptor *>(variableEntry->typeRef);
+
+                if (actVariableFunctionDesc) {
+                    auto params = std::vector<TypeDescriptor *>();
+                    for (const auto &param: actVariableFunctionDesc->params) {
+                        params.push_back(param->type);
+                    }
+
+                    if (Utils::typesMatch(params, getArgumentsTypes(compiler), Utils::TypesCompatible)) {
+                        actStatus = ACT_VARIABLE;
+                        return variableActor(actVariableFunctionDesc);
+                    } else {
+                        throw getFunctionNotFoundError(compiler);
+                    }
+                } else {
+                    throw CompilerError("Variable is not a function");
+                }
             }
 
-            if (Utils::typesMatch(params, getArgumentsTypes(compiler), Utils::TypesCompatible)) {
-                return variableActor(functionRef);
+            actFunctionEntry = getFunctionEntry(compiler);
+
+            if (actFunctionEntry) {
+                actStatus = ACT_FUNCTION;
+                return functionActor(actFunctionEntry);
             }
+
+            throw getFunctionNotFoundError(compiler);
         }
+        case ACT_VARIABLE:
+            return variableActor(actVariableFunctionDesc);
+        case ACT_FUNCTION:
+            return functionActor(actFunctionEntry);
     }
-
-    auto functionEntry = getFunctionEntry(compiler);
-
-    if (functionEntry) {
-        return functionActor(functionEntry);
-    }
-
-    throw getFunctionNotFoundError(compiler);
 }
 
 #endif //RISOTTOV2_MIXEDCALLEXPR_H

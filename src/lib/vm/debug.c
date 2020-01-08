@@ -102,12 +102,6 @@ static int callInstruction(const char *name, Chunk *chunk, int offset) {
 }
 
 static int newInstruction(const char *name, Chunk *chunk, int offset) {
-//    bool needReso = chunk->code[offset + 1];
-//    int c = chunk->code[offset + 2];
-//    printf("%-11s C:%-3d %i\n", name, c, needReso);
-//
-//    return offset + 3 + c;
-
     int vtableAddr = chunk->code[offset + 1];
     int c = chunk->code[offset + 2];
     printf("%-11s VA: ", name);

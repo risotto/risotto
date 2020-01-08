@@ -35,26 +35,26 @@ std::vector<ByteResolver *> LiteralExpr::compile(Compiler *compiler) {
 
     switch (value->type) {
         case TokenType::NIL:
-            bytes.push_back(new ByteResolver(OP_NIL, nullptr));
+            bytes.push_back(new ByteResolver(OP_NIL, &value->position));
             return bytes;
         case TokenType::TRUE:
-            bytes.push_back(new ByteResolver(OP_TRUE, nullptr));
+            bytes.push_back(new ByteResolver(OP_TRUE, &value->position));
             return bytes;
         case TokenType::FALSE:
-            bytes.push_back(new ByteResolver(OP_FALSE, nullptr));
+            bytes.push_back(new ByteResolver(OP_FALSE, &value->position));
             return bytes;
     }
 
     auto v = literalToValue(value);
     auto constAddr = compiler->registerConst(v);
 
-    bytes.push_back(new ByteResolver(OP_CONST, nullptr));
+    bytes.push_back(new ByteResolver(OP_CONST, &value->position));
     bytes.push_back(new ByteResolver([constAddr](Compiler *c) { return constAddr; }, nullptr));
 
     return bytes;
 }
 
-TypeDescriptor *getTypeDescriptor(Compiler *compiler, std::string name) {
+TypeDescriptor *getTypeDescriptor(Compiler *compiler, const std::string& name) {
     auto typeDef = compiler->frame->findNamedType(name);
 
     return new IdentifierTypeDescriptor(name, typeDef->getTypeDefinition());
