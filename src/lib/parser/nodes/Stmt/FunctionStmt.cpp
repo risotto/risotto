@@ -35,7 +35,7 @@ FunctionEntry *FunctionStmt::getFunctionEntry(Compiler *compiler) {
 }
 
 std::vector<ByteResolver *> FunctionStmt::compile(Compiler *compiler) {
-    auto functionEntry = getFunctionEntry(compiler);
+    auto functionEntry = dynamic_cast<CodeFunctionEntry *>(getFunctionEntry(compiler));
 
     compiler->frame = bodyFrame;
 
@@ -118,7 +118,7 @@ bool FunctionStmt::registerFunction(Compiler *compiler) {
         nameStr = name->lexeme;
     }
 
-    functionEntry = new FunctionEntry(nameStr, descriptor);
+    functionEntry = new CodeFunctionEntry(nameStr, descriptor);
 
     if (autoRegister) {
         if (receiver != nullptr) {

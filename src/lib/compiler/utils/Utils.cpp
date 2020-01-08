@@ -43,13 +43,15 @@ void Utils::loadFunctionEntryAddr(Compiler *compiler, FunctionEntry *entry, std:
 
             return c->registerConst(v);
         }, nullptr));
-    } else {
+    } else if (auto codeEntry = dynamic_cast<CodeFunctionEntry *>(entry)) {
         bytes.push_back(new ByteResolver(OP_CONST, nullptr));
-        bytes.push_back(new ByteResolver([entry](Compiler *c) {
-            auto v = i2v(c->getAddr(entry->firstByte));
+        bytes.push_back(new ByteResolver([codeEntry](Compiler *c) {
+            auto v = i2v(c->getAddr(codeEntry->firstByte));
 
             return c->registerConst(v);
         }, nullptr));
+    } else {
+        throw std::logic_error("Unhandled function entry");
     }
 }
 

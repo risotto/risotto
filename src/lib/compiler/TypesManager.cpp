@@ -145,8 +145,10 @@ void TypesManager::generateVEntry(Compiler *compiler, TypeDefinition *receiver, 
     Value addr;
     if (auto native = dynamic_cast<NativeFunctionEntry *>(function)) {
         addr = p2v((void *) native->fun);
+    } else if (auto code = dynamic_cast<CodeFunctionEntry *>(function)) {
+        addr = i2v(compiler->getAddr(code->firstByte));
     } else {
-        addr = i2v(compiler->getAddr(function->firstByte));
+        throw std::logic_error("Unhandled function entry");
     }
 
     auto paddr = static_cast<Value *>(malloc(sizeof(Value)));

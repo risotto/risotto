@@ -24,11 +24,13 @@ public:
     FunctionTypeDescriptor *descriptor;
     std::vector<int> vaddrs;
 
-    ByteResolver *firstByte = nullptr;
-
-    virtual ~FunctionEntry() = default;
-
     virtual bool isSame(FunctionEntry *other);
+};
+
+class CodeFunctionEntry : public FunctionEntry {
+public:
+    using FunctionEntry::FunctionEntry;
+    ByteResolver *firstByte = nullptr;
 };
 
 class DeclarationFunctionEntry : public FunctionEntry {
