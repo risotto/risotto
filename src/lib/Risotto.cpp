@@ -67,6 +67,10 @@ InterpretResult Risotto::doRun(const std::vector<Token *> &tokens) {
         vmFlags |= VMFlags::TraceExecution;
     }
 
+    if (hasFlag(RisottoFlags::PrintBenchmarkExecution)) {
+        vmFlags |= VMFlags::BenchmarkExecution;
+    }
+
     initVM(vmFlags);
 
     auto result = timing<InterpretResult>("VM", [&chunk]() {

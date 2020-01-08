@@ -118,6 +118,8 @@ void gc() {
 
 static InterpretResult run() {
 #ifdef BENCHMARK_TIMINGS
+    bool benchmarkExec = hasFlag(BenchmarkExecution);
+
     clock_t timings[Last + 1];
     unsigned long timingsc[Last + 1];
     unsigned long opsc = 0;
@@ -126,6 +128,8 @@ static InterpretResult run() {
         timings[m] = 0;
         timingsc[m] = 0;
     }
+
+    clock_t start;
 #endif
 
 #ifdef DEBUG_TRACE_EXECUTION
@@ -159,8 +163,10 @@ static InterpretResult run() {
         OP_T instruction = READ_BYTE();
 
 #ifdef BENCHMARK_TIMINGS
-        clock_t start = clock();
-        opsc++;
+        if (benchmarkExec) {
+            start = clock();
+            opsc++;
+        }
 #endif
 
         switch (instruction) {
@@ -438,33 +444,35 @@ static InterpretResult run() {
             }
             case OP_END: {
 #ifdef BENCHMARK_TIMINGS
-                printf("\n======================= TIMINGS =======================\n");
-                clock_t tt = 0;
-                for (int k = 0; k <= Last; ++k) {
-                    tt += timings[k];
-                }
-
-                for (int k = 0; k <= Last; ++k) {
-                    long double t = (long double) timings[k];
-                    unsigned long c = timingsc[k];
-
-                    if (c > 0) {
-                        printf(
-                                "%-3u - %-14s C: %-9lu T: %-13Lf AT: %-13.9Lf (%-5.2Lf%%) TT: %-13.9Lf \n",
-                                k,
-                                getName(k),
-                                c,
-                                t,
-                                t / c / CLOCKS_PER_SEC,
-                                (t / tt) * 100,
-                                t / CLOCKS_PER_SEC
-                        );
+                if (benchmarkExec) {
+                    printf("\n======================= TIMINGS =======================\n");
+                    clock_t tt = 0;
+                    for (int k = 0; k <= Last; ++k) {
+                        tt += timings[k];
                     }
+
+                    for (int k = 0; k <= Last; ++k) {
+                        long double t = (long double) timings[k];
+                        unsigned long c = timingsc[k];
+
+                        if (c > 0) {
+                            printf(
+                                    "%-3u - %-14s C: %-9lu T: %-13Lf AT: %-13.9Lf (%-5.2Lf%%) TT: %-13.9Lf \n",
+                                    k,
+                                    getName(k),
+                                    c,
+                                    t,
+                                    t / c / CLOCKS_PER_SEC,
+                                    (t / tt) * 100,
+                                    t / CLOCKS_PER_SEC
+                            );
+                        }
+                    }
+                    printf("\n");
+                    printf("Total ops: %lu\n", opsc);
+                    printf("C: Count - T: CPU Ticks - AT: Average Time - TT: Total Time\n");
+                    printf("=======================================================\n");
                 }
-                printf("\n");
-                printf("Total ops: %lu\n", opsc);
-                printf("C: Count - T: CPU Ticks - AT: Average Time - TT: Total Time\n");
-                printf("=======================================================\n");
 #endif
                 return INTERPRET_OK;
             }
@@ -474,8 +482,10 @@ static InterpretResult run() {
         }
 
 #ifdef BENCHMARK_TIMINGS
-        timings[instruction] += clock() - start;
-        timingsc[instruction]++;
+        if (benchmarkExec) {
+            timings[instruction] += clock() - start;
+            timingsc[instruction]++;
+        }
 #endif
 
     }

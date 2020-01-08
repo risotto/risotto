@@ -12,8 +12,9 @@
 #define INITIAL_GC_THRESHOLD 1000
 
 typedef enum {
-    VMNone           = 0,
-    TraceExecution = 1 << 0,
+    VMNone             = 0,
+    TraceExecution     = 1 << 0,
+    BenchmarkExecution = 1 << 1,
 } VMFlags;
 
 typedef struct {

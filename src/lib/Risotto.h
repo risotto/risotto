@@ -15,12 +15,13 @@ extern "C" {
 #include <functional>
 
 enum RisottoFlags {
-    None                = 0,
-    PrintTimings        = 1 << 0,
-    PrintTokens         = 1 << 1,
-    PrintAST            = 1 << 2,
-    PrintDisassembled   = 1 << 3,
-    PrintTraceExecution = 1 << 4,
+    None                      = 0,
+    PrintTimings              = 1 << 0,
+    PrintTokens               = 1 << 1,
+    PrintAST                  = 1 << 2,
+    PrintDisassembled         = 1 << 3,
+    PrintTraceExecution       = 1 << 4,
+    PrintBenchmarkExecution   = 1 << 5,
 };
 
 class Risotto {

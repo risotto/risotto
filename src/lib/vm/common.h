@@ -9,8 +9,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-//#define BENCHMARK_TIMINGS
-
 #define OP_T uint16_t
 
 #define ERROR(...) fprintf(stderr, __VA_ARGS__); fprintf(stderr, "\n"); exit(EXIT_FAILURE);

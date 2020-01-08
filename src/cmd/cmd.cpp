@@ -2,6 +2,8 @@
 
 #include "../../lib/cxxopts/include/cxxopts.hpp"
 
+#define DEBUG_CMD_GROUP "Debug"
+
 int main(int argc, char *argv[]) {
     cxxopts::Options options(argv[0], "Risotto - YAPL ¯\\_(ツ)_/¯");
 
@@ -17,8 +19,13 @@ int main(int argc, char *argv[]) {
             ("disassemble", "Disassemble bytecode", cxxopts::value<bool>()->default_value("false"));
 
 #ifdef DEBUG_TRACE_EXECUTION
-    options.add_options("Debug")
+    options.add_options(DEBUG_CMD_GROUP)
             ("trace-execution", "Print trace execution", cxxopts::value<bool>()->default_value("false"));
+#endif
+
+#ifdef BENCHMARK_TIMINGS
+    options.add_options(DEBUG_CMD_GROUP)
+            ("benchmark-execution", "Benchmark execution", cxxopts::value<bool>()->default_value("false"));
 #endif
 
     options.parse_positional({"file", "args"});
@@ -39,30 +46,37 @@ int main(int argc, char *argv[]) {
 
     auto flags = (unsigned int) RisottoFlags::None;
 
-    auto showTimings = result["timings"].as<bool>();
-    if (showTimings) {
+    auto printTimings = result["timings"].as<bool>();
+    if (printTimings) {
         flags |= RisottoFlags::PrintTimings;
     }
 
-    auto showTokens = result["tokens"].as<bool>();
-    if (showTokens) {
+    auto printTokens = result["tokens"].as<bool>();
+    if (printTokens) {
         flags |= RisottoFlags::PrintTokens;
     }
 
-    auto showAST = result["ast"].as<bool>();
-    if (showAST) {
+    auto printAST = result["ast"].as<bool>();
+    if (printAST) {
         flags |= RisottoFlags::PrintAST;
     }
 
-    auto showDisassemble = result["disassemble"].as<bool>();
-    if (showDisassemble) {
+    auto printDisassembled = result["disassemble"].as<bool>();
+    if (printDisassembled) {
         flags |= RisottoFlags::PrintDisassembled;
     }
 
 #ifdef DEBUG_TRACE_EXECUTION
-    auto showTraceExecution= result["trace-execution"].as<bool>();
-    if (showTraceExecution) {
+    auto traceExecution= result["trace-execution"].as<bool>();
+    if (traceExecution) {
         flags |= RisottoFlags::PrintTraceExecution;
+    }
+#endif
+
+#ifdef BENCHMARK_TIMINGS
+    auto benchmarkExecution= result["benchmark-execution"].as<bool>();
+    if (benchmarkExecution) {
+        flags |= RisottoFlags::PrintBenchmarkExecution;
     }
 #endif
 

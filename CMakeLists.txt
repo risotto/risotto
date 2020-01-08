@@ -78,6 +78,7 @@ target_include_directories(risotto_lib PUBLIC ${CMAKE_SOURCE_DIR}/src)
 
 add_library(risotto_lib_debug STATIC ${LIB_COMMON} ${RISOTTO_LIB_SRC})
 target_compile_definitions(risotto_lib_debug PUBLIC DEBUG_TRACE_EXECUTION)
+target_compile_definitions(risotto_lib_debug PUBLIC BENCHMARK_TIMINGS)
 target_include_directories(risotto_lib_debug PUBLIC ${CMAKE_SOURCE_DIR}/src)
 
 # CMD
