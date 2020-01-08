@@ -67,14 +67,14 @@ int main(int argc, char *argv[]) {
     }
 
 #ifdef DEBUG_TRACE_EXECUTION
-    auto traceExecution= result["trace-execution"].as<bool>();
+    auto traceExecution = result["trace-execution"].as<bool>();
     if (traceExecution) {
         flags |= RisottoFlags::PrintTraceExecution;
     }
 #endif
 
 #ifdef BENCHMARK_TIMINGS
-    auto benchmarkExecution= result["benchmark-execution"].as<bool>();
+    auto benchmarkExecution = result["benchmark-execution"].as<bool>();
     if (benchmarkExecution) {
         flags |= RisottoFlags::PrintBenchmarkExecution;
     }
