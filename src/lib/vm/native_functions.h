@@ -141,4 +141,10 @@ NativeFunctionReturn println_double(Value args[], int argc);
 NativeFunctionReturn println_string(Value args[], int argc);
 NativeFunctionReturn println_bool(Value args[], int argc);
 
+// Array
+
+NativeFunctionReturn array_size(Value args[], int argc);
+NativeFunctionReturn array_add(Value args[], int argc);
+NativeFunctionReturn array_at(Value args[], int argc);
+
 #endif //RISOTTOPROJECT_NATIVE_FUNCTIONS_H

@@ -98,7 +98,7 @@ private:
 
     Expr *group();
 
-    std::vector<Expr *> arguments();
+    std::vector<Expr *> arguments(TokenType end);
 
     template<typename T>
     std::vector<T> enumeration(std::function<T()> of, TokenType separator, TokenType end);

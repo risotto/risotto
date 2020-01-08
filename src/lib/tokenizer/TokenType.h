@@ -26,6 +26,7 @@ WISE_ENUM(TokenType,
     PLUS_PLUS,
     MINUS_MINUS,
     AMPERSAND,
+    LEFT_RIGHT_SQUARED,
 
 // Literals.
             IDENTIFIER, STRING, INT, DOUBLE,

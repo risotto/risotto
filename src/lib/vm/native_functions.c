@@ -9,25 +9,25 @@
 
 #define str_t const char *
 
-#define ret0 NativeFunctionReturn __r = {.c = 0, .values = NULL}; return __r;
+#define ret0 NativeFunctionReturn __r = {.c = 0, .values = NULL}; return __r
 #define ret(vc, ...) \
     Value __lvalues[] = {__VA_ARGS__}; \
     Value *__values = malloc(sizeof(Value)*vc); \
     memcpy(__values, __lvalues, sizeof(__lvalues)); \
     NativeFunctionReturn __r = {.c = vc, .values = __values}; \
-    return __r;
+    return __r
 
 NativeFunctionReturn vm_stats(Value args[], int argc) {
     printf("Objects count: %i\n", getVM()->numObjects);
     printf("Max Objects: %i\n", getVM()->maxObjects);
 
-    ret0
+    ret0;
 }
 
 NativeFunctionReturn run_gc(Value args[], int argc) {
     gc();
 
-    ret0
+    ret0;
 }
 
 #define NATIVE_BINARY_FUNCTION_NAME(leftType, opName, rightType) binary_##leftType##_##opName##_##rightType
@@ -209,7 +209,7 @@ NativeFunctionReturn binary_string_add_equal_string(Value args[], int argc) {
 
     set(v.values[0], &args[0]);
 
-    ret(1, v.values[0])
+    ret(1, v.values[0]);
 }
 
 NativeFunctionReturn println_int(Value args[], int argc) {
@@ -217,7 +217,7 @@ NativeFunctionReturn println_int(Value args[], int argc) {
 
     printf("%i\n", v);
 
-    ret0
+    ret0;
 }
 
 NativeFunctionReturn println_double(Value args[], int argc) {
@@ -225,7 +225,7 @@ NativeFunctionReturn println_double(Value args[], int argc) {
 
     printf("%f\n", v);
 
-    ret0
+    ret0;
 }
 
 NativeFunctionReturn println_string(Value args[], int argc) {
@@ -233,7 +233,7 @@ NativeFunctionReturn println_string(Value args[], int argc) {
 
     printf("%s\n", v);
 
-    ret0
+    ret0;
 }
 
 NativeFunctionReturn println_bool(Value args[], int argc) {
@@ -245,5 +245,35 @@ NativeFunctionReturn println_bool(Value args[], int argc) {
         printf("false\n");
     }
 
-    ret0
+    ret0;
+}
+
+NativeFunctionReturn array_size(Value args[], int argc) {
+    ValueArray *array = v2a(args[0]);
+
+    ret(1, i2v(array->object.size));
+}
+
+NativeFunctionReturn array_add(Value args[], int argc) {
+    ValueArray *array = v2a(args[0]);
+
+    Value value = args[1];
+
+    writeValueArray(array, value);
+
+    ret0;
+}
+
+NativeFunctionReturn array_at(Value args[], int argc) {
+    ValueArray *array = v2a(args[0]);
+
+    unsigned index = v2i(args[1]);
+
+    if(index < 0) {
+        unsigned int size = array->object.size;
+
+        index = size + index;
+    }
+
+    ret(1, vp2v(&array->object.values[index]));
 }

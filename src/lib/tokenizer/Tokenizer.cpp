@@ -85,7 +85,11 @@ void Tokenizer::scan() {
             addToken(TokenType::RIGHT_CURLY);
             break;
         case '[':
-            addToken(TokenType::LEFT_SQUARED);
+            if (match(']')) {
+                addToken(TokenType::LEFT_RIGHT_SQUARED);
+            } else {
+                addToken(TokenType::LEFT_SQUARED);
+            }
             break;
         case ']':
             addToken(TokenType::RIGHT_SQUARED);

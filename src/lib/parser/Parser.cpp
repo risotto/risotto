@@ -13,6 +13,7 @@
 #include <lib/parser/nodes/Expr/GetCallExpr.h>
 #include <lib/parser/nodes/Expr/IdentifierCallExpr.h>
 #include <lib/parser/nodes/Expr/NewCallExpr.h>
+#include <lib/parser/nodes/Expr/SubscriptExpr.h>
 #include "Parser.h"
 #include "ParseError.h"
 #include "lib/parser/nodes/Stmt/ExpressionStmt.h"
@@ -90,8 +91,7 @@ ParseError Parser::error(Token *token, const std::string &message) {
 }
 
 TypeDescriptor *Parser::typeDesc() {
-    if (match(TokenType::LEFT_SQUARED)) {
-        consume(TokenType::RIGHT_SQUARED, "Expect ']'");
+    if (match(TokenType::LEFT_RIGHT_SQUARED)) {
 
         return new ArrayTypeDescriptor(typeDesc());
     }
@@ -138,7 +138,8 @@ TypeDescriptor *Parser::typeDesc() {
                 false,
                 false,
                 [](FUNCTION_SIGNATURE_FACTORY_ARGS) {
-                    return new FunctionTypeDescriptor(receiver != nullptr, std::move(parameters), std::move(returnTypes));
+                    return new FunctionTypeDescriptor(receiver != nullptr, std::move(parameters),
+                                                      std::move(returnTypes));
                 }
         );
     }
@@ -181,16 +182,12 @@ Stmt *Parser::declaration() {
 
         return function<FunctionStmt *>(true, isNamed, [isConstructor](FUNCTION_FACTORY_ARGS) {
             if (isConstructor) {
-                if (returnTypes.size() != 1) {
-                    throw CompilerError("Constructors must return the object");
-                }
-
                 if (receiver == nullptr) {
                     throw CompilerError("Constructors must have receiver");
                 }
 
-                if (returnTypes[0]->toString() != receiver->type->toString()) {
-                    throw CompilerError("Constructors must return the object");
+                if (returnTypes.size() != 1 || !returnTypes[0]->isSame(receiver->type)) {
+                    throw CompilerError("Constructors must return " + receiver->type->toString());
                 }
             }
 
@@ -493,7 +490,7 @@ Expr *Parser::expression() {
         return new FunctionExpr(functionStmt);
     }
 
-    if (check(TokenType::LEFT_SQUARED)) {
+    if (check(TokenType::LEFT_RIGHT_SQUARED)) {
         auto type = typeDesc();
 
         consume(TokenType::LEFT_CURLY, "Expect '{'");
@@ -512,7 +509,7 @@ Expr *Parser::expression() {
 
         consume(TokenType::LEFT_PAREN, "Expect '('");
 
-        auto args = arguments();
+        auto args = arguments(TokenType::RIGHT_PAREN);
 
         Token *rParen = consume(TokenType::RIGHT_PAREN, "Expect ')' after parameters.");
 
@@ -634,7 +631,7 @@ Expr *Parser::call() {
 
     while (true) {
         if (match(TokenType::LEFT_PAREN)) {
-            auto args = arguments();
+            auto args = arguments(TokenType::RIGHT_PAREN);
 
             Token *rParen = consume(TokenType::RIGHT_PAREN, "Expect ')' after parameters.");
 
@@ -649,6 +646,12 @@ Expr *Parser::call() {
             auto identifier = consume(TokenType::IDENTIFIER, "Expect identifier.");
 
             expr = new GetExpr(expr, identifier);
+        } else if (match(TokenType::LEFT_SQUARED)) {
+            auto args = arguments(TokenType::RIGHT_SQUARED);
+
+            Token *rParen = consume(TokenType::RIGHT_SQUARED, "Expect ']' after parameters.");
+
+            expr = new SubscriptExpr(expr, rParen, args);
         } else {
             break;
         }
@@ -687,8 +690,8 @@ Expr *Parser::group() {
     return new GroupingExpr(expr, lParen, rParen);
 }
 
-std::vector<Expr *> Parser::arguments() {
-    return enumeration<Expr *>([this]() { return this->expression(); }, TokenType::RIGHT_PAREN);
+std::vector<Expr *> Parser::arguments(TokenType end) {
+    return enumeration<Expr *>([this]() { return this->expression(); }, end);
 }
 
 template<typename T>
