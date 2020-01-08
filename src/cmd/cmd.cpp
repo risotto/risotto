@@ -12,7 +12,7 @@ int main(int argc, char *argv[]) {
             ("args", "Arguments", cxxopts::value<std::vector<std::string>>()->default_value(""))
             ("h,help", "Show this screen");
 
-    options.add_options("Debug")
+    options.add_options(DEBUG_CMD_GROUP)
             ("timings", "Print timings", cxxopts::value<bool>()->default_value("false"))
             ("tokens", "Print tokens", cxxopts::value<bool>()->default_value("false"))
             ("ast", "Print AST", cxxopts::value<bool>()->default_value("false"))
