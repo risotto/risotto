@@ -18,8 +18,11 @@ extern "C" {
 #define TYPE_DESC(type) new IdentifierTypeDescriptor(#type, ENTRY_DEF(TYPE_ENTRY(type)))
 #define SELF_RECEIVER(name, type) new ParameterDefinition(name, TYPE_DESC(type), true)
 
+#define FUNCTION_ENTRY_VAR(target, functionName) function_entry__##functionName
+#define REGISTER_FUNCTION(target, functionName) typesManager->registerFunction(ENTRY_DEF(TYPE_ENTRY(target)), FUNCTION_ENTRY_VAR(target, functionName));
+
 #define NATIVE_BINARY_DECLARATION_NAMED(target, op, param, return, functionName) \
-    ENTRY_DEF(TYPE_ENTRY(target))->addOperator( \
+    auto FUNCTION_ENTRY_VAR(target, functionName) = ENTRY_DEF(TYPE_ENTRY(target))->addOperator( \
         SELF_RECEIVER("self", target), \
         new NativeFunctionEntry( \
             #op, \
@@ -30,7 +33,8 @@ extern "C" {
             ), \
             functionName \
         ) \
-    );
+    ); \
+    REGISTER_FUNCTION(target, functionName);
 
 #define NATIVE_BINARY_OPERATOR_DECLARATION(target, op, param, return, opName) \
 NATIVE_BINARY_DECLARATION_NAMED(target, op, param, return, binary_##target##_##opName##_##param)
@@ -57,7 +61,7 @@ NATIVE_BINARY_OPERATOR_DECLARATION(type, +, string, string, add) \
 NATIVE_BINARY_OPERATOR_DECLARATION(string, +=, type, string, add_equal)
 
 #define NATIVE_UNARY_OPERATOR_DECLARATION(target, op, return, functionName) \
-    ENTRY_DEF(TYPE_ENTRY(target))->addPrefix( \
+    auto FUNCTION_ENTRY_VAR(target, functionName) = ENTRY_DEF(TYPE_ENTRY(target))->addPrefix( \
         SELF_RECEIVER("left", target), \
         new NativeFunctionEntry( \
            #op, \
@@ -68,7 +72,8 @@ NATIVE_BINARY_OPERATOR_DECLARATION(string, +=, type, string, add_equal)
             ), \
             functionName \
         ) \
-    );
+    ); \
+    REGISTER_FUNCTION(target, functionName);
 
 #define NATIVE_UNARY_PREFIX_OPERATOR_DECLARATION(target, op, return, functionName) \
 NATIVE_UNARY_OPERATOR_DECLARATION(target, op, return, unary_prefix_##target##_##functionName)
@@ -120,7 +125,7 @@ Compiler::Compiler(std::vector<Stmt *> stmts) : stmts(std::move(stmts)) {
     NATIVE_BINARY_OPERATOR_DECLARATION(string, +, string, string, add)
     NATIVE_BINARY_OPERATOR_DECLARATION(string, +=, string, string, add_equal)
 
-    ENTRY_DEF(TYPE_ENTRY(bool))->addPrefix(
+    auto FUNCTION_ENTRY_VAR(bool, unary_prefix_bool_invert) = ENTRY_DEF(TYPE_ENTRY(bool))->addPrefix(
             SELF_RECEIVER("right", bool),
             new NativeFunctionEntry(
                    "!",
@@ -132,6 +137,7 @@ Compiler::Compiler(std::vector<Stmt *> stmts) : stmts(std::move(stmts)) {
                     unary_prefix_bool_invert
             )
     );
+    REGISTER_FUNCTION(bool, unary_prefix_bool_invert);
 
     NATIVE_PRINT(int)
     NATIVE_PRINT(double)
