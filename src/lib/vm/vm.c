@@ -14,7 +14,10 @@
 #endif
 
 #ifdef BENCHMARK_TIMINGS
+
 #include <time.h>
+#include "debug.h"
+
 #endif
 
 #define READ_BYTE() (*vm.ip++)
@@ -115,8 +118,8 @@ void gc() {
 
 static InterpretResult run() {
 #ifdef BENCHMARK_TIMINGS
-    clock_t timings[Last+1];
-    unsigned long timingsc[Last+1];
+    clock_t timings[Last + 1];
+    unsigned long timingsc[Last + 1];
     unsigned long opsc = 0;
 
     for (int m = 0; m <= Last; ++m) {
@@ -436,12 +439,26 @@ static InterpretResult run() {
             case OP_END: {
 #ifdef BENCHMARK_TIMINGS
                 printf("\n======================= TIMINGS =======================\n");
+                clock_t tt = 0;
                 for (int k = 0; k <= Last; ++k) {
-                    clock_t t = timings[k];
+                    tt += timings[k];
+                }
+
+                for (int k = 0; k <= Last; ++k) {
+                    long double t = (long double) timings[k];
                     unsigned long c = timingsc[k];
 
-                    if(c > 0) {
-                        printf("%-3u - %-14s C: %-9lu T: %-13lu AT: %-13.9Lf TT: %-13.9Lf \n", k, getName(k), c, t, ((long double)t)/c/CLOCKS_PER_SEC, ((long double)t)/CLOCKS_PER_SEC);
+                    if (c > 0) {
+                        printf(
+                                "%-3u - %-14s C: %-9lu T: %-13Lf AT: %-13.9Lf (%-5.2Lf%%) TT: %-13.9Lf \n",
+                                k,
+                                getName(k),
+                                c,
+                                t,
+                                t / c / CLOCKS_PER_SEC,
+                                (t / tt) * 100,
+                                t / CLOCKS_PER_SEC
+                        );
                     }
                 }
                 printf("\n");
@@ -457,8 +474,7 @@ static InterpretResult run() {
         }
 
 #ifdef BENCHMARK_TIMINGS
-        clock_t end = clock();
-        timings[instruction] += end - start;
+        timings[instruction] += clock() - start;
         timingsc[instruction]++;
 #endif
 
