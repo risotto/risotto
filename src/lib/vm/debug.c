@@ -25,7 +25,7 @@ void printValue(Value value) {
             printf("O: %p {", object->values);
             for (int i = 0; i < object->size; ++i) {
                 Value v = object->values[i];
-                if (TYPECHECK(v, T_OBJECT) && v2o(v) == object) {
+                if (typecheck(v, T_OBJECT) && v2o(v) == object) {
                     printf("<self>");
                 } else {
                     printValue(v);
@@ -38,10 +38,12 @@ void printValue(Value value) {
             printf("}");
             return;
         }
-        case T_VALUE_REF:
+        case T_VALUE_P: {
             printf("+");
-            printValue(*ACCESS_VALUE_REF(value));
+            Value *vp = (Value *) DGET(value, p);
+            printValue(*vp);
             return;
+        }
     }
 
     printf("# Unknown type: %p #", &value);

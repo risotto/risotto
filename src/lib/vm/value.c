@@ -19,7 +19,7 @@ void initValueArray(ValueArray *array) {
 
 void writeValueArray(ValueArray *array, Value value) {
     if (array->capacity < array->object.size + 1) {
-        int oldCapacity = array->capacity;
+        unsigned int oldCapacity = array->capacity;
         array->capacity = GROW_CAPACITY(oldCapacity);
         array->object.values = GROW_ARRAY(array->object.values, Value,
                                           oldCapacity, array->capacity);
@@ -36,90 +36,52 @@ void freeValueArray(ValueArray *array) {
 
 
 Value n2v() {
-    NEW_VALUE(value);
-    TGET(value) = T_NIL;
-
-    return value;
+    return NEW_VALUE(T_NIL, p, 0);
 }
 
 Value i2v(int v) {
-    NEW_VALUE(value);
-    DGET(value, int) = v;
-    TGET(value) = T_INT;
-
-    return value;
+    return NEW_VALUE(T_INT, int, v);
 }
 
 Value ui2v(unsigned int v) {
-    NEW_VALUE(value);
-    DGET(value, uint) = v;
-    TGET(value) = T_UINT;
-
-    return value;
+    return NEW_VALUE(T_UINT, uint, v);
 }
 
 Value b2v(bool v) {
-    NEW_VALUE(value);
-    DGET(value, bool) = v;
-    TGET(value) = T_BOOL;
-
-    return value;
+    return NEW_VALUE(T_BOOL, bool, v);
 }
 
 Value a2v(ValueArray *v) {
-    NEW_VALUE(value);
-    DGET(value, p) = v;
-    TGET(value) = T_ARRAY;
-
-    return value;
+    return NEW_VALUE(T_ARRAY, p, v);
 }
 
 Value vp2v(Value *v) {
-    if (IS_VALUE_REF(*v)) {
-        return *v;
+    Value vl = *v;
+    if (TGET(vl) == T_VALUE_P) {
+        return vl;
     }
 
-    NEW_VALUE(value);
-    DGET(value, p) = v;
-    TGET(value) = T_VALUE_REF;
-
-    return value;
+    return NEW_VALUE(T_VALUE_P, p, v);
 }
 
 Value p2v(void *v) {
-    NEW_VALUE(value);
-    DGET(value, p) = v;
-    TGET(value) = T_P;
-
-    return value;
+    return NEW_VALUE(T_P, p, v);
 }
 
 Value d2v(double v) {
-    NEW_VALUE(value);
-    DGET(value, double) = v;
-    TGET(value) = T_DOUBLE;
-
-    return value;
+    return NEW_VALUE(T_DOUBLE, double, v);
 }
 
 Value s2v(const char *v) {
-    NEW_VALUE(value);
-    DGET(value, str) = v;
-    TGET(value) = T_STR;
-
-    return value;
+    return NEW_VALUE(T_STR, str, v);
 }
 
 Value o2v(Object *v) {
-    NEW_VALUE(value);
-    DGET(value, p) = v;
-    TGET(value) = T_OBJECT;
-
-    return value;
+    return NEW_VALUE(T_OBJECT, p, v);
 }
 
 int v2i(Value v) {
-    V2_ACCESS_REF(v, v2i);
+    ACCESS_REF(v);
 
     assert(TGET(v) == T_INT);
 
@@ -127,7 +89,7 @@ int v2i(Value v) {
 }
 
 unsigned int v2ui(Value v) {
-    V2_ACCESS_REF(v, v2ui);
+    ACCESS_REF(v);
 
     assert(TGET(v) == T_UINT);
 
@@ -135,7 +97,7 @@ unsigned int v2ui(Value v) {
 }
 
 void *v2p(Value v) {
-    V2_ACCESS_REF(v, v2p);
+    ACCESS_REF(v);
 
     assert(TGET(v) == T_P);
 
@@ -143,7 +105,7 @@ void *v2p(Value v) {
 }
 
 double v2d(Value v) {
-    V2_ACCESS_REF(v, v2d);
+    ACCESS_REF(v);
 
     assert(TGET(v) == T_DOUBLE);
 
@@ -151,7 +113,7 @@ double v2d(Value v) {
 }
 
 const char *v2s(Value v) {
-    V2_ACCESS_REF(v, v2s);
+    ACCESS_REF(v);
 
     switch (TGET(v)) {
         case T_NIL:
@@ -191,7 +153,7 @@ const char *v2s(Value v) {
             ValueArray *array = v2a(v);
             sprintf(o, "[");
             for (int i = 0; i < array->object.size; ++i) {
-                sprintf(o + strlen(o), v2s(*(array->object.values + i)));
+                sprintf(o + strlen(o), "%s", v2s(*(array->object.values + i)));
 
                 if (i != array->object.size - 1) {
                     sprintf(o + strlen(o), ", ");
@@ -206,7 +168,7 @@ const char *v2s(Value v) {
 }
 
 Object *v2o(Value v) {
-    V2_ACCESS_REF(v, v2o);
+    ACCESS_REF(v);
 
     assert(TGET(v) == T_OBJECT || TGET(v) == T_ARRAY);
 
@@ -214,7 +176,7 @@ Object *v2o(Value v) {
 }
 
 bool v2b(Value v) {
-    V2_ACCESS_REF(v, v2b);
+    ACCESS_REF(v);
 
     assert(TGET(v) == T_BOOL);
 
@@ -222,7 +184,7 @@ bool v2b(Value v) {
 }
 
 ValueArray *v2a(Value v) {
-    V2_ACCESS_REF(v, v2a);
+    ACCESS_REF(v);
 
     assert(TGET(v) == T_ARRAY);
 
@@ -230,17 +192,17 @@ ValueArray *v2a(Value v) {
 }
 
 Value copy(Value v) {
-    v = followRefV(&v);
-    NEW_VALUE(nv);
+    if (TGET(v) != T_VALUE_P) {
+        return v;
+    }
 
-    nv.data = v.data;
-    nv.type = v.type;
-    nv.vtable = v.vtable;
+    Value nv = NEW_VALUE(T_NIL, p, 0);
+    set(v, &nv);
 
-    if (TYPECHECK(nv, T_ARRAY) || TYPECHECK(nv, T_OBJECT)) {
+    if (typecheck(nv, T_ARRAY) || typecheck(nv, T_OBJECT)) {
         Object *object = v2o(nv);
         for (int i = 0; i < object->size; ++i) {
-            object->values[i] = followRefV(&object->values[i]);
+            object->values[i] = copy(object->values[i]);
         }
     }
 
@@ -248,20 +210,20 @@ Value copy(Value v) {
 }
 
 bool typecheck(Value value, ValueType type) {
-    Value *v = followRef(&value);
+    ACCESS_REF(value);
 
-    return v->type == type;
+    return value.type == type;
 }
 
-Value *followRef(Value *value) {
+Value accessRef(Value v) {
+    return *accessRefp(&v);
+}
+
+Value *accessRefp(Value *value) {
     Value *v = value;
-    while (v->type == T_VALUE_REF) {
+    while (v->type == T_VALUE_P) {
         v = v->data._p;
     }
 
     return v;
-}
-
-Value followRefV(Value *value) {
-    return *followRef(value);
 }

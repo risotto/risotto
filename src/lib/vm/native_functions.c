@@ -12,8 +12,8 @@
 #define ret0 NativeFunctionReturn __r = {.c = 0, .values = NULL}; return __r
 #define ret(vc, ...) \
     Value __lvalues[] = {__VA_ARGS__}; \
-    Value *__values = malloc(sizeof(Value)*vc); \
-    memcpy(__values, __lvalues, sizeof(__lvalues)); \
+    Value *__values = malloc(sizeof(Value) * vc); \
+    *__values = *__lvalues; \
     NativeFunctionReturn __r = {.c = vc, .values = __values}; \
     return __r
 
@@ -68,8 +68,8 @@ NATIVE_BINARY_FUNCTION(string, add_equal, type, str_t, CType, v2s, V2) \
 
 #define NATIVE_BINARY_EQ_OPS(leftType, rightType, leftV2, rightV2) \
 NATIVE_BINARY_FUNCTION(leftType, eq, rightType, leftType, rightType, leftV2, rightV2) \
-    if (TYPECHECK(args[0], T_NIL) || TYPECHECK(args[1], T_NIL)) { \
-        if (TYPECHECK(args[0], T_NIL) && TYPECHECK(args[1], T_NIL)) { \
+    if (typecheck(args[0], T_NIL) || typecheck(args[1], T_NIL)) { \
+        if (typecheck(args[0], T_NIL) && typecheck(args[1], T_NIL)) { \
             ret(1, b2v(true)); \
         } \
         ret(1, b2v(false)); \
@@ -77,8 +77,8 @@ NATIVE_BINARY_FUNCTION(leftType, eq, rightType, leftType, rightType, leftV2, rig
     ret(1, b2v(left == right)); \
 } \
 NATIVE_BINARY_FUNCTION(leftType, neq, rightType, leftType, rightType, leftV2, rightV2) \
-    if (TYPECHECK(args[0], T_NIL) || TYPECHECK(args[1], T_NIL)) { \
-        if (TYPECHECK(args[0], T_NIL) && TYPECHECK(args[1], T_NIL)) { \
+    if (typecheck(args[0], T_NIL) || typecheck(args[1], T_NIL)) { \
+        if (typecheck(args[0], T_NIL) && typecheck(args[1], T_NIL)) { \
             ret(1, b2v(false)); \
         } \
         ret(1, b2v(true)); \

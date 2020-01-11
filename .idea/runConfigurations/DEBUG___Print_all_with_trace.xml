@@ -1,0 +1,7 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="DEBUG - Print all with trace" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="${RISOTTO_TEST_FILE} --timings --tokens --ast --disassemble --trace-execution" PASS_PARENT_ENVS_2="true" PROJECT_NAME="risottov2" TARGET_NAME="rst-debug" CONFIG_NAME="Debug-GNU 7" RUN_TARGET_PROJECT_NAME="risottov2" RUN_TARGET_NAME="rst-debug">
+    <method v="2">
+      <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+    </method>
+  </configuration>
+</component>

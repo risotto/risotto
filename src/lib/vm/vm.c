@@ -68,11 +68,10 @@ void markAll() {
     }
 }
 
-void markValue(Value *value) {
-    Value v = followRefV(value);
-
-    if (TYPECHECK(v, T_OBJECT) || TYPECHECK(v, T_ARRAY)) {
-        Object *object = v2o(v);
+void markValue(Value *v) {
+    Value vl = *accessRefp(v);
+    if (typecheck(vl, T_OBJECT) || typecheck(vl, T_ARRAY)) {
+        Object *object = v2o(vl);
 
         mark(object);
     }
@@ -175,7 +174,7 @@ static InterpretResult run() {
             }
             case OP_CONST: {
                 Value constant = READ_CONSTANT();
-                push(copy(constant));
+                push(constant);
                 break;
             }
             case OP_JUMP: {
@@ -206,7 +205,7 @@ static InterpretResult run() {
             case OP_RESOLVE_ADDR: {
                 OP_T vaddr = READ_BYTE();
 
-                Value v = followRefV(popp());
+                Value v = accessRef(pop());
 
 #ifdef DEBUG_TRACE_EXECUTION
                 if (traceExec) {
@@ -242,7 +241,7 @@ static InterpretResult run() {
                     refs[i] = (bool) READ_BYTE();
                 }
 
-                Value f = followRefV(popp());
+                Value f = accessRef(pop());
 
                 switch (f.type) {
                     case T_INT: { // Function
@@ -431,13 +430,13 @@ static InterpretResult run() {
                 break;
             }
             case OP_EQ_NIL: {
-                Value v = pop();
+                Value v = accessRef(pop());
 
                 push(b2v(typecheck(v, T_NIL)));
                 break;
             }
             case OP_NEQ_NIL: {
-                Value v = pop();
+                Value v = accessRef(pop());
 
                 push(b2v(!typecheck(v, T_NIL)));
                 break;
@@ -502,8 +501,7 @@ InterpretResult interpret(Chunk *chunk, long addr) {
 void loadInstance(int index) {
     Object *array = v2o(pop());
 
-    int offset;
-
+    unsigned int offset;
     if (index < 0) {
         offset = index + array->size;
     } else {
@@ -516,12 +514,12 @@ void loadInstance(int index) {
 }
 
 void set(Value origin, Value *target) {
-    target = followRef(target);
+    target = accessRefp(target);
+    origin = accessRef(origin);
 
-    Value *rorigin = followRef(&origin);
-
-    target->data = rorigin->data;
-    target->type = rorigin->type;
+    target->data = origin.data;
+    target->type = origin.type;
+    target->vtable = origin.vtable;
 }
 
 void push(Value value) {
