@@ -17,7 +17,7 @@ ReturnTypes MixedCallExpr::computeReturnType(Compiler *compiler) {
     });
 }
 
-bool MixedCallExpr::isArgumentReference(Compiler *compiler, int i) {
+bool MixedCallExpr::isArgumentReference(Compiler *compiler, unsigned int i) {
     return act<bool>(compiler, [i](FunctionTypeDescriptor *functionRef) {
         return functionRef->params[i]->asReference;
     }, [i](FunctionEntry *functionEntry) {

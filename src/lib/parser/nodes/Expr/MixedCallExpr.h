@@ -25,7 +25,7 @@ public:
             const std::function<T(FunctionEntry *)> &functionActor
     );
 
-    bool isArgumentReference(Compiler *compiler, int i) override;
+    bool isArgumentReference(Compiler *compiler, unsigned int i) override;
 
     bool loadCallAddr(Compiler *compiler, std::vector<ByteResolver *> &bytes) override;
 

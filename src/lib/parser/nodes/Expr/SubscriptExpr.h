@@ -14,7 +14,7 @@ class SubscriptExpr : public GetCallExpr {
 public:
     SubscriptExpr(Expr *expr, Token *rParen, const std::vector<Expr *>& args);
 
-    bool isArgumentReference(Compiler *compiler, int i) override;
+    bool isArgumentReference(Compiler *compiler, unsigned int i) override;
 
     bool loadCallAddr(Compiler *compiler, std::vector<ByteResolver *> &bytes) override;
 

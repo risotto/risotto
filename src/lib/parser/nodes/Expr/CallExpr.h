@@ -28,7 +28,7 @@ public:
 
     virtual FunctionNotFoundError getFunctionNotFoundError(Compiler *compiler);
 
-    virtual bool isArgumentReference(Compiler *compiler, int i) = 0;
+    virtual bool isArgumentReference(Compiler *compiler, unsigned int i) = 0;
 
     virtual ReturnTypes getFunctionReturnTypes(Compiler *compiler) = 0;
 

@@ -26,7 +26,7 @@ std::vector<ByteResolver *> BaseCallExpr::compile(Compiler *compiler) {
     auto inlined = loadCallAddr(compiler, bytes);
 
     if (!inlined) {
-        auto argc = getArguments(compiler).size();
+        auto argc = getArgumentsTypes(compiler).size();
         auto retc = getFunctionReturnTypes(compiler).size();
 
         bytes.push_back(new ByteResolver(OpCode::OP_CALL, &rParen->position));

@@ -8,7 +8,7 @@ SubscriptExpr::SubscriptExpr(Expr *expr, Token *rParen, const std::vector<Expr *
 
 }
 
-bool SubscriptExpr::isArgumentReference(Compiler *compiler, int i) {
+bool SubscriptExpr::isArgumentReference(Compiler *compiler, unsigned int i) {
     return false;
 }
 
