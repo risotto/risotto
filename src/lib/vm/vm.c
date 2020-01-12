@@ -262,7 +262,8 @@ static InterpretResult run() {
                 break;
             }
             case OP_CALL: {
-                int argc = READ_BYTE(); // ... and next one as number of arguments to load ...
+                int argc = READ_BYTE(); // args count
+                int retc = READ_BYTE(); // return values count
 
                 // we expect all args to be on the stack
                 bool refs[argc];
@@ -302,13 +303,12 @@ static InterpretResult run() {
 
                         NativeFunction fun = v2p(f);
 
-                        NativeFunctionReturn returnValue = fun(args, argc);
+                        Value returnValues[retc];
+                        fun(args, argc, returnValues);
 
-                        for (int i = 0; i < returnValue.c; ++i) {
-                            push(returnValue.values[i]);
+                        for (int i = 0; i < retc; ++i) {
+                            push(returnValues[i]);
                         }
-
-                        free(returnValue.values);
 
                         break;
                     }

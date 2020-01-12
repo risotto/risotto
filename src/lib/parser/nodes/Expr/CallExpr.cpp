@@ -26,14 +26,15 @@ std::vector<ByteResolver *> BaseCallExpr::compile(Compiler *compiler) {
     auto inlined = loadCallAddr(compiler, bytes);
 
     if (!inlined) {
-        auto argsTypes = getArgumentsTypes(compiler);
-        auto argc = argsTypes.size();
+        auto argc = getArguments(compiler).size();
+        auto retc = getFunctionReturnTypes(compiler).size();
 
         bytes.push_back(new ByteResolver(OpCode::OP_CALL, &rParen->position));
-        bytes.push_back(new ByteResolver(argc, nullptr));
+        bytes.push_back(new ByteResolver(argc));
+        bytes.push_back(new ByteResolver(retc));
 
-        for (int i = 0; i < argc; ++i) {
-            bytes.push_back(new ByteResolver(isArgumentReference(compiler, i), nullptr));
+        for (unsigned int i = 0; i < argc; ++i) {
+            bytes.push_back(new ByteResolver(isArgumentReference(compiler, i)));
         }
     }
 

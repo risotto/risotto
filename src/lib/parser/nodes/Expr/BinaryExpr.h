@@ -26,7 +26,6 @@ public:
 protected:
     VariableEntry *getVariableEntry(Compiler *compiler) override;
 
-protected:
     FunctionNotFoundError getFunctionNotFoundError(Compiler *compiler) override;
 };
 

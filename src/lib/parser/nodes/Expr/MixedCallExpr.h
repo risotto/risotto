@@ -29,6 +29,8 @@ public:
 
     bool loadCallAddr(Compiler *compiler, std::vector<ByteResolver *> &bytes) override;
 
+    ReturnTypes getFunctionReturnTypes(Compiler *compiler) override;
+
 protected:
     virtual VariableEntry *getVariableEntry(Compiler *compiler) = 0;
 

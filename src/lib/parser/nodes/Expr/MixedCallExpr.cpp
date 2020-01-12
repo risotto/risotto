@@ -34,3 +34,11 @@ bool MixedCallExpr::loadCallAddr(Compiler *compiler, std::vector<ByteResolver *>
         return Utils::loadFunctionEntryAddr(compiler, functionEntry, bytes);
     });
 }
+
+ReturnTypes MixedCallExpr::getFunctionReturnTypes(Compiler *compiler) {
+    return act<ReturnTypes>(compiler, [](FunctionTypeDescriptor *desc) {
+        return desc->returnTypes;
+    }, [](FunctionEntry *entry) {
+        return entry->descriptor->returnTypes;
+    });
+}

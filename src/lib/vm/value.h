@@ -43,14 +43,9 @@ typedef struct {
     vtable *vtable;
 } Value;
 
-typedef struct {
-    uint8_t c;
-    Value *values;
-} NativeFunctionReturn;
-
 // This is super confusing syntax:
 // Creates a type `NativeFunction` which is a function `NativeFunctionReturn (Value *, int)`
-typedef NativeFunctionReturn (*NativeFunction)(Value[], int);
+typedef void (*NativeFunction)(Value args[], int argsc, Value ret[]);
 
 typedef struct {
     int vaddr;
