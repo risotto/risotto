@@ -169,17 +169,17 @@ char *getName(OP_T instruction) {
 int disassembleInstruction(Chunk *chunk, int offset) {
     printf("%04d ", offset);
 
-    int line = chunk->lines[offset];
-    int previousLine = chunk->lines[offset - 1];
+    Position position = chunk->positions[offset];
+    Position prevPosition = {};
 
-    if (offset == 0 && line == 0) {
-        line = 1;
+    if (offset > 0) {
+        prevPosition = chunk->positions[offset - 1];
     }
 
-    if (offset > 0 && (line == 0 || line == previousLine)) {
-        printf("   | ");
+    if (position_equal(position, (Position) {}) || position_equal(position, prevPosition)) {
+        printf("      | ");
     } else {
-        printf("%4d ", line);
+        printf("%7s ", position_string(position));
     }
 
     OP_T instruction = chunk->code[offset];

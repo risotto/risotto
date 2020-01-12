@@ -18,8 +18,8 @@ std::vector<ByteResolver *> ExpressionStmt::compile(Compiler *compiler) {
     auto exprType = expr->getReturnType(compiler);
 
     if (!exprType.empty()) {
-        bytes.push_back(new ByteResolver(OP_POP, nullptr));
-        bytes.push_back(new ByteResolver(exprType.size(), nullptr));
+        bytes.push_back(new ByteResolver(OP_POP));
+        bytes.push_back(new ByteResolver(exprType.size()));
     }
 
     return bytes;

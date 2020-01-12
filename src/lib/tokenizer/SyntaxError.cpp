@@ -5,9 +5,9 @@
 #include "SyntaxError.h"
 #include <sstream>
 
-SyntaxError::SyntaxError(const std::string &message, Position *position) : position(position) {
+SyntaxError::SyntaxError(const std::string &message, Position position) : position(position) {
     std::stringstream ss;
-    ss << message << " at line " << position->line << ", column " << position->column;
+    ss << message << " at " << position_string(position);
 
     this->message = ss.str();
 }

@@ -19,25 +19,25 @@ std::vector<ByteResolver *>
 LogicalExpr::generateOr(std::vector<ByteResolver *> leftBytes, std::vector<ByteResolver *> rightBytes, Compiler *compiler) {
     auto bytes = std::vector<ByteResolver *>();
 
-    auto trueByte = new ByteResolver(OP_TRUE, nullptr);
-    auto falseByte = new ByteResolver(OP_FALSE, nullptr);
+    auto trueByte = new ByteResolver(OP_TRUE);
+    auto falseByte = new ByteResolver(OP_FALSE);
 
     // LEFT
     bytes.insert(bytes.end(), leftBytes.begin(), leftBytes.end());
 
-    bytes.push_back(new ByteResolver(OP_JUMPT, &op->position));
-    bytes.push_back(new ByteResolver([trueByte](Compiler *c){return c->getAddr(trueByte);}, nullptr));
+    bytes.push_back(new ByteResolver(OP_JUMPT, op->position));
+    bytes.push_back(new ByteResolver([trueByte](Compiler *c){return c->getAddr(trueByte);}));
 
     // RIGHT
     bytes.insert(bytes.end(), rightBytes.begin(), rightBytes.end());
 
-    bytes.push_back(new ByteResolver(OP_JUMPT, nullptr));
-    bytes.push_back(new ByteResolver([trueByte](Compiler *c){return c->getAddr(trueByte);}, nullptr));
+    bytes.push_back(new ByteResolver(OP_JUMPT, TODO_POSITION));
+    bytes.push_back(new ByteResolver([trueByte](Compiler *c){return c->getAddr(trueByte);}));
 
     // EXIT
     bytes.insert(bytes.end(), falseByte);
-    bytes.push_back(new ByteResolver(OP_JUMP, nullptr));
-    bytes.push_back(new ByteResolver([trueByte](Compiler *c){return c->getAddr(trueByte) + 1;}, nullptr));
+    bytes.push_back(new ByteResolver(OP_JUMP, TODO_POSITION));
+    bytes.push_back(new ByteResolver([trueByte](Compiler *c){return c->getAddr(trueByte) + 1;}));
 
     bytes.insert(bytes.end(), trueByte);
 
@@ -48,25 +48,25 @@ std::vector<ByteResolver *>
 LogicalExpr::generateAnd(std::vector<ByteResolver *> leftBytes, std::vector<ByteResolver *> rightBytes, Compiler *compiler) {
     auto bytes = std::vector<ByteResolver *>();
 
-    auto trueByte = new ByteResolver(OP_TRUE, nullptr);
-    auto falseByte = new ByteResolver(OP_FALSE, nullptr);
+    auto trueByte = new ByteResolver(OP_TRUE);
+    auto falseByte = new ByteResolver(OP_FALSE);
 
     // LEFT
     bytes.insert(bytes.end(), leftBytes.begin(), leftBytes.end());
 
-    bytes.push_back(new ByteResolver(OP_JUMPF, &op->position));
-    bytes.push_back(new ByteResolver([falseByte](Compiler *c){return c->getAddr(falseByte);}, nullptr));
+    bytes.push_back(new ByteResolver(OP_JUMPF, op->position));
+    bytes.push_back(new ByteResolver([falseByte](Compiler *c){return c->getAddr(falseByte);}));
 
     // RIGHT
     bytes.insert(bytes.end(), rightBytes.begin(), rightBytes.end());
 
-    bytes.push_back(new ByteResolver(OP_JUMPF, nullptr));
-    bytes.push_back(new ByteResolver([falseByte](Compiler *c){return c->getAddr(falseByte);}, nullptr));
+    bytes.push_back(new ByteResolver(OP_JUMPF, TODO_POSITION));
+    bytes.push_back(new ByteResolver([falseByte](Compiler *c){return c->getAddr(falseByte);}));
 
     // EXIT
     bytes.insert(bytes.end(), trueByte);
-    bytes.push_back(new ByteResolver(OP_JUMP, nullptr));
-    bytes.push_back(new ByteResolver([falseByte](Compiler *c){return c->getAddr(falseByte) + 1;}, nullptr));
+    bytes.push_back(new ByteResolver(OP_JUMP, TODO_POSITION));
+    bytes.push_back(new ByteResolver([falseByte](Compiler *c){return c->getAddr(falseByte) + 1;}));
 
     bytes.insert(bytes.end(), falseByte);
 

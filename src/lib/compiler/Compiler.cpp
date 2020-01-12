@@ -111,34 +111,34 @@ NATIVE_UNARY_PREFIX_OPERATOR_DECLARATION(target, --, return, decrement) \
 
 #define BYTES_OPERATOR_MATH_DECLARATIONS(t, prefix) \
     BYTES_OPERATOR_DECLARATION(t, ==, t, bool, []() { \
-        return std::vector<ByteResolver *>({new ByteResolver(OP_EQ, nullptr)}); \
+        return std::vector<ByteResolver *>({new ByteResolver(OP_EQ, TODO_POSITION)}); \
     }) \
     BYTES_OPERATOR_DECLARATION(t, !=, t, bool, []() { \
-        return std::vector<ByteResolver *>({new ByteResolver(OP_NEQ, nullptr)}); \
+        return std::vector<ByteResolver *>({new ByteResolver(OP_NEQ, TODO_POSITION)}); \
     }) \
     BYTES_OPERATOR_DECLARATION(t, +, t, t, []() { \
-    return std::vector<ByteResolver *>({new ByteResolver(OP_##prefix##ADD, nullptr)}); \
+    return std::vector<ByteResolver *>({new ByteResolver(OP_##prefix##ADD, TODO_POSITION)}); \
     }) \
     BYTES_OPERATOR_DECLARATION(t, -, t, t, []() { \
-        return std::vector<ByteResolver *>({new ByteResolver(OP_##prefix##SUB, nullptr)}); \
+        return std::vector<ByteResolver *>({new ByteResolver(OP_##prefix##SUB, TODO_POSITION)}); \
     }) \
     BYTES_OPERATOR_DECLARATION(t, *, t, t, []() { \
-        return std::vector<ByteResolver *>({new ByteResolver(OP_##prefix##MUL, nullptr)}); \
+        return std::vector<ByteResolver *>({new ByteResolver(OP_##prefix##MUL, TODO_POSITION)}); \
     }) \
     BYTES_OPERATOR_DECLARATION(t, /, t, t, []() { \
-        return std::vector<ByteResolver *>({new ByteResolver(OP_##prefix##DIV, nullptr)}); \
+        return std::vector<ByteResolver *>({new ByteResolver(OP_##prefix##DIV, TODO_POSITION)}); \
     }) \
     BYTES_OPERATOR_DECLARATION(t, <, t, bool, []() { \
-        return std::vector<ByteResolver *>({new ByteResolver(OP_##prefix##LT, nullptr), new ByteResolver(false)}); \
+        return std::vector<ByteResolver *>({new ByteResolver(OP_##prefix##LT, TODO_POSITION), new ByteResolver(false)}); \
     }) \
     BYTES_OPERATOR_DECLARATION(t, >, t, bool, []() { \
-        return std::vector<ByteResolver *>({new ByteResolver(OP_##prefix##GT, nullptr), new ByteResolver(false)}); \
+        return std::vector<ByteResolver *>({new ByteResolver(OP_##prefix##GT, TODO_POSITION), new ByteResolver(false)}); \
     }) \
     BYTES_OPERATOR_DECLARATION(t, <=, t, bool, []() { \
-        return std::vector<ByteResolver *>({new ByteResolver(OP_##prefix##LT, nullptr), new ByteResolver(true)}); \
+        return std::vector<ByteResolver *>({new ByteResolver(OP_##prefix##LT, TODO_POSITION), new ByteResolver(true)}); \
     }) \
     BYTES_OPERATOR_DECLARATION(t, >=, t, bool, []() { \
-        return std::vector<ByteResolver *>({new ByteResolver(OP_##prefix##GT, nullptr), new ByteResolver(true)}); \
+        return std::vector<ByteResolver *>({new ByteResolver(OP_##prefix##GT, TODO_POSITION), new ByteResolver(true)}); \
     })
 
 Compiler::Compiler(std::vector<Stmt *> stmts) : stmts(std::move(stmts)) {
@@ -159,7 +159,7 @@ Compiler::Compiler(std::vector<Stmt *> stmts) : stmts(std::move(stmts)) {
     NATIVE_BINARY_OPERATOR_STRING_DECLARATIONS(int)
 
     BYTES_OPERATOR_DECLARATION(int, %, int, int, []() { \
-        return std::vector<ByteResolver *>({new ByteResolver(OP_IMOD, nullptr)}); \
+        return std::vector<ByteResolver *>({new ByteResolver(OP_IMOD, TODO_POSITION)}); \
     })
 
     NATIVE_UNARY_OPERATOR_MATH_DECLARATIONS(int, int)
@@ -221,18 +221,12 @@ Chunk Compiler::compile() {
         bytes.insert(bytes.end(), stmtBytes.begin(), stmtBytes.end());
     }
 
-    bytes.push_back(new ByteResolver(OP_END, nullptr));
+    bytes.push_back(new ByteResolver(OP_END, TODO_POSITION));
 
     for (auto b: bytes) {
         b->finalize(this);
 
-        // TODO: column
-        int l = -1;
-        if (b->position != nullptr) {
-            l = b->position->line;
-        }
-
-        writeChunk(&chunk, b->byte, l);
+        writeChunk(&chunk, b->byte, b->position);
 
         delete b;
     }

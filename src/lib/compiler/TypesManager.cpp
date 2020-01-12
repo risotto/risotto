@@ -44,7 +44,7 @@ void TypesManager::link() {
                 ss << "Cannot find type for: " << typeDesc->toString();
 
                 if (auto idDesc = dynamic_cast<IdentifierTypeDescriptor *>(typeDesc)) {
-                    ss << " at " << idDesc->name->position.toString();
+                    ss << " at " << position_string(idDesc->name->position);
                 }
 
                 unit->lastError = ss.str();

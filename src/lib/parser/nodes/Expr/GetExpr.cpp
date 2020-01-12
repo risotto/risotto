@@ -39,8 +39,8 @@ std::vector<ByteResolver *> GetExpr::compile(Compiler *compiler) {
         auto calleeBytes = callee->compile(compiler);
         bytes.insert(bytes.begin(), calleeBytes.begin(), calleeBytes.end());
 
-        bytes.push_back(new ByteResolver(OP_LOAD_INSTANCE, &identifier->position));
-        bytes.push_back(new ByteResolver(structDef->getFieldIndex(structDef->fields.find(identifier->lexeme)), nullptr));
+        bytes.push_back(new ByteResolver(OP_LOAD_INSTANCE, identifier->position));
+        bytes.push_back(new ByteResolver(structDef->getFieldIndex(structDef->fields.find(identifier->lexeme))));
 
         return bytes;
     }

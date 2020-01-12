@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include "common.h"
 #include "value.h"
+#include "position.h"
 
 typedef enum {
     OP_CONST,
@@ -60,12 +61,12 @@ typedef struct {
     int count;
     int capacity;
     OP_T* code;
-    int* lines;
+    Position* positions;
     ValueArray constants;
 } Chunk;
 
 void initChunk(Chunk* chunk);
-void writeChunk(Chunk* chunk, OP_T byte, int line);
+void writeChunk(Chunk* chunk, OP_T byte, Position line);
 int addConstant(Chunk* chunk, Value value);
 void freeChunk(Chunk* chunk);
 

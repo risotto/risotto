@@ -160,7 +160,7 @@ std::vector<Stmt *> Parser::program() {
 
         if (s == nullptr) {
             auto token = peek();
-            throw CompilerError("Unexpected token " + token->lexeme + " at " + token->position.toString());
+            throw CompilerError("Unexpected token " + token->lexeme, token->position);
         }
 
         nodes.push_back(s);

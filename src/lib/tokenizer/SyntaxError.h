@@ -11,9 +11,9 @@
 class SyntaxError : public std::exception {
 public:
     std::string message;
-    Position *position;
+    Position position;
 
-    SyntaxError(const std::string &message, Position *position);
+    SyntaxError(const std::string &message, Position position);
 
     [[nodiscard]] const char *what() const noexcept override;
 };

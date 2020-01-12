@@ -167,7 +167,7 @@ static InterpretResult run() {
     for (;;) {
 #ifdef DEBUG_TRACE_EXECUTION
         if (traceExec) {
-            printf("          ");
+            printf("             ");
             for (Value *slot = vm.stack; slot < vm.sp; slot++) {
                 if (vm.fp == slot) {
                     printf("#");
@@ -331,7 +331,6 @@ static InterpretResult run() {
                 OP_T rc = READ_BYTE();
 
                 Value rvals[rc];
-
                 for (int i = 0; i < rc; ++i) {
                     rvals[i] = pop();     // pop return value from top of the stack
                 }

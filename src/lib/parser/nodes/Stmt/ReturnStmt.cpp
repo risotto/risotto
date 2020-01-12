@@ -25,9 +25,9 @@ std::vector<ByteResolver *> ReturnStmt::compile(Compiler *compiler) {
         bytes.insert(bytes.end(), valueBytes.begin(), valueBytes.end());
     }
 
-    bytes.push_back(new ByteResolver(OpCode::OP_RETURN, &keyword->position));
-    bytes.push_back(new ByteResolver(distance, nullptr));
-    bytes.push_back(new ByteResolver(values.size(), nullptr));
+    bytes.push_back(new ByteResolver(OpCode::OP_RETURN, keyword->position));
+    bytes.push_back(new ByteResolver(distance));
+    bytes.push_back(new ByteResolver(values.size()));
 
     return bytes;
 }

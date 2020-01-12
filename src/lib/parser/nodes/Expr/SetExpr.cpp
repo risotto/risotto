@@ -22,7 +22,7 @@ std::vector<ByteResolver *> SetExpr::compile(Compiler *compiler) {
     auto valueBytes = right->compile(compiler);
     bytes.insert(bytes.end(), valueBytes.begin(), valueBytes.end());
 
-    bytes.push_back(new ByteResolver(OP_SET, &op->position));
+    bytes.push_back(new ByteResolver(OP_SET, op->position));
 
     return bytes;
 }

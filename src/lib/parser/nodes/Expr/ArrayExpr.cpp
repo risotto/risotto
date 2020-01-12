@@ -23,8 +23,8 @@ std::vector<ByteResolver *> ArrayExpr::compile(Compiler *compiler) {
         bytes.insert(bytes.end(), e.begin(), e.end());
     }
 
-    bytes.push_back(new ByteResolver(OP_ARRAY, nullptr));
-    bytes.push_back(new ByteResolver(static_cast<int>(elements.size()), nullptr));
+    bytes.push_back(new ByteResolver(OP_ARRAY, TODO_POSITION));
+    bytes.push_back(new ByteResolver(static_cast<int>(elements.size())));
 
     return bytes;
 }

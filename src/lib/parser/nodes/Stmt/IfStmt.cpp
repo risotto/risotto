@@ -26,14 +26,14 @@ ByteResolver *generateNextBranchByte(std::vector<std::vector<ByteResolver *>> *b
 
     return new ByteResolver([nextBranchByte](Compiler *c) {
         return c->getAddr(nextBranchByte);
-    }, nullptr);
+    });
 }
 
 ByteResolver *generateExitByte(std::vector<std::vector<ByteResolver *>> *branchesBytes) {
     auto lastElseByte = branchesBytes->front().back();
     return new ByteResolver([lastElseByte](Compiler *c) {
         return c->getAddr(lastElseByte) + 1;
-    }, nullptr);
+    });
 }
 
 std::vector<ByteResolver *> generateElseifBytes(Compiler  *compiler, IfStmt *elseif,
@@ -43,16 +43,16 @@ std::vector<ByteResolver *> generateElseifBytes(Compiler  *compiler, IfStmt *els
     auto conditionBytes = elseif->condition->compile(compiler);
     bytes.insert(bytes.end(), conditionBytes.begin(), conditionBytes.end());
 
-    bytes.push_back(new ByteResolver(OpCode::OP_JUMPF, nullptr));
+    bytes.push_back(new ByteResolver(OpCode::OP_JUMPF));
     bytes.push_back(generateNextBranchByte(branchesBytes));
 
     auto thenBytes = elseif->thenBranch->compile(compiler);
     if (thenBytes.empty()) {
-        thenBytes.push_back(new ByteResolver(OpCode::OP_NOOP, nullptr));
+        thenBytes.push_back(new ByteResolver(OpCode::OP_NOOP));
     }
 
     bytes.insert(bytes.end(), thenBytes.begin(), thenBytes.end());
-    bytes.push_back(new ByteResolver(OpCode::OP_JUMP, nullptr));
+    bytes.push_back(new ByteResolver(OpCode::OP_JUMP));
     bytes.push_back(generateExitByte(branchesBytes));
 
     return bytes;
@@ -67,7 +67,7 @@ std::vector<ByteResolver *> IfStmt::compile(Compiler  *compiler) {
     }
 
     if (elseBytes.empty()) {
-        elseBytes.push_back(new ByteResolver(OpCode::OP_NOOP, nullptr));
+        elseBytes.push_back(new ByteResolver(OpCode::OP_NOOP));
     }
 
     branchesBytes.push_back(elseBytes);

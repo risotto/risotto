@@ -39,9 +39,9 @@ std::vector<ByteResolver *> IdentifierExpr::compile(Compiler *compiler) {
         throw CompilerError("Cannot find symbol " + name->lexeme);
     }
 
-    bytes.push_back(new ByteResolver(OP_LOAD_LOCAL, &name->position));
-    bytes.push_back(new ByteResolver(response->distance, nullptr));
-    bytes.push_back(new ByteResolver(response->variable->index, nullptr));
+    bytes.push_back(new ByteResolver(OP_LOAD_LOCAL, name->position));
+    bytes.push_back(new ByteResolver(response->distance));
+    bytes.push_back(new ByteResolver(response->variable->index));
 
     return bytes;
 }

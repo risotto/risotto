@@ -26,9 +26,9 @@ void IdentifierCallExpr::loadVariableEntryAddr(Compiler *compiler, std::vector<B
         throw CompilerError("Cannot find variable " + identifier->lexeme);
     }
 
-    bytes.push_back(new ByteResolver(OP_LOAD_LOCAL, &identifier->position));
-    bytes.push_back(new ByteResolver(response->distance, nullptr));
-    bytes.push_back(new ByteResolver(response->variable->index, nullptr));
+    bytes.push_back(new ByteResolver(OP_LOAD_LOCAL, identifier->position));
+    bytes.push_back(new ByteResolver(response->distance));
+    bytes.push_back(new ByteResolver(response->variable->index));
 }
 
 FunctionNotFoundError IdentifierCallExpr::getFunctionNotFoundError(Compiler *compiler) {

@@ -7,20 +7,10 @@
 
 extern "C" {
 #include <lib/vm/value.h>
+#include <lib/vm/position.h>
 }
 #include <string>
 #include "TokenType.h"
-
-class Position {
-public:
-    int line;
-    int column;
-
-    Position(int line, int column);
-
-    std::string toString();
-};
-
 
 class Token {
 public:
