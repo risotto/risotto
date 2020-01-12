@@ -43,11 +43,17 @@ typedef enum {
     OP_ISUB,
     OP_IMUL,
     OP_IDIV,
-    OP_IMOD,
     OP_ILT,
     OP_IGT,
+    OP_IMOD,
+    OP_DADD,
+    OP_DSUB,
+    OP_DMUL,
+    OP_DDIV,
+    OP_DLT,
+    OP_DGT,
 
-    Last = OP_IGT,
+    Last = OP_DGT,
 } OpCode;
 
 typedef struct {

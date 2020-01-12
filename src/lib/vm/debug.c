@@ -157,9 +157,15 @@ char *getName(OP_T instruction) {
         NAME(OP_ISUB)
         NAME(OP_IMUL)
         NAME(OP_IDIV)
-        NAME(OP_IMOD)
         NAME(OP_ILT)
         NAME(OP_IGT)
+        NAME(OP_IMOD)
+        NAME(OP_DADD)
+        NAME(OP_DSUB)
+        NAME(OP_DMUL)
+        NAME(OP_DDIV)
+        NAME(OP_DLT)
+        NAME(OP_DGT)
         default:
             return "Unknown opcode";
     }
@@ -184,16 +190,21 @@ int disassembleInstruction(Chunk *chunk, int offset) {
     OP_T instruction = chunk->code[offset];
     switch (instruction) {
         case OP_IADD:
-            return simpleInstruction(getName(instruction), offset);
         case OP_ISUB:
-            return simpleInstruction(getName(instruction), offset);
         case OP_IMUL:
-            return simpleInstruction(getName(instruction), offset);
         case OP_IDIV:
+        case OP_IMOD:
             return simpleInstruction(getName(instruction), offset);
         case OP_ILT:
-            return intInstruction(getName(instruction), chunk, offset);
         case OP_IGT:
+            return intInstruction(getName(instruction), chunk, offset);
+        case OP_DADD:
+        case OP_DSUB:
+        case OP_DMUL:
+        case OP_DDIV:
+            return simpleInstruction(getName(instruction), offset);
+        case OP_DLT:
+        case OP_DGT:
             return intInstruction(getName(instruction), chunk, offset);
         case OP_EQ:
             return simpleInstruction(getName(instruction), offset);

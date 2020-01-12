@@ -156,7 +156,6 @@ Compiler::Compiler(std::vector<Stmt *> stmts) : stmts(std::move(stmts)) {
 
     BYTES_OPERATOR_MATH_DECLARATIONS(int, I)
 
-    NATIVE_BINARY_OPERATOR_MATH_DECLARATIONS(int, double, double)
     NATIVE_BINARY_OPERATOR_STRING_DECLARATIONS(int)
 
     BYTES_OPERATOR_DECLARATION(int, %, int, int, []() { \
@@ -165,8 +164,7 @@ Compiler::Compiler(std::vector<Stmt *> stmts) : stmts(std::move(stmts)) {
 
     NATIVE_UNARY_OPERATOR_MATH_DECLARATIONS(int, int)
 
-    NATIVE_BINARY_OPERATOR_MATH_DECLARATIONS(double, double, double)
-    NATIVE_BINARY_OPERATOR_MATH_DECLARATIONS(double, int, double)
+    BYTES_OPERATOR_MATH_DECLARATIONS(double, D)
     NATIVE_BINARY_OPERATOR_STRING_DECLARATIONS(double)
 
     NATIVE_UNARY_OPERATOR_MATH_DECLARATIONS(double, double)

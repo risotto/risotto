@@ -136,6 +136,14 @@ case code: { \
     break; \
 }
 
+#define VM_MATH_OPS(t, f) \
+    VM_BINARY(OP_##t##ADD, f, f, +) \
+    VM_BINARY(OP_##t##SUB, f, f, -) \
+    VM_BINARY(OP_##t##MUL, f, f, *) \
+    VM_BINARY(OP_##t##DIV, f, f, /) \
+    VM_BINARY_EQ(OP_##t##LT, f, <) \
+    VM_BINARY_EQ(OP_##t##GT, f, >)
+
 static InterpretResult run() {
 #ifdef BENCHMARK_TIMINGS
     bool benchmarkExec = hasFlag(BenchmarkExecution);
@@ -476,13 +484,9 @@ static InterpretResult run() {
                 push(b2v(memcmp(&l.data, &r.data, sizeof(ValueData)) != 0));
                 break;
             }
-            VM_BINARY(OP_IADD, i, i, +)
-            VM_BINARY(OP_ISUB, i, i, -)
-            VM_BINARY(OP_IMUL, i, i, *)
-            VM_BINARY(OP_IDIV, i, i, /)
+            VM_MATH_OPS(I, i)
             VM_BINARY(OP_IMOD, i, i, %)
-            VM_BINARY_EQ(OP_ILT, i, <)
-            VM_BINARY_EQ(OP_IGT, i, >)
+            VM_MATH_OPS(D, d)
             case OP_END: {
 #ifdef BENCHMARK_TIMINGS
                 if (benchmarkExec) {

@@ -87,10 +87,6 @@ NATIVE_BINARY_EQ_OPS(leftType, rightType, leftV2, rightV2)
 
 // Int
 
-NATIVE_BINARY_MATH_OP(int, mod, int, v2i, v2i, %, i2v)
-
-NATIVE_BINARY_MATH_OPS(int, double, v2i, v2d, d2v)
-
 NATIVE_BINARY_STRING_OPS(int, int, v2i, %i)
 
 NativeFunctionReturn unary_prefix_int_negate(Value *args, int argc) {
@@ -123,10 +119,6 @@ NATIVE_UNARY_POSTFIX_IN_PLACE(int, decrement, v2i, i2v, -1)
 NATIVE_UNARY_POSTFIX_IN_PLACE(int, increment, v2i, i2v, +1)
 
 // Double
-
-NATIVE_BINARY_MATH_OPS(double, int, v2d, v2i, d2v)
-
-NATIVE_BINARY_MATH_OPS(double, double, v2d, v2d, d2v)
 
 NATIVE_BINARY_STRING_OPS(double, double, v2d, %lf)
 
