@@ -49,16 +49,11 @@ NATIVE_BINARY_OPERATOR_DECLARATION(target, >, param, bool, greater) \
 NATIVE_BINARY_OPERATOR_DECLARATION(target, <=, param, bool, lower_equal) \
 NATIVE_BINARY_OPERATOR_DECLARATION(target, >=, param, bool, greater_equal) \
 NATIVE_BINARY_OPERATOR_DECLARATION(target, ==, param, bool, eq) \
-NATIVE_BINARY_OPERATOR_DECLARATION(target, !=, param, bool, neq) \
-NATIVE_BINARY_OPERATOR_DECLARATION(target, +=, param, return, add_equal) \
-NATIVE_BINARY_OPERATOR_DECLARATION(target, -=, param, return, sub_equal) \
-NATIVE_BINARY_OPERATOR_DECLARATION(target, *=, param, return, mul_equal) \
-NATIVE_BINARY_OPERATOR_DECLARATION(target, /=, param, return, div_equal)
+NATIVE_BINARY_OPERATOR_DECLARATION(target, !=, param, bool, neq)
 
 #define NATIVE_BINARY_OPERATOR_STRING_DECLARATIONS(type) \
 NATIVE_BINARY_OPERATOR_DECLARATION(string, +, type, string, add) \
-NATIVE_BINARY_OPERATOR_DECLARATION(type, +, string, string, add) \
-NATIVE_BINARY_OPERATOR_DECLARATION(string, +=, type, string, add_equal)
+NATIVE_BINARY_OPERATOR_DECLARATION(type, +, string, string, add)
 
 #define NATIVE_UNARY_OPERATOR_DECLARATION(target, op, return, functionName) \
     auto FUNCTION_ENTRY_VAR(target, functionName) = ENTRY_DEF(TYPE_ENTRY(target))->addPrefix( \
@@ -96,6 +91,55 @@ NATIVE_UNARY_PREFIX_OPERATOR_DECLARATION(target, --, return, decrement) \
         ) \
     );
 
+#define _BYTES_OPERATOR_DECLARATION(target, op, params, return, generator) \
+ENTRY_DEF(TYPE_ENTRY(target))->addOperator( \
+    SELF_RECEIVER("i", target), \
+    new BytesFunctionEntry( \
+        #op, \
+        new FunctionTypeDescriptor( \
+            true, \
+            params, \
+            return \
+        ), \
+        generator \
+    ) \
+);
+
+#define BYTES_OPERATOR_DECLARATION(target, op, param, return, generator) \
+    _BYTES_OPERATOR_DECLARATION(target, op, {new ParameterDefinition("right", TYPE_DESC(param), true)}, {TYPE_DESC(return)}, generator)
+
+#define BYTES_OPERATOR_MATH_DECLARATIONS(t, prefix) \
+    BYTES_OPERATOR_DECLARATION(t, ==, t, bool, []() { \
+        return std::vector<ByteResolver *>({new ByteResolver(OP_EQ, nullptr)}); \
+    }) \
+    BYTES_OPERATOR_DECLARATION(t, !=, t, bool, []() { \
+        return std::vector<ByteResolver *>({new ByteResolver(OP_NEQ, nullptr)}); \
+    }) \
+    BYTES_OPERATOR_DECLARATION(t, +, t, t, []() { \
+    return std::vector<ByteResolver *>({new ByteResolver(OP_##prefix##ADD, nullptr)}); \
+    }) \
+    BYTES_OPERATOR_DECLARATION(t, -, t, t, []() { \
+        return std::vector<ByteResolver *>({new ByteResolver(OP_##prefix##SUB, nullptr)}); \
+    }) \
+    BYTES_OPERATOR_DECLARATION(t, *, t, t, []() { \
+        return std::vector<ByteResolver *>({new ByteResolver(OP_##prefix##MUL, nullptr)}); \
+    }) \
+    BYTES_OPERATOR_DECLARATION(t, /, t, t, []() { \
+        return std::vector<ByteResolver *>({new ByteResolver(OP_##prefix##DIV, nullptr)}); \
+    }) \
+    BYTES_OPERATOR_DECLARATION(t, <, t, bool, []() { \
+        return std::vector<ByteResolver *>({new ByteResolver(OP_##prefix##LT, nullptr), new ByteResolver(false)}); \
+    }) \
+    BYTES_OPERATOR_DECLARATION(t, >, t, bool, []() { \
+        return std::vector<ByteResolver *>({new ByteResolver(OP_##prefix##GT, nullptr), new ByteResolver(false)}); \
+    }) \
+    BYTES_OPERATOR_DECLARATION(t, <=, t, bool, []() { \
+        return std::vector<ByteResolver *>({new ByteResolver(OP_##prefix##LT, nullptr), new ByteResolver(true)}); \
+    }) \
+    BYTES_OPERATOR_DECLARATION(t, >=, t, bool, []() { \
+        return std::vector<ByteResolver *>({new ByteResolver(OP_##prefix##GT, nullptr), new ByteResolver(true)}); \
+    })
+
 Compiler::Compiler(std::vector<Stmt *> stmts) : stmts(std::move(stmts)) {
     frame = new Frame();
     typesManager = new TypesManager();
@@ -103,11 +147,14 @@ Compiler::Compiler(std::vector<Stmt *> stmts) : stmts(std::move(stmts)) {
     initChunk(&chunk);
 
     auto TYPE_ENTRY(int) = frame->types.add(new IdentifierTypeDescriptor("int", new ScalarTypeDefinition("int")));
-    auto TYPE_ENTRY(double) = frame->types.add(new IdentifierTypeDescriptor("double", new ScalarTypeDefinition("double")));
+    auto TYPE_ENTRY(double) = frame->types.add(
+            new IdentifierTypeDescriptor("double", new ScalarTypeDefinition("double")));
     auto TYPE_ENTRY(bool) = frame->types.add(new IdentifierTypeDescriptor("bool", new ScalarTypeDefinition("bool")));
-    auto TYPE_ENTRY(string) = frame->types.add(new IdentifierTypeDescriptor("string", new ScalarTypeDefinition("string")));
+    auto TYPE_ENTRY(string) = frame->types.add(
+            new IdentifierTypeDescriptor("string", new ScalarTypeDefinition("string")));
 
-    NATIVE_BINARY_OPERATOR_MATH_DECLARATIONS(int, int, int)
+    BYTES_OPERATOR_MATH_DECLARATIONS(int, I)
+
     NATIVE_BINARY_OPERATOR_MATH_DECLARATIONS(int, double, double)
     NATIVE_BINARY_OPERATOR_STRING_DECLARATIONS(int)
     NATIVE_BINARY_OPERATOR_DECLARATION(int, %, int, int, mod)
@@ -123,12 +170,11 @@ Compiler::Compiler(std::vector<Stmt *> stmts) : stmts(std::move(stmts)) {
     NATIVE_BINARY_OPERATOR_STRING_DECLARATIONS(bool)
 
     NATIVE_BINARY_OPERATOR_DECLARATION(string, +, string, string, add)
-    NATIVE_BINARY_OPERATOR_DECLARATION(string, +=, string, string, add_equal)
 
     auto FUNCTION_ENTRY_VAR(bool, unary_prefix_bool_invert) = ENTRY_DEF(TYPE_ENTRY(bool))->addPrefix(
             SELF_RECEIVER("right", bool),
             new NativeFunctionEntry(
-                   "!",
+                    "!",
                     new FunctionTypeDescriptor(
                             true, \
                             {},
@@ -146,7 +192,7 @@ Compiler::Compiler(std::vector<Stmt *> stmts) : stmts(std::move(stmts)) {
 
     frame->functions.add(
             new NativeFunctionEntry(
-                   "vm_stats",
+                    "vm_stats",
                     new FunctionTypeDescriptor(false, {}, {}),
                     vm_stats
             )

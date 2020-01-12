@@ -25,20 +25,12 @@ bool MixedCallExpr::isArgumentReference(Compiler *compiler, int i) {
     });
 }
 
-void MixedCallExpr::loadCallAddr(Compiler *compiler, std::vector<ByteResolver *> &bytes) {
-    auto loadBytes = act<std::vector<ByteResolver *>>(compiler, [this, compiler](FunctionTypeDescriptor *functionRef) {
-        auto bytes = std::vector<ByteResolver *>();
-
+bool MixedCallExpr::loadCallAddr(Compiler *compiler, std::vector<ByteResolver *> &bytes) {
+    return act<bool>(compiler, [this, compiler, &bytes](FunctionTypeDescriptor *functionRef) {
         loadVariableEntryAddr(compiler, bytes);
 
-        return bytes;
-    }, [compiler](FunctionEntry *functionEntry) {
-        auto bytes = std::vector<ByteResolver *>();
-
-        Utils::loadFunctionEntryAddr(compiler, functionEntry, bytes);
-
-        return bytes;
+        return false;
+    }, [compiler, &bytes](FunctionEntry *functionEntry) {
+        return Utils::loadFunctionEntryAddr(compiler, functionEntry, bytes);
     });
-
-    bytes.insert(bytes.end(), loadBytes.begin(), loadBytes.end());
 }

@@ -22,6 +22,7 @@ public:
     Position *position = nullptr;
 
     explicit ByteResolver(OP_T byte, Position *position);
+    explicit ByteResolver(OP_T byte);
     explicit ByteResolver(std::function<OP_T(Compiler *c)> resolver, Position *position);
 
     void finalize(Compiler *c);

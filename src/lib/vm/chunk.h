@@ -34,11 +34,19 @@ typedef enum {
     OP_ARRAY_INSERT,
     OP_TRUE,
     OP_FALSE,
+    OP_EQ,
+    OP_NEQ,
     OP_EQ_NIL,
     OP_NEQ_NIL,
     OP_RESOLVE_ADDR,
+    OP_IADD,
+    OP_ISUB,
+    OP_IMUL,
+    OP_IDIV,
+    OP_ILT,
+    OP_IGT,
 
-    Last = OP_RESOLVE_ADDR,
+    Last = OP_IGT,
 } OpCode;
 
 typedef struct {

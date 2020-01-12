@@ -21,8 +21,7 @@ void writeValueArray(ValueArray *array, Value value) {
     if (array->capacity < array->object.size + 1) {
         unsigned int oldCapacity = array->capacity;
         array->capacity = GROW_CAPACITY(oldCapacity);
-        array->object.values = GROW_ARRAY(array->object.values, Value,
-                                          oldCapacity, array->capacity);
+        array->object.values = GROW_ARRAY(array->object.values, Value, oldCapacity, array->capacity);
     }
 
     array->object.values[array->object.size] = value;

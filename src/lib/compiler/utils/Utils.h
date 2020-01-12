@@ -23,7 +23,7 @@ public:
     static bool typesMatch(std::vector<TypeDescriptor *>& receivers, std::vector<TypeDescriptor *> args, const std::function<bool(int i, TypeDescriptor *, TypeDescriptor *)>& comparator);
     static bool typesMatch(std::vector<ParameterDefinition *>& params, std::vector<ParameterDefinition *> args, const std::function<bool(int i, TypeDescriptor *, TypeDescriptor *)>& comparator);
 
-    static void loadFunctionEntryAddr(Compiler *compiler, FunctionEntry *entry, std::vector<ByteResolver *> &bytes);
+    static bool loadFunctionEntryAddr(Compiler *compiler, FunctionEntry *entry, std::vector<ByteResolver *> &bytes);
 
     static std::vector<TypeDescriptor *> getTypes(const std::vector<Expr *>&, Compiler *compiler);
 

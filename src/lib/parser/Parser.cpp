@@ -538,7 +538,33 @@ Expr *Parser::assignment() {
         Token *op = previous();
         Expr *value = expression();
 
-        return new BinaryExpr(expr, op, value);
+        auto compoundToOp = std::map<TokenType, TokenType>(
+                {
+                        {TokenType::PLUS_EQUAL,  TokenType::PLUS},
+                        {TokenType::MINUS_EQUAL, TokenType::MINUS},
+                        {TokenType::STAR_EQUAL,  TokenType::STAR},
+                        {TokenType::SLASH_EQUAL, TokenType::SLASH},
+                }
+        );
+
+        auto compoundToStr = std::map<TokenType, std::string>(
+                {
+                        {TokenType::PLUS_EQUAL,  "+"},
+                        {TokenType::MINUS_EQUAL, "-"},
+                        {TokenType::STAR_EQUAL,  "*"},
+                        {TokenType::SLASH_EQUAL, "/"},
+                }
+        );
+
+        return new SetExpr(
+                expr,
+                new Token(TokenType::EQUAL, {}, "=", op->position),
+                new BinaryExpr(
+                        expr,
+                        new Token(compoundToOp[op->type], {}, compoundToStr[op->type], op->position),
+                        value
+                )
+        );
     }
 
     return expr;

@@ -42,13 +42,6 @@ NATIVE_BINARY_FUNCTION(leftType, opName, rightType, leftType, rightType, leftV2,
     ret(1, outV(left op right)); \
 }
 
-#define NATIVE_BINARY_SHORTHAND_MATH_OP(leftType, opName, rightType, leftV2, rightV2, op, outV) \
-NATIVE_BINARY_FUNCTION(leftType, opName##_equal, rightType, leftType, rightType, leftV2, rightV2) \
-    NativeFunctionReturn r = NATIVE_BINARY_FUNCTION_NAME(leftType, opName, rightType)(args, argc); \
-    set(r.values[0], &args[0]); \
-    ret(1, r.values[0]); \
-}
-
 #define NATIVE_BINARY_STRING_OPS(type, CType, V2, fmt) \
 NATIVE_BINARY_FUNCTION(type, add, string, CType, str_t, V2, v2s) \
     char *result; \
@@ -59,11 +52,6 @@ NATIVE_BINARY_FUNCTION(string, add, type, str_t, CType, v2s, V2) \
     char *result; \
     asprintf(&result, "%s" #fmt, left, right); \
     ret(1, s2v(result)); \
-} \
-NATIVE_BINARY_FUNCTION(string, add_equal, type, str_t, CType, v2s, V2) \
-    NativeFunctionReturn r = NATIVE_BINARY_FUNCTION_NAME(string, add, type)(args, argc); \
-    set(r.values[0], &args[0]); \
-    ret(1, r.values[0]); \
 }
 
 #define NATIVE_BINARY_EQ_OPS(leftType, rightType, leftV2, rightV2) \
@@ -95,15 +83,9 @@ NATIVE_BINARY_MATH_OP(leftType, lower,          rightType, leftV2, rightV2, <,  
 NATIVE_BINARY_MATH_OP(leftType, greater,        rightType, leftV2, rightV2, >,  b2v) \
 NATIVE_BINARY_MATH_OP(leftType, lower_equal,    rightType, leftV2, rightV2, <=, b2v) \
 NATIVE_BINARY_MATH_OP(leftType, greater_equal,  rightType, leftV2, rightV2, >=, b2v) \
-NATIVE_BINARY_SHORTHAND_MATH_OP(leftType, add, rightType, leftV2, rightV2, +, outV) \
-NATIVE_BINARY_SHORTHAND_MATH_OP(leftType, sub, rightType, leftV2, rightV2, -, outV) \
-NATIVE_BINARY_SHORTHAND_MATH_OP(leftType, mul, rightType, leftV2, rightV2, *, outV) \
-NATIVE_BINARY_SHORTHAND_MATH_OP(leftType, div, rightType, leftV2, rightV2, /, outV) \
 NATIVE_BINARY_EQ_OPS(leftType, rightType, leftV2, rightV2)
 
 // Int
-
-NATIVE_BINARY_MATH_OPS(int, int, v2i, v2i, i2v)
 
 NATIVE_BINARY_MATH_OP(int, mod, int, v2i, v2i, %, i2v)
 
@@ -188,28 +170,12 @@ NativeFunctionReturn binary_string_add_bool(Value args[], int argc) {
     ret(1, s2v(result));
 }
 
-NativeFunctionReturn binary_string_add_equal_bool(Value args[], int argc) {
-    NativeFunctionReturn v = binary_string_add_bool(args, argc);
-
-    set(v.values[0], &args[0]);
-
-    ret(1, v.values[0]);
-}
-
 // String
 
 NATIVE_BINARY_FUNCTION(string, add, string, str_t, str_t, v2s, v2s)
     char *result;
     asprintf(&result, "%s%s", left, right);
     ret(1, s2v(result));
-}
-
-NativeFunctionReturn binary_string_add_equal_string(Value args[], int argc) {
-    NativeFunctionReturn v = binary_string_add_string(args, argc);
-
-    set(v.values[0], &args[0]);
-
-    ret(1, v.values[0]);
 }
 
 NativeFunctionReturn println_int(Value args[], int argc) {

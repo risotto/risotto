@@ -30,7 +30,7 @@ public:
 
     virtual bool isArgumentReference(Compiler *compiler, int i) = 0;
 
-    virtual void loadCallAddr(Compiler *compiler, std::vector<ByteResolver *> &bytes) = 0;
+    virtual bool loadCallAddr(Compiler *compiler, std::vector<ByteResolver *> &bytes) = 0;
     virtual void loadArgs(Compiler *compiler, std::vector<ByteResolver *> &bytes);
 
     void symbolize(Compiler *compiler) override;

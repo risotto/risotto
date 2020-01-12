@@ -22,8 +22,8 @@ typedef struct {
     Chunk* chunk;
     OP_T* ip;
     Value stack[STACK_MAX];
-    Value* sp;
-    Value* fp;
+    Value *sp;
+    Value *fp;
     Object *firstObject;
     /* The total number of currently allocated values. */
     int numObjects;

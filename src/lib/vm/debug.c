@@ -147,13 +147,21 @@ char *getName(OP_T instruction) {
         NAME(OP_NIL)
         NAME(OP_TRUE)
         NAME(OP_FALSE)
+        NAME(OP_EQ)
+        NAME(OP_NEQ)
         NAME(OP_EQ_NIL)
         NAME(OP_NEQ_NIL)
         NAME(OP_NEW)
         NAME(OP_RESOLVE_ADDR)
+        NAME(OP_IADD)
+        NAME(OP_ISUB)
+        NAME(OP_IMUL)
+        NAME(OP_IDIV)
+        NAME(OP_ILT)
+        NAME(OP_IGT)
+        default:
+            return "Unknown opcode";
     }
-
-    return "Unknown opcode";
 }
 
 int disassembleInstruction(Chunk *chunk, int offset) {
@@ -174,6 +182,22 @@ int disassembleInstruction(Chunk *chunk, int offset) {
 
     OP_T instruction = chunk->code[offset];
     switch (instruction) {
+        case OP_IADD:
+            return simpleInstruction(getName(instruction), offset);
+        case OP_ISUB:
+            return simpleInstruction(getName(instruction), offset);
+        case OP_IMUL:
+            return simpleInstruction(getName(instruction), offset);
+        case OP_IDIV:
+            return simpleInstruction(getName(instruction), offset);
+        case OP_ILT:
+            return intInstruction(getName(instruction), chunk, offset);
+        case OP_IGT:
+            return intInstruction(getName(instruction), chunk, offset);
+        case OP_EQ:
+            return simpleInstruction(getName(instruction), offset);
+        case OP_NEQ:
+            return simpleInstruction(getName(instruction), offset);
         case OP_SET:
             return simpleInstruction(getName(instruction), offset);
         case OP_NOOP:
@@ -247,7 +271,7 @@ void printVtable(Value v) {
     vtable_entry *entry;
     vec_foreach_ptr(&v.vtable->addrs, entry, i) {
             printf("%-4d %-4d ", i, entry->vaddr);
-            printValue(*entry->addr);
+            printValue(entry->addr);
             printf("\n");
         }
 

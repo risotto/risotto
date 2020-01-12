@@ -50,11 +50,11 @@ typedef struct {
 
 // This is super confusing syntax:
 // Creates a type `NativeFunction` which is a function `NativeFunctionReturn (Value *, int)`
-typedef NativeFunctionReturn (*NativeFunction)(Value *, int);
+typedef NativeFunctionReturn (*NativeFunction)(Value[], int);
 
 typedef struct {
     int vaddr;
-    Value *addr;
+    Value addr;
 } vtable_entry;
 
 typedef vec_t(vtable_entry) vtable_entry_vec_t;

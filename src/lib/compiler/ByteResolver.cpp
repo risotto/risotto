@@ -11,6 +11,10 @@ ByteResolver::ByteResolver(OP_T byte, Position *position) : final(true), byte(by
 
 }
 
+ByteResolver::ByteResolver(OP_T byte): ByteResolver(byte, nullptr) {
+
+}
+
 ByteResolver::ByteResolver(std::function<OP_T(Compiler *c)> resolver, Position *position) : final(false), resolver(std::move(resolver)), position(position) {
 
 }

@@ -151,13 +151,10 @@ void TypesManager::generateVEntry(Compiler *compiler, TypeDefinition *receiver, 
         throw std::logic_error("Unhandled function entry");
     }
 
-    auto paddr = static_cast<Value *>(malloc(sizeof(Value)));
-    *paddr = addr;
-
     for (auto vaddr: function->vaddrs) {
         auto entry = vtable_entry{
                 .vaddr = vaddr,
-                .addr = paddr,
+                .addr = addr,
         };
         vec_push(&receiver->vtable->addrs, entry);
     }

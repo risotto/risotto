@@ -115,6 +115,27 @@ void gc() {
     vm.maxObjects = vm.numObjects < INITIAL_GC_THRESHOLD ? INITIAL_GC_THRESHOLD : vm.numObjects * 2;
 }
 
+#define VM_BINARY(code, f, rf, op) \
+case code: { \
+    Value l = pop(); \
+    Value r = pop(); \
+    push(rf##2v(v2##f(l) op v2##f(r))); \
+    break; \
+}
+
+#define VM_BINARY_EQ(code, f, op) \
+case code: { \
+    OP_T eq = READ_BYTE(); \
+    Value l = pop(); \
+    Value r = pop(); \
+    if (eq) { \
+        push(b2v(v2##f(l) op##= v2##f(r))); \
+    } else { \
+        push(b2v(v2##f(l) op v2##f(r))); \
+    }\
+    break; \
+}
+
 static InterpretResult run() {
 #ifdef BENCHMARK_TIMINGS
     bool benchmarkExec = hasFlag(BenchmarkExecution);
@@ -221,7 +242,7 @@ static InterpretResult run() {
                 vtable_entry *entry;
                 vec_foreach_ptr(&v.vtable->addrs, entry, i) {
                         if (entry->vaddr == vaddr) {
-                            push(vp2v(entry->addr));
+                            push(entry->addr);
                             found = true;
                             break;
                         }
@@ -345,7 +366,8 @@ static InterpretResult run() {
 
                 Value *fp = vm.fp;
                 for (int i = 0; i < dist; ++i) {
-                    fp = v2p(*(fp - 1));
+                    Value *a = fp - 1;
+                    fp = v2p(*a);
                 }
 
                 Value *vp = fp + addr;
@@ -383,10 +405,9 @@ static InterpretResult run() {
             }
             case OP_SET: {
                 Value o = pop();
-                Value *t = popp();
+                Value *t = vm.sp - 1;
 
                 set(o, t);
-                push(vp2v(t));
 
                 break;
             }
@@ -441,6 +462,26 @@ static InterpretResult run() {
                 push(b2v(!typecheck(v, T_NIL)));
                 break;
             }
+            case OP_EQ: {
+                Value l = accessRef(pop());
+                Value r = accessRef(pop());
+
+                push(b2v(memcmp(&l.data, &r.data, sizeof(ValueData)) == 0));
+                break;
+            }
+            case OP_NEQ: {
+                Value l = accessRef(pop());
+                Value r = accessRef(pop());
+
+                push(b2v(memcmp(&l.data, &r.data, sizeof(ValueData)) != 0));
+                break;
+            }
+            VM_BINARY(OP_IADD, i, i, +)
+            VM_BINARY(OP_ISUB, i, i, -)
+            VM_BINARY(OP_IMUL, i, i, *)
+            VM_BINARY(OP_IDIV, i, i, /)
+            VM_BINARY_EQ(OP_ILT, i, <)
+            VM_BINARY_EQ(OP_IGT, i, >)
             case OP_END: {
 #ifdef BENCHMARK_TIMINGS
                 if (benchmarkExec) {

@@ -12,8 +12,8 @@ bool SubscriptExpr::isArgumentReference(Compiler *compiler, int i) {
     return false;
 }
 
-void SubscriptExpr::loadCallAddr(Compiler *compiler, std::vector<ByteResolver *> &bytes) {
-    Utils::loadFunctionEntryAddr(compiler, getFunctionEntry(compiler), bytes);
+bool SubscriptExpr::loadCallAddr(Compiler *compiler, std::vector<ByteResolver *> &bytes) {
+    return Utils::loadFunctionEntryAddr(compiler, getFunctionEntry(compiler), bytes);
 }
 
 ReturnTypes SubscriptExpr::computeReturnType(Compiler *compiler) {

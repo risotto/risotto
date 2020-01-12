@@ -4,6 +4,7 @@
 
 extern "C" {
 #include <lib/vm/chunk.h>
+#include <lib/vm/value.h>
 }
 
 #include <lib/compiler/CompilerError.h>
@@ -27,7 +28,15 @@ Utils::findCandidatesFunctions(const std::vector<FunctionEntry *> &functions, co
     return candidates;
 }
 
-void Utils::loadFunctionEntryAddr(Compiler *compiler, FunctionEntry *entry, std::vector<ByteResolver *> &bytes) {
+bool Utils::loadFunctionEntryAddr(Compiler *compiler, FunctionEntry *entry, std::vector<ByteResolver *> &bytes) {
+    if (auto bytesEntry = dynamic_cast<BytesFunctionEntry *>(entry)) {
+        auto genBytes = bytesEntry->get();
+
+        bytes.insert(bytes.end(), genBytes.begin(), genBytes.end());
+
+        return true;
+    }
+
     if (auto interfaceEntry = dynamic_cast<DeclarationFunctionEntry *>(entry)) {
         // Load object
         bytes.push_back(new ByteResolver(OP_LOAD_STACK, nullptr));
@@ -53,6 +62,8 @@ void Utils::loadFunctionEntryAddr(Compiler *compiler, FunctionEntry *entry, std:
     } else {
         throw std::logic_error("Unhandled function entry");
     }
+
+    return false;
 }
 
 FunctionEntry *Utils::findMatchingFunctions(
@@ -84,7 +95,7 @@ FunctionEntry *Utils::findMatchingFunctions(
 bool Utils::typesMatch(
         std::vector<ParameterDefinition *> &params,
         std::vector<ParameterDefinition *> args,
-        const std::function<bool(int i, TypeDescriptor *, TypeDescriptor *)>& comparator
+        const std::function<bool(int i, TypeDescriptor *, TypeDescriptor *)> &comparator
 ) {
     if (params.size() != args.size()) {
         return false;
@@ -115,7 +126,7 @@ bool Utils::typesMatch(
 bool Utils::typesMatch(
         std::vector<TypeDescriptor *> &params,
         std::vector<TypeDescriptor *> args,
-        const std::function<bool(int i, TypeDescriptor *, TypeDescriptor *)>& comparator
+        const std::function<bool(int i, TypeDescriptor *, TypeDescriptor *)> &comparator
 ) {
     if (params.size() != args.size()) {
         return false;

@@ -29,7 +29,7 @@ bool FunctionEntry::isSame(FunctionEntry *other) {
 NativeFunctionEntry::NativeFunctionEntry(
         std::string name,
         FunctionTypeDescriptor *descriptor,
-        NativeFunctionReturn (*fun)(Value[], int)
+        NativeFunction fun
 ) : FunctionEntry(std::move(name), descriptor), fun(fun) {
 
 }
@@ -65,4 +65,14 @@ FunctionEntry *FunctionsTable::add(FunctionEntry *entry) {
 
 std::vector<FunctionEntry *> FunctionsTable::findCandidates(const std::string &name) {
     return Utils::findCandidatesFunctions(entries, name);
+}
+
+BytesFunctionEntry::BytesFunctionEntry(
+        const std::string &name,
+        FunctionTypeDescriptor *descriptor,
+        std::function<std::vector<ByteResolver *>()> generator
+) : FunctionEntry(name, descriptor), generator(std::move(generator)) {}
+
+std::vector<ByteResolver *> BytesFunctionEntry::get() {
+    return generator();
 }
