@@ -480,6 +480,7 @@ static InterpretResult run() {
             VM_BINARY(OP_ISUB, i, i, -)
             VM_BINARY(OP_IMUL, i, i, *)
             VM_BINARY(OP_IDIV, i, i, /)
+            VM_BINARY(OP_IMOD, i, i, %)
             VM_BINARY_EQ(OP_ILT, i, <)
             VM_BINARY_EQ(OP_IGT, i, >)
             case OP_END: {

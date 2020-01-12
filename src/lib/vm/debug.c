@@ -157,6 +157,7 @@ char *getName(OP_T instruction) {
         NAME(OP_ISUB)
         NAME(OP_IMUL)
         NAME(OP_IDIV)
+        NAME(OP_IMOD)
         NAME(OP_ILT)
         NAME(OP_IGT)
         default:

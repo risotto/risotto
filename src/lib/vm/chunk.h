@@ -43,6 +43,7 @@ typedef enum {
     OP_ISUB,
     OP_IMUL,
     OP_IDIV,
+    OP_IMOD,
     OP_ILT,
     OP_IGT,
 

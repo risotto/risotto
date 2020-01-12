@@ -147,6 +147,8 @@ void TypesManager::generateVEntry(Compiler *compiler, TypeDefinition *receiver, 
         addr = p2v((void *) native->fun);
     } else if (auto code = dynamic_cast<CodeFunctionEntry *>(function)) {
         addr = i2v(compiler->getAddr(code->firstByte));
+    } else if (dynamic_cast<BytesFunctionEntry *>(function)) {
+        return; // Not supported
     } else {
         throw std::logic_error("Unhandled function entry");
     }

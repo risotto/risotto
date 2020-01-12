@@ -20,6 +20,7 @@ extern "C" {
 
 #define FUNCTION_ENTRY_VAR(target, functionName) function_entry__##functionName
 #define REGISTER_FUNCTION(target, functionName) typesManager->registerFunction(ENTRY_DEF(TYPE_ENTRY(target)), FUNCTION_ENTRY_VAR(target, functionName));
+#define REGISTER_FUNCTION2(target, functionEntry) typesManager->registerFunction(ENTRY_DEF(TYPE_ENTRY(target)), functionEntry);
 
 #define NATIVE_BINARY_DECLARATION_NAMED(target, op, param, return, functionName) \
     auto FUNCTION_ENTRY_VAR(target, functionName) = ENTRY_DEF(TYPE_ENTRY(target))->addOperator( \
@@ -92,18 +93,18 @@ NATIVE_UNARY_PREFIX_OPERATOR_DECLARATION(target, --, return, decrement) \
     );
 
 #define _BYTES_OPERATOR_DECLARATION(target, op, params, return, generator) \
-ENTRY_DEF(TYPE_ENTRY(target))->addOperator( \
-    SELF_RECEIVER("i", target), \
-    new BytesFunctionEntry( \
-        #op, \
-        new FunctionTypeDescriptor( \
-            true, \
-            params, \
-            return \
-        ), \
-        generator \
-    ) \
-);
+    REGISTER_FUNCTION2(target, ENTRY_DEF(TYPE_ENTRY(target))->addOperator( \
+        SELF_RECEIVER("i", target), \
+        new BytesFunctionEntry( \
+            #op, \
+            new FunctionTypeDescriptor( \
+                true, \
+                params, \
+                return \
+            ), \
+            generator \
+        ) \
+    )); \
 
 #define BYTES_OPERATOR_DECLARATION(target, op, param, return, generator) \
     _BYTES_OPERATOR_DECLARATION(target, op, {new ParameterDefinition("right", TYPE_DESC(param), true)}, {TYPE_DESC(return)}, generator)
@@ -157,7 +158,10 @@ Compiler::Compiler(std::vector<Stmt *> stmts) : stmts(std::move(stmts)) {
 
     NATIVE_BINARY_OPERATOR_MATH_DECLARATIONS(int, double, double)
     NATIVE_BINARY_OPERATOR_STRING_DECLARATIONS(int)
-    NATIVE_BINARY_OPERATOR_DECLARATION(int, %, int, int, mod)
+
+    BYTES_OPERATOR_DECLARATION(int, %, int, int, []() { \
+        return std::vector<ByteResolver *>({new ByteResolver(OP_IMOD, nullptr)}); \
+    })
 
     NATIVE_UNARY_OPERATOR_MATH_DECLARATIONS(int, int)
 
