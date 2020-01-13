@@ -203,7 +203,7 @@ void Tokenizer::addToken(TokenType type, T literal) {
                     type,
                     literal_to_value_data::convert(literal),
                     lexeme,
-                    {.line = line + 1, .column = column - lexeme.size() + 1}
+                    {.line = line + 1, .column = static_cast<int>(column - lexeme.size() + 1)}
             )
     );
 }
