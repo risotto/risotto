@@ -117,7 +117,7 @@ NATIVE_UNARY_PREFIX_OPERATOR_DECLARATION(target, --, return, decrement) \
         return std::vector<ByteResolver *>({new ByteResolver(OP_NEQ, TODO_POSITION)}); \
     }) \
     BYTES_OPERATOR_DECLARATION(t, +, t, t, []() { \
-    return std::vector<ByteResolver *>({new ByteResolver(OP_##prefix##ADD, TODO_POSITION)}); \
+        return std::vector<ByteResolver *>({new ByteResolver(OP_##prefix##ADD, TODO_POSITION)}); \
     }) \
     BYTES_OPERATOR_DECLARATION(t, -, t, t, []() { \
         return std::vector<ByteResolver *>({new ByteResolver(OP_##prefix##SUB, TODO_POSITION)}); \

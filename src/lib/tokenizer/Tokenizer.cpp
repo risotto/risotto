@@ -6,7 +6,6 @@
 #include <utility>
 #include <map>
 #include <sstream>
-#include <string.h>
 #include "Tokenizer.h"
 #include "SyntaxError.h"
 
@@ -85,11 +84,7 @@ void Tokenizer::scan() {
             addToken(TokenType::RIGHT_CURLY);
             break;
         case '[':
-            if (match(']')) {
-                addToken(TokenType::LEFT_RIGHT_SQUARED);
-            } else {
-                addToken(TokenType::LEFT_SQUARED);
-            }
+            addToken(match(']') ? TokenType::LEFT_RIGHT_SQUARED : TokenType::LEFT_SQUARED);
             break;
         case ']':
             addToken(TokenType::RIGHT_SQUARED);

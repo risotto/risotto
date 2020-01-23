@@ -42,7 +42,7 @@ namespace ASTPrinter {
                 ss << std::endl;
             }
 
-            ss << repeat("  ", n) << line;
+            ss << repeat("· ", n) << line;
         }
 
         if (str.at(str.length() - 1) == '\n') {

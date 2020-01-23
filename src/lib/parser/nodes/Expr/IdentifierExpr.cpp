@@ -18,7 +18,7 @@ std::vector<ByteResolver *> IdentifierExpr::compile(Compiler *compiler) {
     auto returnType = getReturnType(compiler);
 
     if (!returnType.single()) {
-        throw CompilerError("Must resolve to a single symbol");
+        throw CompilerError("Must resolve to a single symbol", name->position);
     }
 
     if (dynamic_cast<FunctionTypeDefinition *>(returnType[0]->getTypeDefinition())) {
