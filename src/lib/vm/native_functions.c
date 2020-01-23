@@ -4,6 +4,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 #include "value.h"
 #include "vm.h"
 
@@ -28,6 +29,16 @@ NativeFunctionReturn run_gc(Value args[], int argc) {
     gc();
 
     ret0;
+}
+
+NativeFunctionReturn vm_srand(Value args[], int argc) {
+    srand(time(NULL));
+
+    ret0;
+}
+
+NativeFunctionReturn vm_rand(Value args[], int argc) {
+    ret(1, i2v(rand()));
 }
 
 #define NATIVE_BINARY_FUNCTION_NAME(leftType, opName, rightType) binary_##leftType##_##opName##_##rightType

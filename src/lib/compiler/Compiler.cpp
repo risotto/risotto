@@ -103,9 +103,11 @@ Compiler::Compiler(std::vector<Stmt *> stmts) : stmts(std::move(stmts)) {
     initChunk(&chunk);
 
     auto TYPE_ENTRY(int) = frame->types.add(new IdentifierTypeDescriptor("int", new ScalarTypeDefinition("int")));
-    auto TYPE_ENTRY(double) = frame->types.add(new IdentifierTypeDescriptor("double", new ScalarTypeDefinition("double")));
+    auto TYPE_ENTRY(double) = frame->types.add(
+            new IdentifierTypeDescriptor("double", new ScalarTypeDefinition("double")));
     auto TYPE_ENTRY(bool) = frame->types.add(new IdentifierTypeDescriptor("bool", new ScalarTypeDefinition("bool")));
-    auto TYPE_ENTRY(string) = frame->types.add(new IdentifierTypeDescriptor("string", new ScalarTypeDefinition("string")));
+    auto TYPE_ENTRY(string) = frame->types.add(
+            new IdentifierTypeDescriptor("string", new ScalarTypeDefinition("string")));
 
     NATIVE_BINARY_OPERATOR_MATH_DECLARATIONS(int, int, int)
     NATIVE_BINARY_OPERATOR_MATH_DECLARATIONS(int, double, double)
@@ -128,7 +130,7 @@ Compiler::Compiler(std::vector<Stmt *> stmts) : stmts(std::move(stmts)) {
     auto FUNCTION_ENTRY_VAR(bool, unary_prefix_bool_invert) = ENTRY_DEF(TYPE_ENTRY(bool))->addPrefix(
             SELF_RECEIVER("right", bool),
             new NativeFunctionEntry(
-                   "!",
+                    "!",
                     new FunctionTypeDescriptor(
                             true, \
                             {},
@@ -146,7 +148,7 @@ Compiler::Compiler(std::vector<Stmt *> stmts) : stmts(std::move(stmts)) {
 
     frame->functions.add(
             new NativeFunctionEntry(
-                   "vm_stats",
+                    "vm_stats",
                     new FunctionTypeDescriptor(false, {}, {}),
                     vm_stats
             )
@@ -157,6 +159,24 @@ Compiler::Compiler(std::vector<Stmt *> stmts) : stmts(std::move(stmts)) {
                     "gc",
                     new FunctionTypeDescriptor(false, {}, {}),
                     run_gc
+            )
+    );
+
+    frame->functions.add(
+            new NativeFunctionEntry(
+                    "srand",
+                    new FunctionTypeDescriptor(false, {}, {}),
+                    vm_srand
+            )
+    );
+
+    frame->functions.add(
+            new NativeFunctionEntry(
+                    "rand",
+                    new FunctionTypeDescriptor(false, {}, {
+                            TYPE_DESC(int)
+                    }),
+                    vm_rand
             )
     );
 }
