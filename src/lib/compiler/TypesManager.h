@@ -37,9 +37,10 @@ private:
     std::map<InterfaceTypeDefinition *, std::vector<TypeDefinition *>> implementedBy;
 
 public:
-    void add(TypeDescriptor *typeDesc, Frame *frame, bool allowFindType);
-    void add(TypeDescriptor *typeDesc, Frame *frame);
+    void createLinkUnits(TypeDescriptor *typeDesc, Frame *frame, bool allowFindType);
+    void createLinkUnits(TypeDescriptor *typeDesc, Frame *frame);
 
+    void runListeners();
     void addListener(const std::function<bool()>& f);
 
     void link();

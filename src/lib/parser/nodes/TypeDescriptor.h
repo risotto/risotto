@@ -29,7 +29,6 @@ public:
 
     virtual bool isSame(TypeDescriptor *type);
 
-protected:
     TypeDefinition *typeDef = nullptr;
 };
 
@@ -74,13 +73,13 @@ public:
 class IdentifierTypeDescriptor : public TypeDescriptor {
 public:
     Token *name;
-    std::function<TypeDefinition *(Frame *frame)> typeDefGen = nullptr;
+    TypeDescriptor *typeDesc = nullptr;
 
     explicit IdentifierTypeDescriptor(Token *name);
 
-    IdentifierTypeDescriptor(const std::string &name, TypeDefinition *typeDef);
+    IdentifierTypeDescriptor(Token *name, TypeDescriptor *typeDesc);
 
-    IdentifierTypeDescriptor(Token *name, std::function<TypeDefinition *(Frame *frame)> typeDefGen);
+    IdentifierTypeDescriptor(const std::string &name, TypeDefinition *typeDef);
 
     TypeDefinition *genType(TypesManager *typesManager, Frame *frame) override;
 
@@ -97,7 +96,8 @@ public:
     std::vector<ParameterDefinition *> params;
     std::vector<TypeDescriptor *> returnTypes;
 
-    FunctionTypeDescriptor(bool isMethod, std::vector<ParameterDefinition *> params, std::vector<TypeDescriptor *> returnTypes);
+    FunctionTypeDescriptor(bool isMethod, std::vector<ParameterDefinition *> params,
+                           std::vector<TypeDescriptor *> returnTypes);
 
     TypeDefinition *genType(TypesManager *typesManager, Frame *frame) override;
 

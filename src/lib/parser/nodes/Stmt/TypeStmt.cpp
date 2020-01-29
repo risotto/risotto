@@ -12,9 +12,14 @@ std::vector<ByteResolver *> TypeStmt::compile(Compiler *compiler) {
 }
 
 void TypeStmt::symbolize(Compiler *compiler) {
-    TypeDescriptor *identifierDesc = new IdentifierTypeDescriptor(name, [this](Frame *frame){
-        return typeDescriptor->getTypeDefinition();
+    auto desc = new IdentifierTypeDescriptor(name, typeDescriptor);
+
+    compiler->frame->types.add(desc, false);
+    compiler->typesManager->createLinkUnits(typeDescriptor, compiler->frame);
+
+    compiler->typesManager->addListener([this, desc](){
+        desc->typeDef = typeDescriptor->getTypeDefinition();
+
+        return desc->typeDef != nullptr;
     });
-    compiler->typesManager->add(typeDescriptor, compiler->frame);
-    compiler->typesManager->add(identifierDesc, compiler->frame);
 }

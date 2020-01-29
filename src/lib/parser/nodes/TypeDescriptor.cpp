@@ -27,18 +27,22 @@ IdentifierTypeDescriptor::IdentifierTypeDescriptor(const std::string &name, Type
     this->typeDef = typeDef;
 }
 
-IdentifierTypeDescriptor::IdentifierTypeDescriptor(Token *name,
-                                                   std::function<TypeDefinition *(Frame *frame)> typeDefGen)
-        : IdentifierTypeDescriptor(name) {
-    this->typeDefGen = std::move(typeDefGen);
+IdentifierTypeDescriptor::IdentifierTypeDescriptor(Token *name, TypeDescriptor *typeDesc) : IdentifierTypeDescriptor(
+        name) {
+    this->typeDesc = typeDesc;
 }
 
 TypeDefinition *IdentifierTypeDescriptor::genType(TypesManager *typesManager, Frame *frame) {
-    if (typeDefGen) {
-        return typeDefGen(frame);
+    TypeDescriptor *desc;
+    if (typeDesc != nullptr) {
+        desc = typeDesc;
+    } else {
+        desc = frame->findNamedType(name->lexeme);
     }
 
-    auto desc = frame->findNamedType(name->lexeme);
+    if (desc == nullptr) {
+        return nullptr;
+    }
 
     return desc->getTypeDefinition();
 }
@@ -56,7 +60,9 @@ bool IdentifierTypeDescriptor::isSame(TypeDescriptor *type) {
 }
 
 void IdentifierTypeDescriptor::createLinkUnits(TypesManager *typesManager, Frame *frame) {
-
+    if (typeDesc) {
+        typesManager->createLinkUnits(typeDesc, frame);
+    }
 }
 
 ArrayTypeDescriptor::ArrayTypeDescriptor(TypeDescriptor *element) : element(element) {
@@ -129,7 +135,7 @@ bool ArrayTypeDescriptor::isSame(TypeDescriptor *type) {
 }
 
 void ArrayTypeDescriptor::createLinkUnits(TypesManager *typesManager, Frame *frame) {
-    typesManager->add(element, frame);
+    typesManager->createLinkUnits(element, frame);
 }
 
 StructTypeDescriptor::StructTypeDescriptor(std::vector<Field> fields) : fields(std::move(fields)) {}
@@ -159,7 +165,7 @@ TypeDefinition *StructTypeDescriptor::genType(TypesManager *typesManager, Frame 
 
 void StructTypeDescriptor::createLinkUnits(TypesManager *typesManager, Frame *frame) {
     for (auto field: fields) {
-        typesManager->add(field.type, frame);
+        typesManager->createLinkUnits(field.type, frame);
     }
 }
 
@@ -170,7 +176,7 @@ bool StructTypeDescriptor::isSame(TypeDescriptor *type) {
 
     if (auto structDef = dynamic_cast<StructTypeDescriptor *>(type)) {
         if (structDef->fields.size() == fields.size()) {
-            for (int i = 0; i < fields.size(); ++i) {
+            for (auto i = 0; i < fields.size(); ++i) {
                 auto field = fields[i];
                 auto otherField = structDef->fields[i];
 
@@ -211,7 +217,7 @@ std::string FunctionTypeDescriptor::toString() {
 
     if (!returnTypes.empty()) {
         ss << " (";
-        for (int i = 0; i < returnTypes.size(); ++i) {
+        for (auto i = 0; i < returnTypes.size(); ++i) {
             auto type = returnTypes[i];
 
             if (i != 0) {
@@ -232,11 +238,11 @@ TypeDefinition *FunctionTypeDescriptor::genType(TypesManager *typesManager, Fram
 
 void FunctionTypeDescriptor::createLinkUnits(TypesManager *typesManager, Frame *frame) {
     for (auto param: params) {
-        typesManager->add(param->type, frame);
+        typesManager->createLinkUnits(param->type, frame);
     }
 
     for (auto returnType: returnTypes) {
-        typesManager->add(returnType, frame);
+        typesManager->createLinkUnits(returnType, frame);
     }
 }
 
@@ -288,7 +294,7 @@ bool TypeDescriptor::resolveType(TypesManager *typesManager, Frame *frame, bool 
     }
 
     if (allowFindType) {
-        if (auto desc = frame->types.find(this)) {
+        if (auto desc = frame->findType(this)) {
             typeDef = desc->getTypeDefinition();
         } else {
             typeDef = genType(typesManager, frame);
@@ -296,9 +302,6 @@ bool TypeDescriptor::resolveType(TypesManager *typesManager, Frame *frame, bool 
     } else {
         typeDef = genType(typesManager, frame);
     }
-
-    auto entry = frame->types.add(this, allowFindType);
-    this->typeDef = entry->typeDef;
 
     return typeDef != nullptr;
 }
@@ -367,11 +370,11 @@ bool InterfaceTypeDescriptor::isSame(TypeDescriptor *type) {
 void InterfaceTypeDescriptor::createLinkUnits(TypesManager *typesManager, Frame *frame) {
     for (const auto &func: functions) {
         for (auto param: func->descriptor->params) {
-            typesManager->add(param->type, frame);
+            typesManager->createLinkUnits(param->type, frame);
         }
 
         for (auto returnType: func->descriptor->returnTypes) {
-            typesManager->add(returnType, frame);
+            typesManager->createLinkUnits(returnType, frame);
         }
     }
 }
