@@ -51,8 +51,8 @@ set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 # and gmock_main
 add_subdirectory("lib/googletest/googletest")
 
-set(BENCHMARK_ENABLE_TESTING OFF)
-set(BENCHMARK_ENABLE_GTEST_TESTS OFF)
+set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "" FORCE)
+set(BENCHMARK_ENABLE_GTEST_TESTS OFF CACHE BOOL "" FORCE)
 add_subdirectory(lib/googlebenchmark REQUIRED)
 
 # The gtest/gmock targets carry header search path
