@@ -5,8 +5,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+#include <stdarg.h>
 #include "value.h"
-#include "vm.h"
+#include "vm.c"
 
 #define str_t const char *
 
@@ -237,7 +238,7 @@ NativeFunctionReturn binary_string_add_equal_string(Value args[], int argc) {
 NativeFunctionReturn println_int(Value args[], int argc) {
     int v = v2i(args[0]);
 
-    printf("%i\n", v);
+    vm.printf("%i\n", v);
 
     ret0;
 }
@@ -245,7 +246,7 @@ NativeFunctionReturn println_int(Value args[], int argc) {
 NativeFunctionReturn println_double(Value args[], int argc) {
     double v = v2d(args[0]);
 
-    printf("%f\n", v);
+    vm.printf("%f\n", v);
 
     ret0;
 }
@@ -253,7 +254,7 @@ NativeFunctionReturn println_double(Value args[], int argc) {
 NativeFunctionReturn println_string(Value args[], int argc) {
     str_t v = v2s(args[0]);
 
-    printf("%s\n", v);
+    vm.printf("%s\n", v);
 
     ret0;
 }
@@ -262,9 +263,9 @@ NativeFunctionReturn println_bool(Value args[], int argc) {
     bool v = v2b(args[0]);
 
     if (v) {
-        printf("true\n");
+        vm.printf("true\n");
     } else {
-        printf("false\n");
+        vm.printf("false\n");
     }
 
     ret0;

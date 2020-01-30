@@ -26,8 +26,8 @@ func isShorterThan(x Element, y Element) bool {
          return true
        }
 
-       xTail = xTail.getNext()
-       yTail = yTail.getNext()
+       xTail = xTail.next
+       yTail = yTail.next
     }
 
     return false
@@ -36,9 +36,9 @@ func isShorterThan(x Element, y Element) bool {
 func tail(x Element, y Element, z Element) Element {
     if (isShorterThan(y, x)) {
       return tail(
-        tail(x.getNext(), y, z),
-        tail(y.getNext(), z, x),
-        tail(z.getNext(), x, y)
+        tail(x.next, y, z),
+        tail(y.next, z, x),
+        tail(z.next, x, y)
       )
     } else {
       return z

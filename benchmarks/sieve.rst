@@ -1,4 +1,4 @@
-int sieve(flags []boolean, size int) {
+func sieve(flags []bool, size int) int {
     primeCount := 0
 
     for i := 2; i <= size; i += 1 {
@@ -14,7 +14,7 @@ int sieve(flags []boolean, size int) {
     return primeCount
 }
 
-flags := []boolean{}
+flags := []bool{}
 for i := 0; i < 5000; i += 1 {
     flags.push(true)
 }
