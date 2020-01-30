@@ -48,9 +48,9 @@ std::vector<ByteResolver *> FunctionStmt::compile(Compiler *compiler) {
 
     // Ensure functions have a return TODO: add branches check
     if (functionEntry->descriptor->returnTypes.empty()) {
-        bytes.push_back(new ByteResolver(OP_RETURN, nullptr));
-        bytes.push_back(new ByteResolver(0, nullptr)); // no frame to drop
-        bytes.push_back(new ByteResolver(0, nullptr)); // no value to return
+        bytes.push_back(new ByteResolver(OP_RETURN));
+        bytes.push_back(new ByteResolver(0)); // no frame to drop
+        bytes.push_back(new ByteResolver(0)); // no value to return
     }
 
     // Restore frame
@@ -62,10 +62,10 @@ std::vector<ByteResolver *> FunctionStmt::compile(Compiler *compiler) {
     // Skip function body
     auto lastByte = bytes.back();
     bytes.insert(bytes.begin(), {
-            new ByteResolver(OP_JUMP, nullptr),
+            new ByteResolver(OP_JUMP, type->position),
             new ByteResolver([lastByte](Compiler *c) {
                 return c->getAddr(lastByte) + 1;
-            }, nullptr)
+            })
     });
 
     return bytes;

@@ -17,7 +17,7 @@ ReturnTypes MixedCallExpr::computeReturnType(Compiler *compiler) {
     });
 }
 
-bool MixedCallExpr::isArgumentReference(Compiler *compiler, int i) {
+bool MixedCallExpr::isArgumentReference(Compiler *compiler, unsigned int i) {
     return act<bool>(compiler, [i](FunctionTypeDescriptor *functionRef) {
         return functionRef->params[i]->asReference;
     }, [i](FunctionEntry *functionEntry) {
@@ -25,20 +25,20 @@ bool MixedCallExpr::isArgumentReference(Compiler *compiler, int i) {
     });
 }
 
-void MixedCallExpr::loadCallAddr(Compiler *compiler, std::vector<ByteResolver *> &bytes) {
-    auto loadBytes = act<std::vector<ByteResolver *>>(compiler, [this, compiler](FunctionTypeDescriptor *functionRef) {
-        auto bytes = std::vector<ByteResolver *>();
-
+bool MixedCallExpr::loadCallAddr(Compiler *compiler, std::vector<ByteResolver *> &bytes) {
+    return act<bool>(compiler, [this, compiler, &bytes](FunctionTypeDescriptor *functionRef) {
         loadVariableEntryAddr(compiler, bytes);
 
-        return bytes;
-    }, [compiler](FunctionEntry *functionEntry) {
-        auto bytes = std::vector<ByteResolver *>();
-
-        Utils::loadFunctionEntryAddr(compiler, functionEntry, bytes);
-
-        return bytes;
+        return false;
+    }, [compiler, &bytes](FunctionEntry *functionEntry) {
+        return Utils::loadFunctionEntryAddr(compiler, functionEntry, bytes);
     });
+}
 
-    bytes.insert(bytes.end(), loadBytes.begin(), loadBytes.end());
+ReturnTypes MixedCallExpr::getFunctionReturnTypes(Compiler *compiler) {
+    return act<ReturnTypes>(compiler, [](FunctionTypeDescriptor *desc) {
+        return desc->returnTypes;
+    }, [](FunctionEntry *entry) {
+        return entry->descriptor->returnTypes;
+    });
 }

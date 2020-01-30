@@ -13,7 +13,7 @@ CompilerError::CompilerError(const std::string &message) {
 }
 
 CompilerError::CompilerError(const std::string &message, Position position) :
-        CompilerError(message + " at " + position.toString()) {
+        CompilerError(message + " at " + position_string(position)) {
 
 }
 

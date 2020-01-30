@@ -10,7 +10,9 @@
 #include <lib/tokenizer/Token.h>
 extern "C" {
 #include <lib/vm/common.h>
-};
+}
+
+#define TODO_POSITION {}
 
 class Compiler;
 
@@ -19,10 +21,12 @@ public:
     bool final;
     std::function<OP_T(Compiler *c)> resolver = nullptr;
     OP_T byte = -1;
-    Position *position = nullptr;
+    Position position = {};
 
-    explicit ByteResolver(OP_T byte, Position *position);
-    explicit ByteResolver(std::function<OP_T(Compiler *c)> resolver, Position *position);
+    explicit ByteResolver(OP_T byte, Position position);
+    explicit ByteResolver(OP_T byte);
+    explicit ByteResolver(std::function<OP_T(Compiler *c)> resolver, Position position);
+    explicit ByteResolver(std::function<OP_T(Compiler *c)> resolver);
 
     void finalize(Compiler *c);
 };

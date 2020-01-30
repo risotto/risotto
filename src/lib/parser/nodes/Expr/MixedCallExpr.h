@@ -25,9 +25,11 @@ public:
             const std::function<T(FunctionEntry *)> &functionActor
     );
 
-    bool isArgumentReference(Compiler *compiler, int i) override;
+    bool isArgumentReference(Compiler *compiler, unsigned int i) override;
 
-    void loadCallAddr(Compiler *compiler, std::vector<ByteResolver *> &bytes) override;
+    bool loadCallAddr(Compiler *compiler, std::vector<ByteResolver *> &bytes) override;
+
+    ReturnTypes getFunctionReturnTypes(Compiler *compiler) override;
 
 protected:
     virtual VariableEntry *getVariableEntry(Compiler *compiler) = 0;

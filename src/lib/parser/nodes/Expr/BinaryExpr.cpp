@@ -52,10 +52,10 @@ const std::vector<Shortcut> shortcuts = {
 
             switch (op->type) {
                 case EQUAL_EQUAL:
-                    bytes.push_back(new ByteResolver(OP_EQ_NIL, &op->position));
+                    bytes.push_back(new ByteResolver(OP_EQ_NIL, op->position));
                     return;
                 case BANG_EQUAL:
-                    bytes.push_back(new ByteResolver(OP_NEQ_NIL, &op->position));
+                    bytes.push_back(new ByteResolver(OP_NEQ_NIL, op->position));
                     return;
                 default:
                     throw std::logic_error("unhandled");

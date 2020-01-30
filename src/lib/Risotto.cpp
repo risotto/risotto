@@ -17,11 +17,11 @@ extern "C" {
 #include <sstream>
 #include "Risotto.h"
 
-Risotto::Risotto(unsigned int flags) : flags(flags) {}
-
-Risotto::Risotto() : Risotto(RisottoFlags::None) {
+Risotto::Risotto(unsigned int flags) : flags(flags) {
     this->printfp = printf;
 }
+
+Risotto::Risotto() : Risotto(RisottoFlags::None) {}
 
 InterpretResult Risotto::runFile(const std::string &path) {
     std::ifstream ifs(path);

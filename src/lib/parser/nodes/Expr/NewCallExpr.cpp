@@ -41,9 +41,9 @@ void NewCallExpr::loadArgs(Compiler *compiler, std::vector<ByteResolver *> &byte
     auto v = p2v(structTypeDef->vtable);
     auto vtableAddr = compiler->registerConst(v);
 
-    bytes.push_back(new ByteResolver(OP_NEW, &identifier->position));
-    bytes.push_back(new ByteResolver(vtableAddr, nullptr));
-    bytes.push_back(new ByteResolver(structTypeDef->fields.size(), nullptr));
+    bytes.push_back(new ByteResolver(OP_NEW, identifier->position));
+    bytes.push_back(new ByteResolver(vtableAddr));
+    bytes.push_back(new ByteResolver(structTypeDef->fields.size()));
 }
 
 FunctionNotFoundError NewCallExpr::getFunctionNotFoundError(Compiler *compiler) {

@@ -39,14 +39,24 @@ public:
     int addr = -1;
 };
 
+class BytesFunctionEntry : public FunctionEntry {
+public:
+    std::function<std::vector<ByteResolver *>()> generator;
+
+    BytesFunctionEntry(const std::string &name, FunctionTypeDescriptor *descriptor,
+                       std::function<std::vector<ByteResolver *>()> generator);
+
+    std::vector<ByteResolver *> get();
+};
+
 class NativeFunctionEntry : public FunctionEntry {
 public:
-    NativeFunctionReturn (*fun)(Value[], int);
+    NativeFunction fun;
 
     NativeFunctionEntry(
             std::string name,
             FunctionTypeDescriptor *descriptor,
-            NativeFunctionReturn (*fun)(Value[], int)
+            NativeFunction fun
     );
 };
 

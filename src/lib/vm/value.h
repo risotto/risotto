@@ -10,11 +10,8 @@
 
 #define DGET(value, type) (value).data._##type
 #define TGET(value) (value).type
-#define NEW_VALUE(name) Value (name) = {}
-#define IS_VALUE_REF(value) (TGET(value) == T_VALUE_REF)
-#define TYPECHECK(value, t) typecheck(value, t)
-#define ACCESS_VALUE_REF(value) ((Value *) DGET(value, p))
-#define V2_ACCESS_REF(value, call) value = followRefV(&value)
+#define NEW_VALUE(t, tu, value) (Value) {.type = t, .data={._##tu = value}}
+#define ACCESS_REF(value) value = accessRef(value)
 
 typedef enum {
     T_NIL,
@@ -26,7 +23,7 @@ typedef enum {
     T_OBJECT,
     T_BOOL,
     T_ARRAY,
-    T_VALUE_REF,
+    T_VALUE_P,
 } ValueType;
 
 typedef union {
@@ -41,23 +38,18 @@ typedef union {
 typedef struct vtable vtable;
 
 typedef struct {
-    ValueData data; // TODO: should be a pointer
+    ValueData data;
     ValueType type;
     vtable *vtable;
 } Value;
 
-typedef struct {
-    uint8_t c;
-    Value *values;
-} NativeFunctionReturn;
-
 // This is super confusing syntax:
 // Creates a type `NativeFunction` which is a function `NativeFunctionReturn (Value *, int)`
-typedef NativeFunctionReturn (*NativeFunction)(Value *, int);
+typedef void (*NativeFunction)(Value args[], int argsc, Value ret[]);
 
 typedef struct {
     int vaddr;
-    Value *addr;
+    Value addr;
 } vtable_entry;
 
 typedef vec_t(vtable_entry) vtable_entry_vec_t;
@@ -127,8 +119,8 @@ Value copy(Value v);
 
 bool typecheck(Value value, ValueType type);
 
-Value *followRef(Value *v);
+Value accessRef(Value v);
 
-Value followRefV(Value *v);
+Value *accessRefp(Value *v);
 
 #endif //RISOTTOVM_VALUE_H

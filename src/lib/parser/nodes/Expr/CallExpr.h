@@ -28,9 +28,12 @@ public:
 
     virtual FunctionNotFoundError getFunctionNotFoundError(Compiler *compiler);
 
-    virtual bool isArgumentReference(Compiler *compiler, int i) = 0;
+    virtual bool isArgumentReference(Compiler *compiler, unsigned int i) = 0;
 
-    virtual void loadCallAddr(Compiler *compiler, std::vector<ByteResolver *> &bytes) = 0;
+    virtual ReturnTypes getFunctionReturnTypes(Compiler *compiler) = 0;
+
+    virtual bool loadCallAddr(Compiler *compiler, std::vector<ByteResolver *> &bytes) = 0;
+
     virtual void loadArgs(Compiler *compiler, std::vector<ByteResolver *> &bytes);
 
     void symbolize(Compiler *compiler) override;

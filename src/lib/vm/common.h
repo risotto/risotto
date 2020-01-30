@@ -11,6 +11,7 @@
 
 #define OP_T uint16_t
 
-#define ERROR(...) fprintf(stderr, __VA_ARGS__); fprintf(stderr, "\n"); exit(EXIT_FAILURE);
+#define ERROR_MESSAGE(...) fprintf(stderr, __VA_ARGS__); fprintf(stderr, "\n");
+#define ERROR(...) ERROR_MESSAGE(__VA_ARGS__); exit(EXIT_FAILURE);
 
 #endif //RISOTTOVM_COMMON_H

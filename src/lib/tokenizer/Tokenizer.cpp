@@ -6,14 +6,13 @@
 #include <utility>
 #include <map>
 #include <sstream>
-#include <string.h>
 #include "Tokenizer.h"
 #include "SyntaxError.h"
 
 namespace literal_to_value_data {
     template<typename T>
     ValueData convert(T literal) {
-        throw SyntaxError("Unhandled literal", new Position(0, 0));
+        throw SyntaxError("Unhandled literal", {.line = 0, .column = 0});
     }
 
     template<>
@@ -85,11 +84,7 @@ void Tokenizer::scan() {
             addToken(TokenType::RIGHT_CURLY);
             break;
         case '[':
-            if (match(']')) {
-                addToken(TokenType::LEFT_RIGHT_SQUARED);
-            } else {
-                addToken(TokenType::LEFT_SQUARED);
-            }
+            addToken(match(']') ? TokenType::LEFT_RIGHT_SQUARED : TokenType::LEFT_SQUARED);
             break;
         case ']':
             addToken(TokenType::RIGHT_SQUARED);
@@ -202,7 +197,7 @@ void Tokenizer::scan() {
                 std::stringstream ss;
                 ss << "Unexpected character " << c;
 
-                throw SyntaxError(ss.str(), new Position(line, column));
+                throw SyntaxError(ss.str(), {.line = line, .column = column});
             }
     }
 }
@@ -215,8 +210,12 @@ template<typename T>
 void Tokenizer::addToken(TokenType type, T literal) {
     std::string lexeme = src.substr(start, current - start);
     tokens.push_back(
-            new Token(type, literal_to_value_data::convert(literal), lexeme,
-                      Position(line + 1, column - lexeme.size() + 1))
+            new Token(
+                    type,
+                    literal_to_value_data::convert(literal),
+                    lexeme,
+                    {.line = line + 1, .column = static_cast<int>(column - lexeme.size() + 1)}
+            )
     );
 }
 
@@ -238,7 +237,7 @@ void Tokenizer::lexString() {
 
     // Unterminated string.
     if (isAtEnd()) {
-        throw SyntaxError("Unterminated string", new Position(line, column));
+        throw SyntaxError("Unterminated string", {.line = line, .column = column});
     }
 
     // The closing ".

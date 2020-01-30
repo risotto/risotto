@@ -25,7 +25,7 @@ void printValue(Value value) {
             printf("O: %p {", object->values);
             for (int i = 0; i < object->size; ++i) {
                 Value v = object->values[i];
-                if (TYPECHECK(v, T_OBJECT) && v2o(v) == object) {
+                if (typecheck(v, T_OBJECT) && v2o(v) == object) {
                     printf("<self>");
                 } else {
                     printValue(v);
@@ -38,10 +38,12 @@ void printValue(Value value) {
             printf("}");
             return;
         }
-        case T_VALUE_REF:
+        case T_VALUE_P: {
             printf("+");
-            printValue(*ACCESS_VALUE_REF(value));
+            Value *vp = (Value *) DGET(value, p);
+            printValue(*vp);
             return;
+        }
     }
 
     printf("# Unknown type: %p #", &value);
@@ -89,16 +91,11 @@ static int biIntInstruction(const char *name, const char *l1, const char *l2, Ch
 }
 
 static int callInstruction(const char *name, Chunk *chunk, int offset) {
-//    bool needReso = chunk->code[offset + 1];
-//    int c = chunk->code[offset + 2];
-//    printf("%-11s C:%-3d %i\n", name, c, needReso);
-//
-//    return offset + 3 + c;
+    int argsc = chunk->code[offset + 1];
+    int retc = chunk->code[offset + 2];
+    printf("%-11s AC:%-3d RC:%-3d\n", name, argsc, retc);
 
-    int c = chunk->code[offset + 1];
-    printf("%-11s C:%-3d\n", name, c);
-
-    return offset + 2 + c;
+    return offset + 3 + argsc;
 }
 
 static int newInstruction(const char *name, Chunk *chunk, int offset) {
@@ -145,33 +142,77 @@ char *getName(OP_T instruction) {
         NAME(OP_NIL)
         NAME(OP_TRUE)
         NAME(OP_FALSE)
+        NAME(OP_EQ)
+        NAME(OP_NEQ)
         NAME(OP_EQ_NIL)
         NAME(OP_NEQ_NIL)
         NAME(OP_NEW)
         NAME(OP_RESOLVE_ADDR)
+        NAME(OP_IADD)
+        NAME(OP_ISUB)
+        NAME(OP_IMUL)
+        NAME(OP_IDIV)
+        NAME(OP_ILT)
+        NAME(OP_IGT)
+        NAME(OP_IMOD)
+        NAME(OP_DADD)
+        NAME(OP_DSUB)
+        NAME(OP_DMUL)
+        NAME(OP_DDIV)
+        NAME(OP_DLT)
+        NAME(OP_DGT)
+        NAME(OP_B_AND)
+        NAME(OP_B_OR)
+        NAME(OP_B_XOR)
+        NAME(OP_B_SHIFTL)
+        NAME(OP_B_SHIFTR)
+        NAME(OP_B_NOT)
+        NAME(OP_I2D)
+        NAME(OP_D2I)
+        default:
+            return "Unknown opcode";
     }
-
-    return "Unknown opcode";
 }
 
 int disassembleInstruction(Chunk *chunk, int offset) {
     printf("%04d ", offset);
 
-    int line = chunk->lines[offset];
-    int previousLine = chunk->lines[offset - 1];
+    Position position = chunk->positions[offset];
+    Position prevPosition = {};
 
-    if (offset == 0 && line == 0) {
-        line = 1;
+    if (offset > 0) {
+        prevPosition = chunk->positions[offset - 1];
     }
 
-    if (offset > 0 && (line == 0 || line == previousLine)) {
-        printf("   | ");
+    if (position_equal(position, (Position) {}) || position_equal(position, prevPosition)) {
+        printf("      | ");
     } else {
-        printf("%4d ", line);
+        printf("%7s ", position_string(position));
     }
 
     OP_T instruction = chunk->code[offset];
     switch (instruction) {
+        case OP_IADD:
+        case OP_ISUB:
+        case OP_IMUL:
+        case OP_IDIV:
+        case OP_IMOD:
+            return simpleInstruction(getName(instruction), offset);
+        case OP_ILT:
+        case OP_IGT:
+            return intInstruction(getName(instruction), chunk, offset);
+        case OP_DADD:
+        case OP_DSUB:
+        case OP_DMUL:
+        case OP_DDIV:
+            return simpleInstruction(getName(instruction), offset);
+        case OP_DLT:
+        case OP_DGT:
+            return intInstruction(getName(instruction), chunk, offset);
+        case OP_EQ:
+            return simpleInstruction(getName(instruction), offset);
+        case OP_NEQ:
+            return simpleInstruction(getName(instruction), offset);
         case OP_SET:
             return simpleInstruction(getName(instruction), offset);
         case OP_NOOP:
@@ -245,7 +286,7 @@ void printVtable(Value v) {
     vtable_entry *entry;
     vec_foreach_ptr(&v.vtable->addrs, entry, i) {
             printf("%-4d %-4d ", i, entry->vaddr);
-            printValue(*entry->addr);
+            printValue(entry->addr);
             printf("\n");
         }
 

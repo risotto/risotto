@@ -7,154 +7,57 @@
 
 #include "value.h"
 
-NativeFunctionReturn vm_stats(Value args[], int argc);
-NativeFunctionReturn run_gc(Value args[], int argc);
-
-NativeFunctionReturn vm_srand(Value args[], int argc);
-NativeFunctionReturn vm_rand(Value args[], int argc);
+void vm_stats(Value args[], int argc, Value ret[]);
+void run_gc(Value args[], int argc, Value ret[]);
 
 // String
 
-NativeFunctionReturn binary_string_add_string(Value args[], int argc);
-NativeFunctionReturn binary_string_add_int(Value args[], int argc);
-NativeFunctionReturn binary_string_add_double(Value args[], int argc);
-NativeFunctionReturn binary_string_add_bool(Value args[], int argc);
-
-NativeFunctionReturn binary_string_add_equal_string(Value args[], int argc);
-NativeFunctionReturn binary_string_add_equal_int(Value args[], int argc);
-NativeFunctionReturn binary_string_add_equal_double(Value args[], int argc);
-NativeFunctionReturn binary_string_add_equal_bool(Value args[], int argc);
+void binary_string_add_string(Value args[], int argc, Value ret[]);
+void binary_string_add_int(Value args[], int argc, Value ret[]);
+void binary_string_add_double(Value args[], int argc, Value ret[]);
+void binary_string_add_bool(Value args[], int argc, Value ret[]);
 
 // Int
 
-NativeFunctionReturn binary_int_add_string(Value args[], int argc);
+void binary_int_add_string(Value args[], int argc, Value ret[]);
 
-NativeFunctionReturn binary_int_add_int(Value args[], int argc);
-NativeFunctionReturn binary_int_add_double(Value args[], int argc);
+void unary_prefix_int_negate(Value args[], int argc, Value ret[]);
 
-NativeFunctionReturn binary_int_sub_int(Value args[], int argc);
-NativeFunctionReturn binary_int_sub_double(Value args[], int argc);
+void unary_prefix_int_decrement(Value args[], int argc, Value ret[]);
+void unary_prefix_int_increment(Value args[], int argc, Value ret[]);
 
-NativeFunctionReturn binary_int_mul_int(Value args[], int argc);
-NativeFunctionReturn binary_int_mul_double(Value args[], int argc);
-
-NativeFunctionReturn binary_int_div_int(Value args[], int argc);
-NativeFunctionReturn binary_int_div_double(Value args[], int argc);
-
-NativeFunctionReturn binary_int_mod_int(Value args[], int argc);
-
-NativeFunctionReturn binary_int_lower_int(Value args[], int argc);
-NativeFunctionReturn binary_int_lower_double(Value args[], int argc);
-
-NativeFunctionReturn binary_int_greater_int(Value args[], int argc);
-NativeFunctionReturn binary_int_greater_double(Value args[], int argc);
-
-NativeFunctionReturn binary_int_lower_equal_int(Value args[], int argc);
-NativeFunctionReturn binary_int_lower_equal_double(Value args[], int argc);
-
-NativeFunctionReturn binary_int_greater_equal_int(Value args[], int argc);
-NativeFunctionReturn binary_int_greater_equal_double(Value args[], int argc);
-
-NativeFunctionReturn binary_int_eq_int(Value args[], int argc);
-NativeFunctionReturn binary_int_eq_double(Value args[], int argc);
-
-NativeFunctionReturn binary_int_neq_int(Value args[], int argc);
-NativeFunctionReturn binary_int_neq_double(Value args[], int argc);
-
-NativeFunctionReturn unary_prefix_int_negate(Value *args, int argc);
-
-NativeFunctionReturn unary_prefix_int_decrement(Value *args, int argc);
-NativeFunctionReturn unary_prefix_int_increment(Value *args, int argc);
-
-NativeFunctionReturn unary_postfix_int_decrement(Value *args, int argc);
-NativeFunctionReturn unary_postfix_int_increment(Value *args, int argc);
-
-NativeFunctionReturn binary_int_add_equal_int(Value args[], int argc);
-NativeFunctionReturn binary_int_sub_equal_int(Value args[], int argc);
-NativeFunctionReturn binary_int_mul_equal_int(Value args[], int argc);
-NativeFunctionReturn binary_int_div_equal_int(Value args[], int argc);
-
-NativeFunctionReturn binary_int_add_equal_double(Value args[], int argc);
-NativeFunctionReturn binary_int_sub_equal_double(Value args[], int argc);
-NativeFunctionReturn binary_int_mul_equal_double(Value args[], int argc);
-NativeFunctionReturn binary_int_div_equal_double(Value args[], int argc);
-
-NativeFunctionReturn binary_int_bit_and_int(Value args[], int argc);
-NativeFunctionReturn binary_int_bit_or_int(Value args[], int argc);
-NativeFunctionReturn binary_int_bit_xor_int(Value args[], int argc);
-NativeFunctionReturn binary_int_bit_lshift_int(Value args[], int argc);
-NativeFunctionReturn binary_int_bit_rshift_int(Value args[], int argc);
-NativeFunctionReturn unary_prefix_int_bit_not(Value args[], int argc);
+void unary_postfix_int_decrement(Value args[], int argc, Value ret[]);
+void unary_postfix_int_increment(Value args[], int argc, Value ret[]);
 
 // Double
 
-NativeFunctionReturn binary_double_add_string(Value args[], int argc);
+void binary_double_add_string(Value args[], int argc, Value ret[]);
 
-NativeFunctionReturn binary_double_add_int(Value args[], int argc);
-NativeFunctionReturn binary_double_add_double(Value args[], int argc);
+void unary_prefix_double_negate(Value args[], int argc, Value ret[]);
 
-NativeFunctionReturn binary_double_sub_int(Value args[], int argc);
-NativeFunctionReturn binary_double_sub_double(Value args[], int argc);
+void unary_prefix_double_decrement(Value args[], int argc, Value ret[]);
+void unary_prefix_double_increment(Value args[], int argc, Value ret[]);
 
-NativeFunctionReturn binary_double_mul_int(Value args[], int argc);
-NativeFunctionReturn binary_double_mul_double(Value args[], int argc);
-
-NativeFunctionReturn binary_double_div_int(Value args[], int argc);
-NativeFunctionReturn binary_double_div_double(Value args[], int argc);
-
-NativeFunctionReturn binary_double_lower_int(Value args[], int argc);
-NativeFunctionReturn binary_double_lower_double(Value args[], int argc);
-
-NativeFunctionReturn binary_double_greater_int(Value args[], int argc);
-NativeFunctionReturn binary_double_greater_double(Value args[], int argc);
-
-NativeFunctionReturn binary_double_lower_equal_int(Value args[], int argc);
-NativeFunctionReturn binary_double_lower_equal_double(Value args[], int argc);
-
-NativeFunctionReturn binary_double_greater_equal_int(Value args[], int argc);
-NativeFunctionReturn binary_double_greater_equal_double(Value args[], int argc);
-
-NativeFunctionReturn binary_double_eq_int(Value args[], int argc);
-NativeFunctionReturn binary_double_eq_double(Value args[], int argc);
-
-NativeFunctionReturn binary_double_neq_int(Value args[], int argc);
-NativeFunctionReturn binary_double_neq_double(Value args[], int argc);
-
-NativeFunctionReturn unary_prefix_double_negate(Value *args, int argc);
-
-NativeFunctionReturn unary_prefix_double_decrement(Value *args, int argc);
-NativeFunctionReturn unary_prefix_double_increment(Value *args, int argc);
-
-NativeFunctionReturn unary_postfix_double_decrement(Value *args, int argc);
-NativeFunctionReturn unary_postfix_double_increment(Value *args, int argc);
-
-NativeFunctionReturn binary_double_add_equal_int(Value args[], int argc);
-NativeFunctionReturn binary_double_sub_equal_int(Value args[], int argc);
-NativeFunctionReturn binary_double_mul_equal_int(Value args[], int argc);
-NativeFunctionReturn binary_double_div_equal_int(Value args[], int argc);
-
-NativeFunctionReturn binary_double_add_equal_double(Value args[], int argc);
-NativeFunctionReturn binary_double_sub_equal_double(Value args[], int argc);
-NativeFunctionReturn binary_double_mul_equal_double(Value args[], int argc);
-NativeFunctionReturn binary_double_div_equal_double(Value args[], int argc);
+void unary_postfix_double_decrement(Value args[], int argc, Value ret[]);
+void unary_postfix_double_increment(Value args[], int argc, Value ret[]);
 
 // Bool
 
-NativeFunctionReturn binary_bool_add_string(Value args[], int argc);
+void binary_bool_add_string(Value args[], int argc, Value ret[]);
 
-NativeFunctionReturn unary_prefix_bool_invert(Value args[], int argc);
+void unary_prefix_bool_invert(Value args[], int argc, Value ret[]);
 
 // Print
 
-NativeFunctionReturn println_int(Value args[], int argc);
-NativeFunctionReturn println_double(Value args[], int argc);
-NativeFunctionReturn println_string(Value args[], int argc);
-NativeFunctionReturn println_bool(Value args[], int argc);
+void println_int(Value args[], int argc, Value ret[]);
+void println_double(Value args[], int argc, Value ret[]);
+void println_string(Value args[], int argc, Value ret[]);
+void println_bool(Value args[], int argc, Value ret[]);
 
 // Array
 
-NativeFunctionReturn array_size(Value args[], int argc);
-NativeFunctionReturn array_add(Value args[], int argc);
-NativeFunctionReturn array_at(Value args[], int argc);
+void array_size(Value args[], int argc, Value ret[]);
+void array_add(Value args[], int argc, Value ret[]);
+void array_at(Value args[], int argc, Value ret[]);
 
 #endif //RISOTTOPROJECT_NATIVE_FUNCTIONS_H

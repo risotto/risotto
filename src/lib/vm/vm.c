@@ -69,11 +69,10 @@ void markAll() {
     }
 }
 
-void markValue(Value *value) {
-    Value v = followRefV(value);
-
-    if (TYPECHECK(v, T_OBJECT) || TYPECHECK(v, T_ARRAY)) {
-        Object *object = v2o(v);
+void markValue(Value *v) {
+    Value vl = *accessRefp(v);
+    if (typecheck(vl, T_OBJECT) || typecheck(vl, T_ARRAY)) {
+        Object *object = v2o(vl);
 
         mark(object);
     }
@@ -117,13 +116,42 @@ void gc() {
     vm.maxObjects = vm.numObjects < INITIAL_GC_THRESHOLD ? INITIAL_GC_THRESHOLD : vm.numObjects * 2;
 }
 
+#define VM_BINARY(code, f, rf, op) \
+case code: { \
+    Value l = pop(); \
+    Value r = pop(); \
+    push(rf##2v(v2##f(l) op v2##f(r))); \
+    break; \
+}
+
+#define VM_BINARY_EQ(code, f, op) \
+case code: { \
+    OP_T eq = READ_BYTE(); \
+    Value l = pop(); \
+    Value r = pop(); \
+    if (eq) { \
+        push(b2v(v2##f(l) op##= v2##f(r))); \
+    } else { \
+        push(b2v(v2##f(l) op v2##f(r))); \
+    }\
+    break; \
+}
+
+#define VM_MATH_OPS(t, f) \
+    VM_BINARY(OP_##t##ADD, f, f, +) \
+    VM_BINARY(OP_##t##SUB, f, f, -) \
+    VM_BINARY(OP_##t##MUL, f, f, *) \
+    VM_BINARY(OP_##t##DIV, f, f, /) \
+    VM_BINARY_EQ(OP_##t##LT, f, <) \
+    VM_BINARY_EQ(OP_##t##GT, f, >)
+
 static InterpretResult run() {
 #ifdef BENCHMARK_TIMINGS
     bool benchmarkExec = hasFlag(BenchmarkExecution);
 
     clock_t timings[Last + 1];
-    unsigned long timingsc[Last + 1];
-    unsigned long opsc = 0;
+    unsigned long long timingsc[Last + 1];
+    unsigned long long opsc = 0;
 
     for (int m = 0; m <= Last; ++m) {
         timings[m] = 0;
@@ -140,7 +168,7 @@ static InterpretResult run() {
     for (;;) {
 #ifdef DEBUG_TRACE_EXECUTION
         if (traceExec) {
-            printf("          ");
+            printf("             ");
             for (Value *slot = vm.stack; slot < vm.sp; slot++) {
                 if (vm.fp == slot) {
                     printf("#");
@@ -176,7 +204,7 @@ static InterpretResult run() {
             }
             case OP_CONST: {
                 Value constant = READ_CONSTANT();
-                push(copy(constant));
+                push(constant);
                 break;
             }
             case OP_JUMP: {
@@ -207,7 +235,7 @@ static InterpretResult run() {
             case OP_RESOLVE_ADDR: {
                 OP_T vaddr = READ_BYTE();
 
-                Value v = followRefV(popp());
+                Value v = accessRef(pop());
 
 #ifdef DEBUG_TRACE_EXECUTION
                 if (traceExec) {
@@ -223,7 +251,7 @@ static InterpretResult run() {
                 vtable_entry *entry;
                 vec_foreach_ptr(&v.vtable->addrs, entry, i) {
                         if (entry->vaddr == vaddr) {
-                            push(vp2v(entry->addr));
+                            push(entry->addr);
                             found = true;
                             break;
                         }
@@ -235,7 +263,8 @@ static InterpretResult run() {
                 break;
             }
             case OP_CALL: {
-                int argc = READ_BYTE(); // ... and next one as number of arguments to load ...
+                int argc = READ_BYTE(); // args count
+                int retc = READ_BYTE(); // return values count
 
                 // we expect all args to be on the stack
                 bool refs[argc];
@@ -243,7 +272,7 @@ static InterpretResult run() {
                     refs[i] = (bool) READ_BYTE();
                 }
 
-                Value f = followRefV(popp());
+                Value f = accessRef(pop());
 
                 switch (f.type) {
                     case T_INT: { // Function
@@ -275,13 +304,12 @@ static InterpretResult run() {
 
                         NativeFunction fun = v2p(f);
 
-                        NativeFunctionReturn returnValue = fun(args, argc);
+                        Value returnValues[retc];
+                        fun(args, argc, returnValues);
 
-                        for (int i = 0; i < returnValue.c; ++i) {
-                            push(returnValue.values[i]);
+                        for (int i = 0; i < retc; ++i) {
+                            push(returnValues[i]);
                         }
-
-                        free(returnValue.values);
 
                         break;
                     }
@@ -304,7 +332,6 @@ static InterpretResult run() {
                 OP_T rc = READ_BYTE();
 
                 Value rvals[rc];
-
                 for (int i = 0; i < rc; ++i) {
                     rvals[i] = pop();     // pop return value from top of the stack
                 }
@@ -347,7 +374,8 @@ static InterpretResult run() {
 
                 Value *fp = vm.fp;
                 for (int i = 0; i < dist; ++i) {
-                    fp = v2p(*(fp - 1));
+                    Value *a = fp - 1;
+                    fp = v2p(*a);
                 }
 
                 Value *vp = fp + addr;
@@ -385,10 +413,9 @@ static InterpretResult run() {
             }
             case OP_SET: {
                 Value o = pop();
-                Value *t = popp();
+                Value *t = vm.sp - 1;
 
                 set(o, t);
-                push(vp2v(t));
 
                 break;
             }
@@ -432,15 +459,52 @@ static InterpretResult run() {
                 break;
             }
             case OP_EQ_NIL: {
-                Value v = pop();
+                Value v = accessRef(pop());
 
                 push(b2v(typecheck(v, T_NIL)));
                 break;
             }
             case OP_NEQ_NIL: {
-                Value v = pop();
+                Value v = accessRef(pop());
 
                 push(b2v(!typecheck(v, T_NIL)));
+                break;
+            }
+            case OP_EQ: {
+                Value l = accessRef(pop());
+                Value r = accessRef(pop());
+
+                push(b2v(memcmp(&l.data, &r.data, sizeof(ValueData)) == 0));
+                break;
+            }
+            case OP_NEQ: {
+                Value l = accessRef(pop());
+                Value r = accessRef(pop());
+
+                push(b2v(memcmp(&l.data, &r.data, sizeof(ValueData)) != 0));
+                break;
+            }
+            VM_MATH_OPS(I, i)
+            VM_BINARY(OP_IMOD, i, i, %)
+            VM_MATH_OPS(D, d)
+            VM_BINARY(OP_B_AND, i, i, &)
+            VM_BINARY(OP_B_OR, i, i, |)
+            VM_BINARY(OP_B_XOR, i, i, ^)
+            VM_BINARY(OP_B_SHIFTL, i, i, <<)
+            VM_BINARY(OP_B_SHIFTR, i, i, >>)
+            case OP_B_NOT: {
+                Value l = pop();
+                push(i2v(~v2i(l)));
+                break;
+            }
+            case OP_I2D: {
+                Value l = pop();
+                push(d2v(v2i(l)));
+                break;
+            }
+            case OP_D2I: {
+                Value l = pop();
+                push(i2v(v2d(l)));
                 break;
             }
             case OP_END: {
@@ -458,7 +522,7 @@ static InterpretResult run() {
 
                         if (c > 0) {
                             printf(
-                                    "%-3u - %-14s C: %-9lu T: %-13Lf AT: %-13.9Lf (%-5.2Lf%%) TT: %-13.9Lf \n",
+                                    "%-3u - %-14s C: %-9lu T: %-10.0Lf AT: %-13.9Lf (%-5.2Lf%%) TT: %-13.9Lf \n",
                                     k,
                                     getName(k),
                                     c,
@@ -503,8 +567,7 @@ InterpretResult interpret(Chunk *chunk, long addr) {
 void loadInstance(int index) {
     Object *array = v2o(pop());
 
-    int offset;
-
+    unsigned int offset;
     if (index < 0) {
         offset = index + array->size;
     } else {
@@ -517,12 +580,12 @@ void loadInstance(int index) {
 }
 
 void set(Value origin, Value *target) {
-    target = followRef(target);
+    target = accessRefp(target);
+    origin = accessRef(origin);
 
-    Value *rorigin = followRef(&origin);
-
-    target->data = rorigin->data;
-    target->type = rorigin->type;
+    target->data = origin.data;
+    target->type = origin.type;
+    target->vtable = origin.vtable;
 }
 
 void push(Value value) {

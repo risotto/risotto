@@ -5,7 +5,7 @@
 #include <gtest/gtest.h>
 #include "../common.h"
 
-#define OPERATOR_INPUT(op) "println(-2.1 " #op " 2) println(2 " #op " -2.2) println(2.0 " #op " 2.0) println(1 " #op " 2)"
+#define OPERATOR_INPUT(op) "println(2.0 " #op " 2.0) println(1 " #op " 2)"
 #define SHORTHAND_OPERATOR_INPUT(op) "a := 1 println(a) a " #op " 2 println(a) a " #op " 5 println(a)"
 #define LOGICAL_OPERATOR_INPUT(op) "println(true " #op " false) println(false " #op " true) println(true " #op " true) println(false " #op " false)"
 
@@ -70,7 +70,7 @@ TEST(Operators, BinaryPlus) {
 
     risotto.run(OPERATOR_INPUT(+));
 
-    EXPECT_STDOUT("-0.100000\n-0.200000\n4.000000\n3\n");
+    EXPECT_STDOUT("4.000000\n3\n");
 }
 
 TEST(Operators, BinaryPlusString) {
@@ -86,7 +86,7 @@ TEST(Operators, BinaryMinus) {
 
     risotto.run(OPERATOR_INPUT(-));
 
-    EXPECT_STDOUT("-4.100000\n4.200000\n0.000000\n-1\n");
+    EXPECT_STDOUT("0.000000\n-1\n");
 }
 
 TEST(Operators, BinaryDivide) {
@@ -94,7 +94,7 @@ TEST(Operators, BinaryDivide) {
 
     risotto.run(OPERATOR_INPUT(/));
 
-    EXPECT_STDOUT("-1.050000\n-0.909091\n1.000000\n0\n");
+    EXPECT_STDOUT("1.000000\n0\n");
 }
 
 TEST(Operators, BinaryMultiply) {
@@ -102,7 +102,7 @@ TEST(Operators, BinaryMultiply) {
 
     risotto.run(OPERATOR_INPUT(*));
 
-    EXPECT_STDOUT("-4.200000\n-4.400000\n4.000000\n2\n");
+    EXPECT_STDOUT("4.000000\n2\n");
 }
 
 TEST(Operators, BinaryModulo) {
@@ -118,7 +118,7 @@ TEST(Operators, BinaryLower) {
 
     risotto.run(OPERATOR_INPUT(<));
 
-    EXPECT_STDOUT("true\nfalse\nfalse\ntrue\n");
+    EXPECT_STDOUT("false\ntrue\n");
 }
 
 TEST(Operators, BinaryLowerEqual) {
@@ -126,7 +126,7 @@ TEST(Operators, BinaryLowerEqual) {
 
     risotto.run(OPERATOR_INPUT(<=));
 
-    EXPECT_STDOUT("true\nfalse\ntrue\ntrue\n");
+    EXPECT_STDOUT("true\ntrue\n");
 }
 
 TEST(Operators, BinaryGreater) {
@@ -134,7 +134,7 @@ TEST(Operators, BinaryGreater) {
 
     risotto.run(OPERATOR_INPUT(>));
 
-    EXPECT_STDOUT("false\ntrue\nfalse\nfalse\n");
+    EXPECT_STDOUT("false\nfalse\n");
 }
 
 TEST(Operators, BinaryGreaterEqual) {
@@ -142,7 +142,7 @@ TEST(Operators, BinaryGreaterEqual) {
 
     risotto.run(OPERATOR_INPUT(>=));
 
-    EXPECT_STDOUT("false\ntrue\ntrue\nfalse\n");
+    EXPECT_STDOUT("true\nfalse\n");
 }
 
 TEST(Operators, BinaryEqualEqual) {
@@ -150,7 +150,7 @@ TEST(Operators, BinaryEqualEqual) {
 
     risotto.run(OPERATOR_INPUT(==));
 
-    EXPECT_STDOUT("false\nfalse\ntrue\nfalse\n");
+    EXPECT_STDOUT("true\nfalse\n");
 }
 
 TEST(Operators, BinaryBangEqual) {
@@ -158,7 +158,7 @@ TEST(Operators, BinaryBangEqual) {
 
     risotto.run(OPERATOR_INPUT(!=));
 
-    EXPECT_STDOUT("true\ntrue\nfalse\ntrue\n");
+    EXPECT_STDOUT("false\ntrue\n");
 }
 
 TEST(Operators, PlusEqual) {

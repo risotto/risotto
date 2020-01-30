@@ -47,7 +47,7 @@ void TypesManager::link() {
                 ss << "Cannot find type for: " << typeDesc->toString();
 
                 if (auto idDesc = dynamic_cast<IdentifierTypeDescriptor *>(typeDesc)) {
-                    ss << " at " << idDesc->name->position.toString();
+                    ss << " at " << position_string(idDesc->name->position);
                 }
 
                 unit->lastError = ss.str();
@@ -156,17 +156,16 @@ void TypesManager::generateVEntry(Compiler *compiler, TypeDefinition *receiver, 
         addr = p2v((void *) native->fun);
     } else if (auto code = dynamic_cast<CodeFunctionEntry *>(function)) {
         addr = i2v(compiler->getAddr(code->firstByte));
+    } else if (dynamic_cast<BytesFunctionEntry *>(function)) {
+        return; // Not supported
     } else {
         throw std::logic_error("Unhandled function entry");
     }
 
-    auto paddr = static_cast<Value *>(malloc(sizeof(Value)));
-    *paddr = addr;
-
     for (auto vaddr: function->vaddrs) {
         auto entry = vtable_entry{
                 .vaddr = vaddr,
-                .addr = paddr,
+                .addr = addr,
         };
         vec_push(&receiver->vtable->addrs, entry);
     }

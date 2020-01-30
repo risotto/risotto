@@ -35,22 +35,22 @@ std::vector<ByteResolver *> LiteralExpr::compile(Compiler *compiler) {
 
     switch (value->type) {
         case TokenType::NIL:
-            bytes.push_back(new ByteResolver(OP_NIL, &value->position));
+            bytes.push_back(new ByteResolver(OP_NIL, value->position));
             return bytes;
         case TokenType::TRUE:
-            bytes.push_back(new ByteResolver(OP_TRUE, &value->position));
+            bytes.push_back(new ByteResolver(OP_TRUE, value->position));
             return bytes;
         case TokenType::FALSE:
-            bytes.push_back(new ByteResolver(OP_FALSE, &value->position));
+            bytes.push_back(new ByteResolver(OP_FALSE, value->position));
             return bytes;
         default:
             auto v = literalToValue(value);
             auto constAddr = compiler->registerConst(v);
 
-            bytes.push_back(new ByteResolver(OP_CONST, &value->position));
-            bytes.push_back(new ByteResolver([constAddr](Compiler *c) { return constAddr; }, nullptr));
+    bytes.push_back(new ByteResolver(OP_CONST, value->position));
+    bytes.push_back(new ByteResolver([constAddr](Compiler *c) { return constAddr; }));
 
-            return bytes;
+    return bytes;
     }
 }
 
