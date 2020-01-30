@@ -150,8 +150,8 @@ static InterpretResult run() {
     bool benchmarkExec = hasFlag(BenchmarkExecution);
 
     clock_t timings[Last + 1];
-    unsigned long timingsc[Last + 1];
-    unsigned long opsc = 0;
+    unsigned long long timingsc[Last + 1];
+    unsigned long long opsc = 0;
 
     for (int m = 0; m <= Last; ++m) {
         timings[m] = 0;
@@ -522,7 +522,7 @@ static InterpretResult run() {
 
                         if (c > 0) {
                             printf(
-                                    "%-3u - %-14s C: %-9lu T: %-13Lf AT: %-13.9Lf (%-5.2Lf%%) TT: %-13.9Lf \n",
+                                    "%-3u - %-14s C: %-9lu T: %-10.0Lf AT: %-13.9Lf (%-5.2Lf%%) TT: %-13.9Lf \n",
                                     k,
                                     getName(k),
                                     c,
