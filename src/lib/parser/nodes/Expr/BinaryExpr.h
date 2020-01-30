@@ -23,12 +23,27 @@ public:
 
     FunctionEntry *getFunctionEntry(Compiler *compiler) override;
 
+    std::vector<ByteResolver *> compile(Compiler *compiler) override;
+
 protected:
     VariableEntry *getVariableEntry(Compiler *compiler) override;
 
-protected:
     FunctionNotFoundError getFunctionNotFoundError(Compiler *compiler) override;
+
+    ReturnTypes computeReturnType(Compiler *compiler) override;
 };
 
+class Shortcut {
+public:
+    std::function<bool(Compiler *, BinaryExpr *)> applies;
+    std::function<void(Compiler *, BinaryExpr *, std::vector<ByteResolver *> &)> bytesGen;
+    std::function<TypeDescriptor *(Compiler *, BinaryExpr *)> returnTypeGen;
+
+    Shortcut(
+            std::function<bool(Compiler *, BinaryExpr *)> applies,
+            std::function<void(Compiler *, BinaryExpr *, std::vector<ByteResolver *> &bytes)> bytesGen,
+            std::function<TypeDescriptor *(Compiler *, BinaryExpr *)> returnTypeGen
+    );
+};
 
 #endif //RISOTTOV2_BINARYEXPR_H

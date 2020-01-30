@@ -15,6 +15,31 @@ extern "C" {
 #include "lib/compiler/Compiler.h"
 #include "lib/compiler/TypeDefinition.h"
 
+NilTypeDescriptor NilTypeDescriptor::Def = NilTypeDescriptor();
+
+NilTypeDescriptor::NilTypeDescriptor(): NilTypeDescriptor(Token::IdentifierFactory("nil"))  {}
+
+NilTypeDescriptor::NilTypeDescriptor(Token *token) {
+    this->token = token;
+    typeDef = &NilTypeDefinition::Def;
+}
+
+std::string NilTypeDescriptor::toString() {
+    return token->lexeme;
+}
+
+TypeDefinition *NilTypeDescriptor::genType(TypesManager *typesManager, Frame *frame) {
+    return typeDef;
+}
+
+void NilTypeDescriptor::createLinkUnits(TypesManager *typesManager, Frame *frame) {
+
+}
+
+bool NilTypeDescriptor::isSame(TypeDescriptor *type) {
+    return true;
+}
+
 std::string IdentifierTypeDescriptor::toString() {
     return name->lexeme;
 }

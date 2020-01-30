@@ -10,7 +10,7 @@
 #include <lib/compiler/utils/Utils.h>
 
 bool TypeDefinition::canReceiveType(TypeDefinition *type) {
-    return this == type;
+    return this == type || type == &NilTypeDefinition::Def;
 }
 
 void TypeDefinition::addSelf(ParameterDefinition *self, FunctionEntry *entry) {
@@ -152,3 +152,11 @@ bool InterfaceTypeDefinition::canReceiveType(TypeDefinition *type) {
 
     return true;
 }
+
+NilTypeDefinition::NilTypeDefinition() = default;
+
+bool NilTypeDefinition::isSame(TypeDefinition *other) {
+    return true;
+}
+
+NilTypeDefinition NilTypeDefinition::Def = NilTypeDefinition();

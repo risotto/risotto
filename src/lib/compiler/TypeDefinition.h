@@ -38,6 +38,15 @@ protected:
     static void addSelf(ParameterDefinition *self, FunctionEntry *entry);
 };
 
+class NilTypeDefinition : public TypeDefinition {
+public:
+    static NilTypeDefinition Def;
+
+    NilTypeDefinition();
+
+    bool isSame(TypeDefinition *other) override;
+};
+
 class ArrayTypeDefinition : public TypeDefinition {
 public:
     TypeDescriptor *element;

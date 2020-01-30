@@ -98,7 +98,6 @@ void TypesManager::runListeners() {
     }
 }
 
-
 void TypesManager::registerType(TypeDefinition *t) {
     assert(t != nullptr);
 

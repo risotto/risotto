@@ -32,6 +32,24 @@ public:
     TypeDefinition *typeDef = nullptr;
 };
 
+class NilTypeDescriptor: public TypeDescriptor {
+public:
+    Token *token;
+
+    static NilTypeDescriptor Def;
+
+    NilTypeDescriptor();
+    explicit NilTypeDescriptor(Token *name);
+
+    std::string toString() override;
+
+    TypeDefinition *genType(TypesManager *typesManager, Frame *frame) override;
+
+    void createLinkUnits(TypesManager *typesManager, Frame *frame) override;
+
+    bool isSame(TypeDescriptor *type) override;
+};
+
 class ArrayTypeDescriptor : public TypeDescriptor {
 public:
     TypeDescriptor *element;

@@ -66,7 +66,7 @@ ReturnTypes LiteralExpr::computeReturnType(Compiler *compiler) {
         case TokenType::TRUE:
             return getTypeDescriptor(compiler, "bool");
         case TokenType::NIL:
-            throw CompilerError("Cannot get type of nil", value->position);
+            return new NilTypeDescriptor(value);
         case TokenType::INT:
             return getTypeDescriptor(compiler, "int");
         case TokenType::DOUBLE:
