@@ -31,12 +31,13 @@ static void resetStack() {
     vm.fp = vm.sp;
 }
 
-void initVM(unsigned int flags) {
+void initVM(unsigned int flags, int (*printf) (const char *, ...)) {
     resetStack();
     vm.flags = flags;
     vm.numObjects = 0;
     vm.maxObjects = INITIAL_GC_THRESHOLD;
     vm.firstObject = NULL;
+    vm.printf = printf;
 }
 
 bool hasFlag(VMFlags flag) {

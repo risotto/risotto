@@ -43,15 +43,15 @@ std::vector<ByteResolver *> LiteralExpr::compile(Compiler *compiler) {
         case TokenType::FALSE:
             bytes.push_back(new ByteResolver(OP_FALSE, &value->position));
             return bytes;
+        default:
+            auto v = literalToValue(value);
+            auto constAddr = compiler->registerConst(v);
+
+            bytes.push_back(new ByteResolver(OP_CONST, &value->position));
+            bytes.push_back(new ByteResolver([constAddr](Compiler *c) { return constAddr; }, nullptr));
+
+            return bytes;
     }
-
-    auto v = literalToValue(value);
-    auto constAddr = compiler->registerConst(v);
-
-    bytes.push_back(new ByteResolver(OP_CONST, &value->position));
-    bytes.push_back(new ByteResolver([constAddr](Compiler *c) { return constAddr; }, nullptr));
-
-    return bytes;
 }
 
 TypeDescriptor *getTypeDescriptor(Compiler *compiler, const std::string& name) {
@@ -66,7 +66,7 @@ ReturnTypes LiteralExpr::computeReturnType(Compiler *compiler) {
         case TokenType::TRUE:
             return getTypeDescriptor(compiler, "bool");
         case TokenType::NIL:
-            throw CompilerError("Cannot get type of nil ");
+            return new NilTypeDescriptor(value);
         case TokenType::INT:
             return getTypeDescriptor(compiler, "int");
         case TokenType::DOUBLE:

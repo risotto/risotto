@@ -5,20 +5,21 @@
 #include "TypesManager.h"
 #include "lib/parser/nodes/TypeDescriptor.h"
 #include <sstream>
+#include <cassert>
 
 LinkUnit::LinkUnit(TypeDescriptor *typeDesc, Frame *frame, bool allowFindType) : typeDesc(typeDesc), frame(frame),
                                                                                  allowFindType(allowFindType) {
 
 }
 
-void TypesManager::add(TypeDescriptor *typeDesc, Frame *frame, bool allowFindType) {
+void TypesManager::createLinkUnits(TypeDescriptor *typeDesc, Frame *frame, bool allowFindType) {
     units.push_back(new LinkUnit(typeDesc, frame, allowFindType));
 
     typeDesc->createLinkUnits(this, frame);
 }
 
-void TypesManager::add(TypeDescriptor *typeDesc, Frame *frame) {
-    add(typeDesc, frame, true);
+void TypesManager::createLinkUnits(TypeDescriptor *typeDesc, Frame *frame) {
+    createLinkUnits(typeDesc, frame, true);
 }
 
 void TypesManager::link() {
@@ -34,10 +35,12 @@ void TypesManager::link() {
             auto ok = typeDesc->resolveType(this, unit->frame, unit->allowFindType);
             if (ok) {
                 hasAdvanced = true;
+
                 uit = units.erase(uit);
                 delete unit;
 
-                registerType(typeDesc->getTypeDefinition());
+                auto typeDef = typeDesc->getTypeDefinition();
+                registerType(typeDef);
             } else {
                 unit->hasError = true;
                 std::stringstream ss;
@@ -53,18 +56,7 @@ void TypesManager::link() {
         }
 
         if (hasAdvanced) {
-            auto lit = listeners.begin();
-            while (lit != listeners.end()) {
-                auto listener = *lit;
-
-                auto done = listener();
-
-                if (done) {
-                    lit = listeners.erase(lit);
-                } else {
-                    ++lit;
-                }
-            }
+            runListeners();
         }
     } while (hasAdvanced && !units.empty());
 
@@ -91,7 +83,24 @@ void TypesManager::addListener(const std::function<bool()> &listener) {
     listeners.push_back(listener);
 }
 
+void TypesManager::runListeners() {
+    auto lit = listeners.begin();
+    while (lit != listeners.end()) {
+        auto listener = *lit;
+
+        auto done = listener();
+
+        if (done) {
+            lit = listeners.erase(lit);
+        } else {
+            ++lit;
+        }
+    }
+}
+
 void TypesManager::registerType(TypeDefinition *t) {
+    assert(t != nullptr);
+
     if (auto interfaceType = dynamic_cast<InterfaceTypeDefinition *>(t)) {
         interfaces.insert(interfaceType);
     } else {

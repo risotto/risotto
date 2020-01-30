@@ -39,6 +39,8 @@ public:
 
     TypeDescriptor *findNamedType(const std::string &name);
 
+    TypeDescriptor *findType(TypeDescriptor *typeDesc);
+
     VariableFindResponse *findVariable(const std::string &name);
 
     std::vector<FunctionEntry *> findFunctionsCandidates(const std::string &name);

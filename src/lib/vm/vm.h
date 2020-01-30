@@ -29,6 +29,7 @@ typedef struct {
     int numObjects;
     /* The number of values required to trigger a GC. */
     int maxObjects;
+    int (*printf) (const char *, ...);
 } VM;
 
 typedef enum {
@@ -37,7 +38,7 @@ typedef enum {
     INTERPRET_RUNTIME_ERROR
 } InterpretResult;
 
-void initVM(unsigned int flags);
+void initVM(unsigned int flags, int (*printf) (const char *, ...));
 VM *getVM();
 void freeVM();
 InterpretResult interpret(Chunk* chunk, long addr);

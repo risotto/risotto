@@ -11,7 +11,7 @@ jobs:
     - name: Pull submodules
       run: |
         git submodule init
-        git submodule update --remote
+        git submodule update --init
     - name: Install lcov
       run: sudo apt-get install -y lcov
     - name: CMake for Coverage
@@ -26,6 +26,30 @@ jobs:
       env:
         CODECOV_TOKEN: ${{secrets.CODECOV_TOKEN}}
 
+  benchmark:
+    name: Run benchmarks
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Pull submodules
+      run: |
+        git submodule init
+        git submodule update --init
+    - name: CMake for Coverage
+      run: cmake -DCMAKE_BUILD_TYPE=Release -H. -Bbuild
+    - name: Build
+      run: cmake --build build --target ben
+    - name: Run
+      run: ./build/ben --benchmark_format=json | tee ./benchmark_result.json
+    - name: Store benchmark result
+      uses: rhysd/github-action-benchmark@v1
+      with:
+        tool: 'googlecpp'
+        output-file-path: ./benchmark_result.json
+        github-token: ${{ secrets.PERSONAL_GITHUB_TOKEN }}
+        # Push and deploy GitHub pages branch automatically
+        auto-push: true
+
   build:
     name: Build for ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
@@ -37,11 +61,11 @@ jobs:
     - name: Pull submodules
       run: |
         git submodule init
-        git submodule update --remote
+        git submodule update --init
     - name: CMake for Release
       run: cmake -DCMAKE_BUILD_TYPE=Release -H. -Bbuild
     - name: Build
-      run: cmake --build build
+      run: cmake --build build --target rst rst-debug
     - name: Test binary
       run: build/rst -h
 

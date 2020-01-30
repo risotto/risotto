@@ -4,8 +4,10 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
+#include <stdarg.h>
 #include "value.h"
-#include "vm.h"
+#include "vm.c"
 
 #define str_t const char *
 
@@ -28,6 +30,16 @@ NativeFunctionReturn run_gc(Value args[], int argc) {
     gc();
 
     ret0;
+}
+
+NativeFunctionReturn vm_srand(Value args[], int argc) {
+    srand(time(NULL));
+
+    ret0;
+}
+
+NativeFunctionReturn vm_rand(Value args[], int argc) {
+    ret(1, i2v(rand()));
 }
 
 #define NATIVE_BINARY_FUNCTION_NAME(leftType, opName, rightType) binary_##leftType##_##opName##_##rightType
@@ -101,19 +113,32 @@ NATIVE_BINARY_SHORTHAND_MATH_OP(leftType, mul, rightType, leftV2, rightV2, *, ou
 NATIVE_BINARY_SHORTHAND_MATH_OP(leftType, div, rightType, leftV2, rightV2, /, outV) \
 NATIVE_BINARY_EQ_OPS(leftType, rightType, leftV2, rightV2)
 
+#define NATIVE_BINARY_BIT_OPS(leftType, rightType, leftV2, rightV2, outV) \
+NATIVE_BINARY_MATH_OP(leftType, bit_and, rightType, leftV2, rightV2, &,  outV) \
+NATIVE_BINARY_MATH_OP(leftType, bit_or, rightType, leftV2, rightV2, |,  outV) \
+NATIVE_BINARY_MATH_OP(leftType, bit_xor, rightType, leftV2, rightV2, ^,  outV) \
+NATIVE_BINARY_MATH_OP(leftType, bit_lshift, rightType, leftV2, rightV2, <<,  outV) \
+NATIVE_BINARY_MATH_OP(leftType, bit_rshift, rightType, leftV2, rightV2, >>,  outV)
+
+#define NATIVE_UNARY_OP(op, type, name, v2, outV) \
+    NativeFunctionReturn name(Value *args, int argc) { \
+        ret(1, outV(op v2(args[0]))); \
+    }
+
 // Int
 
 NATIVE_BINARY_MATH_OPS(int, int, v2i, v2i, i2v)
 
 NATIVE_BINARY_MATH_OP(int, mod, int, v2i, v2i, %, i2v)
 
+NATIVE_BINARY_BIT_OPS(int, int, v2i, v2i, i2v)
+NATIVE_UNARY_OP(~, int, unary_prefix_int_bit_not, v2i, i2v)
+
 NATIVE_BINARY_MATH_OPS(int, double, v2i, v2d, d2v)
 
 NATIVE_BINARY_STRING_OPS(int, int, v2i, %i)
 
-NativeFunctionReturn unary_prefix_int_negate(Value *args, int argc) {
-    ret(1, i2v(-v2i(args[0])));
-}
+NATIVE_UNARY_OP(-, int, unary_prefix_int_negate, v2i, i2v)
 
 #define NATIVE_UNARY_PREFIX_IN_PLACE(type, opName, v2t, t2v, operation) \
 NativeFunctionReturn unary_prefix_##type##_##opName(Value *args, int argc) { \
@@ -148,9 +173,7 @@ NATIVE_BINARY_MATH_OPS(double, double, v2d, v2d, d2v)
 
 NATIVE_BINARY_STRING_OPS(double, double, v2d, %lf)
 
-NativeFunctionReturn unary_prefix_double_negate(Value *args, int argc) {
-    ret(1, d2v(-v2d(args[0])));
-}
+NATIVE_UNARY_OP(-, double, unary_prefix_double_negate, v2d, d2v)
 
 NATIVE_UNARY_PREFIX_IN_PLACE(double, decrement, v2d, d2v, -1.0)
 
@@ -215,7 +238,7 @@ NativeFunctionReturn binary_string_add_equal_string(Value args[], int argc) {
 NativeFunctionReturn println_int(Value args[], int argc) {
     int v = v2i(args[0]);
 
-    printf("%i\n", v);
+    vm.printf("%i\n", v);
 
     ret0;
 }
@@ -223,7 +246,7 @@ NativeFunctionReturn println_int(Value args[], int argc) {
 NativeFunctionReturn println_double(Value args[], int argc) {
     double v = v2d(args[0]);
 
-    printf("%f\n", v);
+    vm.printf("%f\n", v);
 
     ret0;
 }
@@ -231,7 +254,7 @@ NativeFunctionReturn println_double(Value args[], int argc) {
 NativeFunctionReturn println_string(Value args[], int argc) {
     str_t v = v2s(args[0]);
 
-    printf("%s\n", v);
+    vm.printf("%s\n", v);
 
     ret0;
 }
@@ -240,9 +263,9 @@ NativeFunctionReturn println_bool(Value args[], int argc) {
     bool v = v2b(args[0]);
 
     if (v) {
-        printf("true\n");
+        vm.printf("true\n");
     } else {
-        printf("false\n");
+        vm.printf("false\n");
     }
 
     ret0;

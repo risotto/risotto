@@ -9,7 +9,6 @@
 #include <vector>
 #include <map>
 
-class TypeDefinition;
 class TypeDescriptor;
 
 class TypesTable {
@@ -18,7 +17,7 @@ public:
 
     TypeDescriptor *findNamed(const std::string &name);
 
-    TypeDescriptor *find(TypeDescriptor * desc);
+    TypeDescriptor *find(TypeDescriptor *desc);
 
     TypeDescriptor *add(TypeDescriptor *typeEntry);
 
