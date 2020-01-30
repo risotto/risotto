@@ -125,9 +125,13 @@ void Tokenizer::scan() {
             addToken(match('&') ? TokenType::AND : TokenType::AMPERSAND);
             break;
         case '|':
-            if (match('|')) {
-                addToken(TokenType::OR);
-            }
+            addToken(match('|') ? TokenType::OR : TokenType::PIPE);
+            break;
+        case '^':
+            addToken(TokenType::CARET);
+            break;
+        case '~':
+            addToken(TokenType::TILDE);
             break;
         case ';':
             addToken(TokenType::SEMICOLON);
@@ -148,10 +152,22 @@ void Tokenizer::scan() {
             addToken(match('=') ? TokenType::EQUAL_EQUAL : TokenType::EQUAL);
             break;
         case '<':
-            addToken(match('=') ? TokenType::LESS_EQUAL : TokenType::LESS);
+            if (match('<')) {
+                addToken(TokenType::LEFT_LEFT);
+            } else if (match('=')) {
+                addToken(TokenType::LESS_EQUAL);
+            } else {
+                addToken(TokenType::LESS);
+            }
             break;
         case '>':
-            addToken(match('=') ? TokenType::GREATER_EQUAL : TokenType::GREATER);
+            if (match('>')) {
+                addToken(TokenType::RIGHT_RIGHT);
+            } else if (match('=')) {
+                addToken(TokenType::GREATER_EQUAL);
+            } else {
+                addToken(TokenType::GREATER);
+            }
             break;
         case '/':
             if (match('/')) {

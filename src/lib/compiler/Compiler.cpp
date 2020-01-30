@@ -36,8 +36,26 @@ extern "C" {
     ); \
     REGISTER_FUNCTION(target, functionName);
 
+#define NATIVE_UNARY_OPERATOR_DECLARATION(target, op, return, functionName) \
+    auto FUNCTION_ENTRY_VAR(target, functionName) = ENTRY_DEF(TYPE_ENTRY(target))->addPrefix( \
+        SELF_RECEIVER("left", target), \
+        new NativeFunctionEntry( \
+           #op, \
+            new FunctionTypeDescriptor( \
+                true, \
+                {}, \
+                {TYPE_DESC(return)} \
+            ), \
+            functionName \
+        ) \
+    ); \
+    REGISTER_FUNCTION(target, functionName);
+
 #define NATIVE_BINARY_OPERATOR_DECLARATION(target, op, param, return, opName) \
 NATIVE_BINARY_DECLARATION_NAMED(target, op, param, return, binary_##target##_##opName##_##param)
+
+#define NATIVE_UNARY_PREFIX_OPERATOR_DECLARATION(target, op, return, functionName) \
+NATIVE_UNARY_OPERATOR_DECLARATION(target, op, return, unary_prefix_##target##_##functionName)
 
 #define NATIVE_BINARY_OPERATOR_MATH_DECLARATIONS(target, param, return) \
 NATIVE_BINARY_OPERATOR_DECLARATION(target, +, param, return, add) \
@@ -60,23 +78,13 @@ NATIVE_BINARY_OPERATOR_DECLARATION(string, +, type, string, add) \
 NATIVE_BINARY_OPERATOR_DECLARATION(type, +, string, string, add) \
 NATIVE_BINARY_OPERATOR_DECLARATION(string, +=, type, string, add_equal)
 
-#define NATIVE_UNARY_OPERATOR_DECLARATION(target, op, return, functionName) \
-    auto FUNCTION_ENTRY_VAR(target, functionName) = ENTRY_DEF(TYPE_ENTRY(target))->addPrefix( \
-        SELF_RECEIVER("left", target), \
-        new NativeFunctionEntry( \
-           #op, \
-            new FunctionTypeDescriptor( \
-                true, \
-                {}, \
-                {TYPE_DESC(return)} \
-            ), \
-            functionName \
-        ) \
-    ); \
-    REGISTER_FUNCTION(target, functionName);
-
-#define NATIVE_UNARY_PREFIX_OPERATOR_DECLARATION(target, op, return, functionName) \
-NATIVE_UNARY_OPERATOR_DECLARATION(target, op, return, unary_prefix_##target##_##functionName)
+#define NATIVE_OPERATOR_BIT_DECLARATIONS(target, param, return) \
+NATIVE_BINARY_OPERATOR_DECLARATION(target, &, param, return, bit_and) \
+NATIVE_BINARY_OPERATOR_DECLARATION(target, |, param, return, bit_or) \
+NATIVE_BINARY_OPERATOR_DECLARATION(target, ^, param, return, bit_xor) \
+NATIVE_UNARY_PREFIX_OPERATOR_DECLARATION(target, ~, return, bit_not) \
+NATIVE_BINARY_OPERATOR_DECLARATION(target, <<, param, return, bit_lshift) \
+NATIVE_BINARY_OPERATOR_DECLARATION(target, >>, param, return, bit_rshift)
 
 #define NATIVE_UNARY_OPERATOR_MATH_DECLARATIONS(target, return) \
 NATIVE_UNARY_PREFIX_OPERATOR_DECLARATION(target, -, return, negate) \
@@ -113,6 +121,8 @@ Compiler::Compiler(std::vector<Stmt *> stmts) : stmts(std::move(stmts)) {
     NATIVE_BINARY_OPERATOR_MATH_DECLARATIONS(int, double, double)
     NATIVE_BINARY_OPERATOR_STRING_DECLARATIONS(int)
     NATIVE_BINARY_OPERATOR_DECLARATION(int, %, int, int, mod)
+
+    NATIVE_OPERATOR_BIT_DECLARATIONS(int, int, int)
 
     NATIVE_UNARY_OPERATOR_MATH_DECLARATIONS(int, int)
 

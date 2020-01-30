@@ -79,6 +79,13 @@ NativeFunctionReturn binary_int_sub_equal_double(Value args[], int argc);
 NativeFunctionReturn binary_int_mul_equal_double(Value args[], int argc);
 NativeFunctionReturn binary_int_div_equal_double(Value args[], int argc);
 
+NativeFunctionReturn binary_int_bit_and_int(Value args[], int argc);
+NativeFunctionReturn binary_int_bit_or_int(Value args[], int argc);
+NativeFunctionReturn binary_int_bit_xor_int(Value args[], int argc);
+NativeFunctionReturn binary_int_bit_lshift_int(Value args[], int argc);
+NativeFunctionReturn binary_int_bit_rshift_int(Value args[], int argc);
+NativeFunctionReturn unary_prefix_int_bit_not(Value args[], int argc);
+
 // Double
 
 NativeFunctionReturn binary_double_add_string(Value args[], int argc);

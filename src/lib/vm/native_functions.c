@@ -112,19 +112,32 @@ NATIVE_BINARY_SHORTHAND_MATH_OP(leftType, mul, rightType, leftV2, rightV2, *, ou
 NATIVE_BINARY_SHORTHAND_MATH_OP(leftType, div, rightType, leftV2, rightV2, /, outV) \
 NATIVE_BINARY_EQ_OPS(leftType, rightType, leftV2, rightV2)
 
+#define NATIVE_BINARY_BIT_OPS(leftType, rightType, leftV2, rightV2, outV) \
+NATIVE_BINARY_MATH_OP(leftType, bit_and, rightType, leftV2, rightV2, &,  outV) \
+NATIVE_BINARY_MATH_OP(leftType, bit_or, rightType, leftV2, rightV2, |,  outV) \
+NATIVE_BINARY_MATH_OP(leftType, bit_xor, rightType, leftV2, rightV2, ^,  outV) \
+NATIVE_BINARY_MATH_OP(leftType, bit_lshift, rightType, leftV2, rightV2, <<,  outV) \
+NATIVE_BINARY_MATH_OP(leftType, bit_rshift, rightType, leftV2, rightV2, >>,  outV)
+
+#define NATIVE_UNARY_OP(op, type, name, v2, outV) \
+    NativeFunctionReturn name(Value *args, int argc) { \
+        ret(1, outV(op v2(args[0]))); \
+    }
+
 // Int
 
 NATIVE_BINARY_MATH_OPS(int, int, v2i, v2i, i2v)
 
 NATIVE_BINARY_MATH_OP(int, mod, int, v2i, v2i, %, i2v)
 
+NATIVE_BINARY_BIT_OPS(int, int, v2i, v2i, i2v)
+NATIVE_UNARY_OP(~, int, unary_prefix_int_bit_not, v2i, i2v)
+
 NATIVE_BINARY_MATH_OPS(int, double, v2i, v2d, d2v)
 
 NATIVE_BINARY_STRING_OPS(int, int, v2i, %i)
 
-NativeFunctionReturn unary_prefix_int_negate(Value *args, int argc) {
-    ret(1, i2v(-v2i(args[0])));
-}
+NATIVE_UNARY_OP(-, int, unary_prefix_int_negate, v2i, i2v)
 
 #define NATIVE_UNARY_PREFIX_IN_PLACE(type, opName, v2t, t2v, operation) \
 NativeFunctionReturn unary_prefix_##type##_##opName(Value *args, int argc) { \
@@ -159,9 +172,7 @@ NATIVE_BINARY_MATH_OPS(double, double, v2d, v2d, d2v)
 
 NATIVE_BINARY_STRING_OPS(double, double, v2d, %lf)
 
-NativeFunctionReturn unary_prefix_double_negate(Value *args, int argc) {
-    ret(1, d2v(-v2d(args[0])));
-}
+NATIVE_UNARY_OP(-, double, unary_prefix_double_negate, v2d, d2v)
 
 NATIVE_UNARY_PREFIX_IN_PLACE(double, decrement, v2d, d2v, -1.0)
 
