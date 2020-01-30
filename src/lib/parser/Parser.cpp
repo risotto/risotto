@@ -583,12 +583,48 @@ Expr *Parser::logicalOr() {
 }
 
 Expr *Parser::logicalAnd() {
-    Expr *expr = equality();
+    Expr *expr = bit_or();
 
     while (match(TokenType::AND)) {
         Token *op = previous();
-        Expr *right = equality();
+        Expr *right = bit_or();
         expr = new LogicalExpr(expr, op, right);
+    }
+
+    return expr;
+}
+
+Expr *Parser::bit_or() {
+    Expr *expr = bit_xor();
+
+    while (match(TokenType::PIPE)) {
+        Token *op = previous();
+        Expr *right = bit_xor();
+        expr = new BinaryExpr(expr, op, right);
+    }
+
+    return expr;
+}
+
+Expr *Parser::bit_xor() {
+    Expr *expr = bit_and();
+
+    while (match(TokenType::CARET)) {
+        Token *op = previous();
+        Expr *right = bit_and();
+        expr = new BinaryExpr(expr, op, right);
+    }
+
+    return expr;
+}
+
+Expr *Parser::bit_and() {
+    Expr *expr = equality();
+
+    while (match(TokenType::AMPERSAND)) {
+        Token *op = previous();
+        Expr *right = equality();
+        expr = new BinaryExpr(expr, op, right);
     }
 
     return expr;
@@ -607,11 +643,23 @@ Expr *Parser::equality() {
 }
 
 Expr *Parser::comparison() {
-    Expr *expr = addition();
+    Expr *expr = bitshifting();
 
     while (match(TokenType::GREATER, TokenType::GREATER_EQUAL, TokenType::LESS, TokenType::LESS_EQUAL)) {
         Token *op = previous();
         Expr *right = addition();
+        expr = new BinaryExpr(expr, op, right);
+    }
+
+    return expr;
+}
+
+Expr *Parser::bitshifting() {
+    Expr *expr = addition();
+
+    while (match(TokenType::LEFT_LEFT, TokenType::RIGHT_RIGHT)) {
+        Token *op = previous();
+        Expr *right = bitshifting();
         expr = new BinaryExpr(expr, op, right);
     }
 
@@ -643,7 +691,7 @@ Expr *Parser::multiplication() {
 }
 
 Expr *Parser::unary() {
-    if (match(TokenType::BANG, TokenType::MINUS, TokenType::MINUS_MINUS, TokenType::PLUS_PLUS)) {
+    if (match(TokenType::BANG, TokenType::MINUS, TokenType::TILDE, TokenType::MINUS_MINUS, TokenType::PLUS_PLUS)) {
         Token *op = previous();
         Expr *right = unary();
         return new UnaryExpr(op, right);

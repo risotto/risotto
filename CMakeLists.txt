@@ -51,6 +51,10 @@ set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 # and gmock_main
 add_subdirectory("lib/googletest/googletest")
 
+set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "" FORCE)
+set(BENCHMARK_ENABLE_GTEST_TESTS OFF CACHE BOOL "" FORCE)
+add_subdirectory(lib/googlebenchmark REQUIRED)
+
 # The gtest/gmock targets carry header search path
 # dependencies automatically when using CMake 2.8.11 or
 # later. Otherwise we have to add them here ourselves.
@@ -90,6 +94,14 @@ target_link_libraries(rst risotto_lib)
 
 add_executable(rst-debug ${CMD_COMMON} ${CMD_SRC})
 target_link_libraries(rst-debug risotto_lib_debug)
+
+# BENCHMARK
+
+file(GLOB_RECURSE BENCHMARKS_SRC RELATIVE ${CMAKE_SOURCE_DIR} "benchmarks/*.c" "benchmarks/*.cpp" "benchmarks/*.h")
+
+add_executable(ben ${BENCHMARKS_SRC})
+target_link_libraries(ben risotto_lib)
+target_link_libraries(ben benchmark::benchmark)
 
 # TESTING
 

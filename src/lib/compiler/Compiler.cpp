@@ -37,25 +37,6 @@ extern "C" {
     ); \
     REGISTER_FUNCTION(target, functionName);
 
-#define NATIVE_BINARY_OPERATOR_DECLARATION(target, op, param, return, opName) \
-NATIVE_BINARY_DECLARATION_NAMED(target, op, param, return, binary_##target##_##opName##_##param)
-
-#define NATIVE_BINARY_OPERATOR_MATH_DECLARATIONS(target, param, return) \
-NATIVE_BINARY_OPERATOR_DECLARATION(target, +, param, return, add) \
-NATIVE_BINARY_OPERATOR_DECLARATION(target, -, param, return, sub) \
-NATIVE_BINARY_OPERATOR_DECLARATION(target, *, param, return, mul) \
-NATIVE_BINARY_OPERATOR_DECLARATION(target, /, param, return, div) \
-NATIVE_BINARY_OPERATOR_DECLARATION(target, <, param, bool, lower) \
-NATIVE_BINARY_OPERATOR_DECLARATION(target, >, param, bool, greater) \
-NATIVE_BINARY_OPERATOR_DECLARATION(target, <=, param, bool, lower_equal) \
-NATIVE_BINARY_OPERATOR_DECLARATION(target, >=, param, bool, greater_equal) \
-NATIVE_BINARY_OPERATOR_DECLARATION(target, ==, param, bool, eq) \
-NATIVE_BINARY_OPERATOR_DECLARATION(target, !=, param, bool, neq)
-
-#define NATIVE_BINARY_OPERATOR_STRING_DECLARATIONS(type) \
-NATIVE_BINARY_OPERATOR_DECLARATION(string, +, type, string, add) \
-NATIVE_BINARY_OPERATOR_DECLARATION(type, +, string, string, add)
-
 #define NATIVE_UNARY_OPERATOR_DECLARATION(target, op, return, functionName) \
     auto FUNCTION_ENTRY_VAR(target, functionName) = ENTRY_DEF(TYPE_ENTRY(target))->addPrefix( \
         SELF_RECEIVER("left", target), \
@@ -71,8 +52,15 @@ NATIVE_BINARY_OPERATOR_DECLARATION(type, +, string, string, add)
     ); \
     REGISTER_FUNCTION(target, functionName);
 
+#define NATIVE_BINARY_OPERATOR_DECLARATION(target, op, param, return, opName) \
+NATIVE_BINARY_DECLARATION_NAMED(target, op, param, return, binary_##target##_##opName##_##param)
+
 #define NATIVE_UNARY_PREFIX_OPERATOR_DECLARATION(target, op, return, functionName) \
 NATIVE_UNARY_OPERATOR_DECLARATION(target, op, return, unary_prefix_##target##_##functionName)
+
+#define NATIVE_BINARY_OPERATOR_STRING_DECLARATIONS(type) \
+NATIVE_BINARY_OPERATOR_DECLARATION(string, +, type, string, add) \
+NATIVE_BINARY_OPERATOR_DECLARATION(type, +, string, string, add)
 
 #define NATIVE_UNARY_OPERATOR_MATH_DECLARATIONS(target, return) \
 NATIVE_UNARY_PREFIX_OPERATOR_DECLARATION(target, -, return, negate) \
@@ -105,6 +93,21 @@ NATIVE_UNARY_PREFIX_OPERATOR_DECLARATION(target, --, return, decrement) \
             generator \
         ) \
     )); \
+
+#define TYPE_CONVERSION_FUNCTION(in, out, opcode) \
+    frame->functions.add( \
+        new BytesFunctionEntry( \
+            #out, \
+            new FunctionTypeDescriptor( \
+                true, \
+                {new ParameterDefinition("v", TYPE_DESC(in), true)}, \
+                {TYPE_DESC(out)} \
+            ), \
+            []() { \
+                return std::vector<ByteResolver *>({new ByteResolver(opcode, TODO_POSITION)}); \
+            } \
+        ) \
+    );
 
 #define BYTES_OPERATOR_DECLARATION(target, op, param, return, generator) \
     _BYTES_OPERATOR_DECLARATION(target, op, {new ParameterDefinition("right", TYPE_DESC(param), true)}, {TYPE_DESC(return)}, generator)
@@ -162,6 +165,37 @@ Compiler::Compiler(std::vector<Stmt *> stmts) : stmts(std::move(stmts)) {
         return std::vector<ByteResolver *>({new ByteResolver(OP_IMOD, TODO_POSITION)}); \
     })
 
+    BYTES_OPERATOR_DECLARATION(int, &, int, int, []() { \
+        return std::vector<ByteResolver *>({new ByteResolver(OP_B_AND, TODO_POSITION)}); \
+    })
+    BYTES_OPERATOR_DECLARATION(int, |, int, int, []() { \
+        return std::vector<ByteResolver *>({new ByteResolver(OP_B_OR, TODO_POSITION)}); \
+    })
+    BYTES_OPERATOR_DECLARATION(int, ^, int, int, []() { \
+        return std::vector<ByteResolver *>({new ByteResolver(OP_B_XOR, TODO_POSITION)}); \
+    })
+    BYTES_OPERATOR_DECLARATION(int, <<, int, int, []() { \
+        return std::vector<ByteResolver *>({new ByteResolver(OP_B_SHIFTL, TODO_POSITION)}); \
+    })
+    BYTES_OPERATOR_DECLARATION(int, >>, int, int, []() { \
+        return std::vector<ByteResolver *>({new ByteResolver(OP_B_SHIFTR, TODO_POSITION)}); \
+    })
+    auto FUNCTION_ENTRY_VAR(int, int_unary_bit_not) = ENTRY_DEF(TYPE_ENTRY(int))->addPrefix(
+        SELF_RECEIVER("right", int),
+        new BytesFunctionEntry(
+           "~",
+            new FunctionTypeDescriptor(
+                true,
+                {},
+                {TYPE_DESC(int)}
+            ),
+           []() {
+               return std::vector<ByteResolver *>({new ByteResolver(OP_B_NOT, TODO_POSITION)});
+           }
+        )
+    );
+    REGISTER_FUNCTION(int, int_unary_bit_not);
+
     NATIVE_UNARY_OPERATOR_MATH_DECLARATIONS(int, int)
 
     BYTES_OPERATOR_MATH_DECLARATIONS(double, D)
@@ -207,6 +241,9 @@ Compiler::Compiler(std::vector<Stmt *> stmts) : stmts(std::move(stmts)) {
                     run_gc
             )
     );
+
+    TYPE_CONVERSION_FUNCTION(double, int, OP_D2I)
+    TYPE_CONVERSION_FUNCTION(int, double, OP_I2D)
 }
 
 Chunk Compiler::compile() {

@@ -31,12 +31,13 @@ static void resetStack() {
     vm.fp = vm.sp;
 }
 
-void initVM(unsigned int flags) {
+void initVM(unsigned int flags, int (*printf) (const char *, ...)) {
     resetStack();
     vm.flags = flags;
     vm.numObjects = 0;
     vm.maxObjects = INITIAL_GC_THRESHOLD;
     vm.firstObject = NULL;
+    vm.printf = printf;
 }
 
 bool hasFlag(VMFlags flag) {
@@ -486,6 +487,26 @@ static InterpretResult run() {
             VM_MATH_OPS(I, i)
             VM_BINARY(OP_IMOD, i, i, %)
             VM_MATH_OPS(D, d)
+            VM_BINARY(OP_B_AND, i, i, &)
+            VM_BINARY(OP_B_OR, i, i, |)
+            VM_BINARY(OP_B_XOR, i, i, ^)
+            VM_BINARY(OP_B_SHIFTL, i, i, <<)
+            VM_BINARY(OP_B_SHIFTR, i, i, >>)
+            case OP_B_NOT: {
+                Value l = pop();
+                push(i2v(~v2i(l)));
+                break;
+            }
+            case OP_I2D: {
+                Value l = pop();
+                push(d2v(v2i(l)));
+                break;
+            }
+            case OP_D2I: {
+                Value l = pop();
+                push(i2v(v2d(l)));
+                break;
+            }
             case OP_END: {
 #ifdef BENCHMARK_TIMINGS
                 if (benchmarkExec) {

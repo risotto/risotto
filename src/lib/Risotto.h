@@ -28,20 +28,23 @@ class Risotto {
 public:
     const unsigned int flags;
 
+    int (*printfp)(const char *, ...);
+
     Risotto();
 
     explicit Risotto(unsigned int flags);
 
     InterpretResult runFile(const std::string &filename);
 
-    InterpretResult run(const std::string& program);
+    InterpretResult run(const std::string &program);
 
     bool hasFlag(RisottoFlags flag);
 
     template<typename T>
-    T timing(const std::string& name, std::function<T()> f);
+    T timing(const std::string &name, std::function<T()> f);
+
 private:
-    InterpretResult doRun(const std::vector<Token *>& tokens);
+    InterpretResult doRun(const std::vector<Token *> &tokens);
 };
 
 

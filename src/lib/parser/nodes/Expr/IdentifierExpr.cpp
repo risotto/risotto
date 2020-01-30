@@ -36,7 +36,7 @@ std::vector<ByteResolver *> IdentifierExpr::compile(Compiler *compiler) {
     auto response = compiler->frame->findVariable(name->lexeme);
 
     if (response == nullptr) {
-        throw CompilerError("Cannot find symbol " + name->lexeme);
+        throw CompilerError("Cannot find symbol " + name->lexeme, name->position);
     }
 
     bytes.push_back(new ByteResolver(OP_LOAD_LOCAL, name->position));
@@ -62,7 +62,7 @@ ReturnTypes IdentifierExpr::computeReturnType(Compiler *compiler) {
     }
 
     if (candidateTypes.empty()) {
-        throw CompilerError("Cannot find symbol " + name->lexeme);
+        throw CompilerError("Cannot find symbol " + name->lexeme, name->position);
     }
 
     return candidateTypes;

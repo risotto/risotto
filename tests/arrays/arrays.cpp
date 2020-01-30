@@ -13,11 +13,3 @@ TEST(Arrays, Common) {
 
     EXPECT_STDOUT(OUTPUT("common"));
 }
-
-TEST(Arrays, BoundFunction) {
-    INIT_TEST;
-
-    risotto.runFile(INPUT("bound"));
-
-    EXPECT_STDOUT("YO\n");
-}

@@ -19,7 +19,9 @@ extern "C" {
 
 Risotto::Risotto(unsigned int flags) : flags(flags) {}
 
-Risotto::Risotto() : Risotto(RisottoFlags::None) {}
+Risotto::Risotto() : Risotto(RisottoFlags::None) {
+    this->printfp = printf;
+}
 
 InterpretResult Risotto::runFile(const std::string &path) {
     std::ifstream ifs(path);
@@ -71,7 +73,7 @@ InterpretResult Risotto::doRun(const std::vector<Token *> &tokens) {
         vmFlags |= VMFlags::BenchmarkExecution;
     }
 
-    initVM(vmFlags);
+    initVM(vmFlags, this->printfp);
 
     auto result = timing<InterpretResult>("VM", [&chunk]() {
         return interpret(&chunk, 0);

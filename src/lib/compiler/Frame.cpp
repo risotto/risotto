@@ -35,6 +35,20 @@ TypeDescriptor *Frame::findNamedType(const std::string &name) {
     return nullptr;
 }
 
+TypeDescriptor *Frame::findType(TypeDescriptor *typeDesc) {
+    auto def = types.find(typeDesc);
+
+    if (def != nullptr) {
+        return def;
+    }
+
+    if (parent != nullptr) {
+        return parent->findType(typeDesc);
+    }
+
+    return nullptr;
+}
+
 VariableFindResponse *Frame::findVariable(const std::string &name) {
     Frame *current = this;
     int distance = 0;

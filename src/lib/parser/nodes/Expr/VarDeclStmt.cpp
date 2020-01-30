@@ -19,7 +19,7 @@ std::vector<ByteResolver *> VarDeclStmt::compile(Compiler *compiler) {
         throw CompilerError("Declaration and initializer are not the same number", op->position);
     }
 
-    for (int i = 0; i < identifiers.size(); ++i) {
+    for (auto i = 0u; i < identifiers.size(); ++i) {
         auto identifier = identifiers[0];
         auto returnType = valueReturnType[0];
 
@@ -30,7 +30,7 @@ std::vector<ByteResolver *> VarDeclStmt::compile(Compiler *compiler) {
         }
     }
 
-    for (int i = 0; i < identifiers.size(); ++i) {
+    for (auto i = 0u; i < identifiers.size(); ++i) {
         auto identifier = identifiers[i];
         auto type = identifier.second ? identifier.second : valueReturnType[i];
 
@@ -45,7 +45,7 @@ void VarDeclStmt::symbolize(Compiler *compiler) {
 
     for (auto id: identifiers) {
         if (id.second != nullptr) {
-            compiler->typesManager->add(id.second, compiler->frame);
+            compiler->typesManager->createLinkUnits(id.second, compiler->frame);
         }
     }
 }

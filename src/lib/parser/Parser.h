@@ -80,9 +80,17 @@ private:
 
     Expr *logicalAnd();
 
+    Expr *bit_or();
+
+    Expr *bit_xor();
+
+    Expr *bit_and();
+
     Expr *equality();
 
     Expr *comparison();
+
+    Expr *bitshifting();
 
     Expr *addition();
 
@@ -113,10 +121,10 @@ private:
     std::vector<Stmt *> block();
 
     template<typename T>
-    T function(bool canHaveReceiver, bool isNamed, const FunctionFactory<T>& f);
+    T function(bool canHaveReceiver, bool isNamed, const FunctionFactory<T> &f);
 
     template<typename T>
-    T functionSignature(TokenType type, bool canHaveReceiver, bool canBeNamed, const FunctionSignatureFactory<T>& f);
+    T functionSignature(TokenType type, bool canHaveReceiver, bool canBeNamed, const FunctionSignatureFactory<T> &f);
 
     ParameterDefinition *parameter();
 

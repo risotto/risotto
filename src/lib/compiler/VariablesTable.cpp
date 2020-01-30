@@ -21,8 +21,8 @@ VariableEntry *VariablesTable::find(const std::string &name) {
     return nullptr;
 }
 
-VariableEntry *VariablesTable::add(std::string name, TypeDescriptor *typeRef) {
-    auto entry = new VariableEntry(std::move(name), typeRef, entries.size());
+VariableEntry *VariablesTable::add(std::string name, TypeDescriptor *typeDesc) {
+    auto entry = new VariableEntry(std::move(name), typeDesc, entries.size());
 
     entries.push_back(entry);
 

@@ -53,6 +53,14 @@ typedef enum {
     OP_DDIV,
     OP_DLT,
     OP_DGT,
+    OP_B_AND,
+    OP_B_OR,
+    OP_B_XOR,
+    OP_B_SHIFTL,
+    OP_B_SHIFTR,
+    OP_B_NOT,
+    OP_I2D,
+    OP_D2I,
 
     Last = OP_DGT,
 } OpCode;

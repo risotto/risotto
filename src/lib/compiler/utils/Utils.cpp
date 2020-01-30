@@ -73,7 +73,7 @@ FunctionEntry *Utils::findMatchingFunctions(
     for (auto entry : functions) {
         if (entry->descriptor->params.size() == argsTypes.size()) {
             auto compatible = true;
-            for (int i = 0; i < entry->descriptor->params.size(); ++i) {
+            for (auto i = 0u; i < entry->descriptor->params.size(); ++i) {
                 auto paramType = entry->descriptor->params[i]->type;
                 auto argType = argsTypes[i];
 
@@ -111,7 +111,7 @@ bool Utils::typesMatch(
         argsTypes.push_back(arg->type);
     }
 
-    for (int i = 0; i < params.size(); ++i) {
+    for (auto i = 0u; i < params.size(); ++i) {
         auto param = params[i];
         auto arg = args[i];
 
@@ -132,7 +132,7 @@ bool Utils::typesMatch(
         return false;
     }
 
-    for (int i = 0; i < params.size(); ++i) {
+    for (auto i = 0u; i < params.size(); ++i) {
         auto paramType = params[i];
         auto argType = args[i];
 

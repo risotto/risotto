@@ -33,7 +33,7 @@ std::vector<ByteResolver *> BaseCallExpr::compile(Compiler *compiler) {
         bytes.push_back(new ByteResolver(argc));
         bytes.push_back(new ByteResolver(retc));
 
-        for (unsigned int i = 0; i < argc; ++i) {
+        for (auto i = 0u; i < argc; ++i) {
             bytes.push_back(new ByteResolver(isArgumentReference(compiler, i)));
         }
     }

@@ -3,9 +3,8 @@
 //
 
 #include <stdio.h>
-#include <string.h>
 #include "value.h"
-#include "vm.h"
+#include "vm.c"
 
 #define str_t const char *
 
@@ -127,28 +126,28 @@ NATIVE_BINARY_FUNCTION(string, add, string, str_t, str_t, v2s, v2s)
 void println_int(Value args[], int argc, Value *ret) {
     int v = v2i(args[0]);
 
-    printf("%i\n", v);
+    vm.printf("%i\n", v);
 }
 
 void println_double(Value args[], int argc, Value *ret) {
     double v = v2d(args[0]);
 
-    printf("%f\n", v);
+    vm.printf("%f\n", v);
 }
 
 void println_string(Value args[], int argc, Value *ret) {
     str_t v = v2s(args[0]);
 
-    printf("%s\n", v);
+    vm.printf("%s\n", v);
 }
 
 void println_bool(Value args[], int argc, Value *ret) {
     bool v = v2b(args[0]);
 
     if (v) {
-        printf("true\n");
+        vm.printf("true\n");
     } else {
-        printf("false\n");
+        vm.printf("false\n");
     }
 }
 

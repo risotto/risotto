@@ -161,6 +161,14 @@ char *getName(OP_T instruction) {
         NAME(OP_DDIV)
         NAME(OP_DLT)
         NAME(OP_DGT)
+        NAME(OP_B_AND)
+        NAME(OP_B_OR)
+        NAME(OP_B_XOR)
+        NAME(OP_B_SHIFTL)
+        NAME(OP_B_SHIFTR)
+        NAME(OP_B_NOT)
+        NAME(OP_I2D)
+        NAME(OP_D2I)
         default:
             return "Unknown opcode";
     }

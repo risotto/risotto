@@ -76,18 +76,18 @@ void FunctionStmt::symbolize(Compiler *compiler) {
         return registerFunction(compiler);
     });
 
-    compiler->typesManager->add(descriptor, compiler->frame);
+    compiler->typesManager->createLinkUnits(descriptor, compiler->frame);
 
     if (receiver != nullptr) {
-        compiler->typesManager->add(receiver->type, compiler->frame);
+        compiler->typesManager->createLinkUnits(receiver->type, compiler->frame);
     }
 
     for (auto param: parameters) {
-        compiler->typesManager->add(param->type, compiler->frame);
+        compiler->typesManager->createLinkUnits(param->type, compiler->frame);
     }
 
     for (auto returnType: returnTypes) {
-        compiler->typesManager->add(returnType, compiler->frame);
+        compiler->typesManager->createLinkUnits(returnType, compiler->frame);
     }
 
     // Create new frame
