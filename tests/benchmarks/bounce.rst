@@ -1,4 +1,18 @@
-srand() // Seed random
+type Random struct {
+    seed int;
+}
+
+new (r Random) () Random {
+    r.seed = 74755
+
+    return r
+}
+
+func (r Random) next() int {
+    r.seed = ((r.seed * 1309) + 13849) & 65535
+
+    return r.seed
+}
 
 func abs(i int) int {
     if i < 0 {
@@ -15,11 +29,11 @@ type Ball struct {
     yVel int;
 }
 
-new (b Ball) () Ball {
-    b.x = rand() % 500
-    b.y = rand() % 500
-    b.xVel = (rand() % 300) - 150
-    b.yVel = (rand() % 300) - 150
+new (b Ball) (r Random) Ball {
+    b.x = r.next() % 500
+    b.y = r.next() % 500
+    b.xVel = (r.next() % 300) - 150
+    b.yVel = (r.next() % 300) - 150
 
     return b
 }
@@ -61,12 +75,14 @@ func (b Ball) bounce() bool {
 
 // Run
 
+r := new Random()
+
 ballCount := 100
 bounces   := 0
 balls := []Ball{}
 
 for i := 0; i < ballCount; i += 1 {
-    balls.push(new Ball())
+    balls.push(new Ball(r))
 }
 
 for i := 0; i < 50; i += 1 {

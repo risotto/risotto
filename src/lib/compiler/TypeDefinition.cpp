@@ -10,7 +10,7 @@
 #include <lib/compiler/utils/Utils.h>
 
 bool TypeDefinition::canReceiveType(TypeDefinition *type) {
-    return this == type || type == &NilTypeDefinition::Def;
+    return isSame(type) || isSame(&NilTypeDefinition::Def);
 }
 
 void TypeDefinition::addSelf(ParameterDefinition *self, FunctionEntry *entry) {
