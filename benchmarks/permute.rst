@@ -20,7 +20,7 @@ func (p Permute) permute(n int) {
     if (n != 0) {
       n1 := n - 1
       p.permute(n1)
-      for i := n1+0; i >= 0; i -= 1 {
+      for i := n1; i >= 0; i -= 1 {
         p.swap(n1, i)
         p.permute(n1)
         p.swap(n1, i)

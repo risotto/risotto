@@ -37,7 +37,13 @@ std::vector<ByteResolver *> VarDeclStmt::compile(Compiler *compiler) {
         compiler->frame->variables.add(identifier.first->lexeme, type);
     }
 
-    return value->compile(compiler);
+    auto bytes = value->compile(compiler);
+
+    for (auto i = 0u; i < identifiers.size(); ++i) {
+        bytes.push_back(new ByteResolver(OP_COPY));
+    }
+
+    return bytes;
 }
 
 void VarDeclStmt::symbolize(Compiler *compiler) {
