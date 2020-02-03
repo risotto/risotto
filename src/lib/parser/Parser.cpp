@@ -33,6 +33,8 @@
 #include "lib/parser/nodes/Stmt/FunctionStmt.h"
 #include "lib/parser/nodes/Stmt/BlockStmt.h"
 
+Shorthand::Shorthand(TokenType op, const std::string &str) : op(op), str(str) {}
+
 Parser::Parser(std::vector<Token *> tokens) : tokens(std::move(tokens)) {
 
 }
@@ -519,6 +521,23 @@ Expr *Parser::expression() {
     return assignment();
 }
 
+const auto shorthands = std::map<TokenType, Shorthand>(
+        {
+                // Maths
+                {TokenType::PLUS_EQUAL, Shorthand(TokenType::PLUS, "+")},
+                {TokenType::MINUS_EQUAL, Shorthand(TokenType::MINUS, "-")},
+                {TokenType::STAR_EQUAL, Shorthand(TokenType::STAR, "*")},
+                {TokenType::SLASH_EQUAL, Shorthand(TokenType::SLASH, "/")},
+
+                // Bitwise
+                {TokenType::AMPERSAND_EQUAL, Shorthand(TokenType::AMPERSAND, "&")},
+                {TokenType::PIPE_EQUAL, Shorthand(TokenType::PIPE, "|")},
+                {TokenType::CARET_EQUAL, Shorthand(TokenType::CARET, "^")},
+                {TokenType::LEFT_LEFT_EQUAL, Shorthand(TokenType::LEFT_LEFT, "<<")},
+                {TokenType::RIGHT_RIGHT_EQUAL, Shorthand(TokenType::RIGHT_RIGHT, ">>")},
+        }
+);
+
 Expr *Parser::assignment() {
     Expr *expr = logicalOr();
 
@@ -533,35 +552,24 @@ Expr *Parser::assignment() {
             TokenType::PLUS_EQUAL,
             TokenType::MINUS_EQUAL,
             TokenType::STAR_EQUAL,
-            TokenType::SLASH_EQUAL
+            TokenType::SLASH_EQUAL,
+            TokenType::AMPERSAND_EQUAL,
+            TokenType::PIPE_EQUAL,
+            TokenType::CARET_EQUAL,
+            TokenType::LEFT_LEFT_EQUAL,
+            TokenType::RIGHT_RIGHT_EQUAL
     )) {
-        Token *op = previous();
-        Expr *value = expression();
+        auto op = previous();
+        auto value = expression();
 
-        auto compoundToOp = std::map<TokenType, TokenType>(
-                {
-                        {TokenType::PLUS_EQUAL,  TokenType::PLUS},
-                        {TokenType::MINUS_EQUAL, TokenType::MINUS},
-                        {TokenType::STAR_EQUAL,  TokenType::STAR},
-                        {TokenType::SLASH_EQUAL, TokenType::SLASH},
-                }
-        );
-
-        auto compoundToStr = std::map<TokenType, std::string>(
-                {
-                        {TokenType::PLUS_EQUAL,  "+"},
-                        {TokenType::MINUS_EQUAL, "-"},
-                        {TokenType::STAR_EQUAL,  "*"},
-                        {TokenType::SLASH_EQUAL, "/"},
-                }
-        );
+        auto s = shorthands.at(op->type);
 
         return new SetExpr(
                 expr,
                 new Token(TokenType::EQUAL, {}, "=", op->position),
                 new BinaryExpr(
                         expr,
-                        new Token(compoundToOp[op->type], {}, compoundToStr[op->type], op->position),
+                        new Token(s.op, {}, s.str, op->position),
                         value
                 )
         );

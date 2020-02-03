@@ -117,13 +117,29 @@ void Tokenizer::scan() {
             addToken(TokenType::PERCENT);
             break;
         case '&':
-            addToken(match('&') ? TokenType::AND : TokenType::AMPERSAND);
+            if (match('&')) {
+                addToken(TokenType::AND);
+            } else if (match('=')) {
+                addToken(TokenType::AMPERSAND_EQUAL);
+            } else {
+                addToken(TokenType::AMPERSAND);
+            }
             break;
         case '|':
-            addToken(match('|') ? TokenType::OR : TokenType::PIPE);
+            if (match('|')) {
+                addToken(TokenType::OR);
+            } else if (match('=')) {
+                addToken(TokenType::PIPE_EQUAL);
+            } else {
+                addToken(TokenType::PIPE);
+            }
             break;
         case '^':
-            addToken(TokenType::CARET);
+            if (match('=')) {
+                addToken(TokenType::CARET_EQUAL);
+            } else {
+                addToken(TokenType::CARET);
+            }
             break;
         case '~':
             addToken(TokenType::TILDE);
@@ -148,7 +164,11 @@ void Tokenizer::scan() {
             break;
         case '<':
             if (match('<')) {
-                addToken(TokenType::LEFT_LEFT);
+                if (match('=')) {
+                    addToken(TokenType::LEFT_LEFT_EQUAL);
+                } else {
+                    addToken(TokenType::LEFT_LEFT);
+                }
             } else if (match('=')) {
                 addToken(TokenType::LESS_EQUAL);
             } else {
@@ -157,7 +177,11 @@ void Tokenizer::scan() {
             break;
         case '>':
             if (match('>')) {
-                addToken(TokenType::RIGHT_RIGHT);
+                if (match('=')) {
+                    addToken(TokenType::RIGHT_RIGHT_EQUAL);
+                } else {
+                    addToken(TokenType::RIGHT_RIGHT);
+                }
             } else if (match('=')) {
                 addToken(TokenType::GREATER_EQUAL);
             } else {
@@ -231,7 +255,7 @@ void Tokenizer::lexString() {
     while (peek() != '"' && !isAtEnd()) {
         if (peek() == '\n') {
             nextLine();
-        };
+        }
         advance();
     }
 

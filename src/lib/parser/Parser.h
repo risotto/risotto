@@ -32,6 +32,14 @@ using FunctionSignatureFactory = std::function<T(FUNCTION_SIGNATURE_FACTORY_ARGS
 template<typename T>
 using FunctionFactory = std::function<T(FUNCTION_FACTORY_ARGS)>;
 
+class Shorthand {
+public:
+    TokenType op;
+    std::string str;
+
+    Shorthand(TokenType op, const std::string &str);
+};
+
 class Parser {
 private:
     std::vector<Token *> tokens;

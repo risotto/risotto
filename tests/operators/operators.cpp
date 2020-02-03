@@ -233,3 +233,11 @@ TEST(Operators, Overloading) {
 
     EXPECT_STDOUT(OUTPUT("overloading"));
 }
+
+TEST(Operators, Shorthands) {
+    INIT_TEST;
+
+    risotto.runFile(INPUT("shorthands"));
+
+    EXPECT_STDOUT(OUTPUT("shorthands"));
+}
