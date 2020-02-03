@@ -10,12 +10,12 @@ int noopprintf(const char *, ...) {
 
 #define SETUP auto risotto = Risotto(); risotto.printfp = noopprintf
 
-#define RST_BENCHMARH(name) \
+#define RST_BENCHMARH(name, ...) \
     static void BM_##name(benchmark::State& state) { \
         auto file = INPUT(#name); \
         for (auto _ : state) { \
             SETUP; \
-            risotto.runFile(file); \
+            risotto.runFile(file, {__VA_ARGS__}); \
         } \
     } \
     BENCHMARK(BM_##name);
@@ -27,7 +27,7 @@ std::string ddir(const std::string &file_path) {
 
 RST_BENCHMARH(bounce)
 RST_BENCHMARH(list)
-RST_BENCHMARH(mandelbrot)
+RST_BENCHMARH(mandelbrot, "500")
 RST_BENCHMARH(permute)
 RST_BENCHMARH(sieve)
 RST_BENCHMARH(storage)

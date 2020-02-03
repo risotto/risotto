@@ -5,22 +5,31 @@
 #include <stdio.h>
 #include "value.h"
 #include "vm.c"
+#include "native_functions.h"
 
 #define str_t const char *
 
-void vm_stats(Value args[], int argc, Value *ret) {
+NATIVE_FUNCTION(vm_stats) {
     printf("Objects count: %i\n", getVM()->numObjects);
     printf("Max Objects: %i\n", getVM()->maxObjects);
 }
 
-void run_gc(Value args[], int argc, Value *ret) {
+NATIVE_FUNCTION(run_gc) {
     gc();
+}
+
+NATIVE_FUNCTION(args) {
+    ret[0] = a2v(vm.args);
+}
+
+NATIVE_FUNCTION(panic) {
+    ERROR(v2s(args[0]))
 }
 
 #define NATIVE_BINARY_FUNCTION_NAME(leftType, opName, rightType) binary_##leftType##_##opName##_##rightType
 
 #define NATIVE_BINARY_FUNCTION(leftType, opName, rightType, leftCType, rightCType, leftV2, rightV2) \
-void NATIVE_BINARY_FUNCTION_NAME(leftType, opName, rightType)(Value args[], int argc, Value *ret) { \
+NATIVE_FUNCTION(NATIVE_BINARY_FUNCTION_NAME(leftType, opName, rightType)) { \
     leftCType left = leftV2(args[0]); \
     rightCType right = rightV2(args[1]);
 
@@ -87,7 +96,7 @@ NATIVE_UNARY_POSTFIX_IN_PLACE(double, increment, v2d, d2v, +1.0)
 
 // Bool
 
-void binary_bool_add_string(Value args[], int argc, Value *ret) {
+NATIVE_FUNCTION(binary_bool_add_string) {
     bool left = v2b(args[0]);
     str_t right = v2s(args[1]);
 
@@ -98,11 +107,11 @@ void binary_bool_add_string(Value args[], int argc, Value *ret) {
     ret[0] = s2v(result);
 }
 
-void unary_prefix_bool_invert(Value args[], int argc, Value *ret) {
+NATIVE_FUNCTION(unary_prefix_bool_invert) {
     ret[0] = b2v(!v2b(args[0]));
 }
 
-void binary_string_add_bool(Value args[], int argc, Value *ret) {
+NATIVE_FUNCTION(binary_string_add_bool) {
     str_t left = v2s(args[0]);
     bool right = v2b(args[1]);
 
@@ -123,25 +132,36 @@ NATIVE_BINARY_FUNCTION(string, add, string, str_t, str_t, v2s, v2s)
     ret[0] = s2v(result);
 }
 
-void println_int(Value args[], int argc, Value *ret) {
+NATIVE_FUNCTION(string_to_int) {
+    const char *s = v2s(args[0]);
+    int base = v2i(args[1]);
+
+    int v = strtol(s, NULL, base);
+
+    ret[0] = i2v(v);
+}
+
+// Prints
+
+NATIVE_FUNCTION(println_int) {
     int v = v2i(args[0]);
 
     vm.printf("%i\n", v);
 }
 
-void println_double(Value args[], int argc, Value *ret) {
+NATIVE_FUNCTION(println_double) {
     double v = v2d(args[0]);
 
     vm.printf("%f\n", v);
 }
 
-void println_string(Value args[], int argc, Value *ret) {
+NATIVE_FUNCTION(println_string) {
     str_t v = v2s(args[0]);
 
     vm.printf("%s\n", v);
 }
 
-void println_bool(Value args[], int argc, Value *ret) {
+NATIVE_FUNCTION(println_bool) {
     bool v = v2b(args[0]);
 
     if (v) {
@@ -151,13 +171,13 @@ void println_bool(Value args[], int argc, Value *ret) {
     }
 }
 
-void array_size(Value args[], int argc, Value *ret) {
+NATIVE_FUNCTION(array_size) {
     ValueArray *array = v2a(args[0]);
 
     ret[0] = i2v(array->object.size);
 }
 
-void array_add(Value args[], int argc, Value *ret) {
+NATIVE_FUNCTION(array_add) {
     ValueArray *array = v2a(args[0]);
 
     Value value = args[1];
@@ -165,16 +185,22 @@ void array_add(Value args[], int argc, Value *ret) {
     writeValueArray(array, value);
 }
 
-void array_at(Value args[], int argc, Value *ret) {
+NATIVE_FUNCTION(array_at) {
     ValueArray *array = v2a(args[0]);
 
     unsigned index = v2i(args[1]);
 
-    if(index < 0) {
-        unsigned int size = array->object.size;
+    struct Object obj = array->object;
+
+    if (index < 0) {
+        unsigned int size = obj.size;
 
         index = size + index;
     }
 
-    ret[0] = vp2v(&array->object.values[index]);
+    if (index >= obj.size) {
+        ERROR("index %i out of bounds", index);
+    }
+
+    ret[0] = vp2v(&obj.values[index]);
 }

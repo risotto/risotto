@@ -80,9 +80,9 @@ int main(int argc, char *argv[]) {
     }
 #endif
 
-//    auto args = result["args"].as<std::vector<std::string>>();
+    auto args = result["args"].as<std::vector<std::string>>();
 
-    Risotto(flags).runFile(path);
+    Risotto(flags).runFile(path, args);
 
     return 0;
 }

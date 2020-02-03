@@ -24,14 +24,22 @@ Risotto::Risotto(unsigned int flags) : flags(flags) {
 Risotto::Risotto() : Risotto(RisottoFlags::None) {}
 
 InterpretResult Risotto::runFile(const std::string &path) {
+   return runFile(path, {});
+}
+
+InterpretResult Risotto::runFile(const std::string &path, const std::vector<std::string>& args) {
     std::ifstream ifs(path);
     std::string str((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
 
-    return run(str);
+    return run(str, args);
 }
 
 InterpretResult Risotto::run(const std::string &str) {
-    return timing<InterpretResult>("Total", [this, str]() {
+    return run(str, {});
+}
+
+InterpretResult Risotto::run(const std::string &str, const std::vector<std::string>& args) {
+    return timing<InterpretResult>("Total", [this, str, args]() {
         auto tokens = timing<std::vector<Token *>>("Tokenizer", [str]() {
             auto tokenizer = new Tokenizer(str);
             return tokenizer->tokenize();
@@ -41,11 +49,11 @@ InterpretResult Risotto::run(const std::string &str) {
             TokensPrinter::print(tokens);
         }
 
-        return doRun(tokens);
+        return doRun(tokens, args);
     });
 }
 
-InterpretResult Risotto::doRun(const std::vector<Token *> &tokens) {
+InterpretResult Risotto::doRun(const std::vector<Token *> &tokens, const std::vector<std::string>& args) {
     auto stmts = timing<std::vector<Stmt *>>("Parser", [tokens]() {
         auto parser = new Parser(tokens);
         return parser->program();
@@ -73,7 +81,15 @@ InterpretResult Risotto::doRun(const std::vector<Token *> &tokens) {
         vmFlags |= VMFlags::BenchmarkExecution;
     }
 
-    initVM(vmFlags, this->printfp);
+    auto argsa = (ValueArray *) malloc(sizeof(ValueArray));
+    initValueArray(argsa);
+    registerObject((Object *) argsa);
+
+    for (const auto& arg: args) {
+        writeValueArray(argsa, s2v(arg.c_str()));
+    }
+
+    initVM(vmFlags, this->printfp, argsa);
 
     auto result = timing<InterpretResult>("VM", [&chunk]() {
         return interpret(&chunk, 0);

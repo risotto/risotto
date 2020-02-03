@@ -20,9 +20,9 @@ TEST(Benchmark, List) {
 TEST(Benchmark, Mandelbrot) {
     INIT_TEST;
 
-    risotto.runFile(INPUT("../benchmarks/mandelbrot"));
+    risotto.runFile(INPUT("../benchmarks/mandelbrot"), {"1"});
 
-    EXPECT_STDOUT("191\n");
+    EXPECT_STDOUT("128\n");
 }
 
 TEST(Benchmark, Permute) {

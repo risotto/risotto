@@ -36,15 +36,20 @@ public:
 
     InterpretResult runFile(const std::string &filename);
 
+    InterpretResult runFile(const std::string &path, const std::vector<std::string>& args);
+
     InterpretResult run(const std::string &program);
+
+    InterpretResult run(const std::string &program, const std::vector<std::string>& args);
 
     bool hasFlag(RisottoFlags flag);
 
     template<typename T>
     T timing(const std::string &name, std::function<T()> f);
 
+
 private:
-    InterpretResult doRun(const std::vector<Token *> &tokens);
+    InterpretResult doRun(const std::vector<Token *> &tokens, const std::vector<std::string>& args);
 };
 
 

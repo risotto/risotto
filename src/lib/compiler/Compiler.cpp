@@ -18,7 +18,7 @@ extern "C" {
 #define TYPE_DESC(type) new IdentifierTypeDescriptor(#type, ENTRY_DEF(TYPE_ENTRY(type)))
 #define SELF_RECEIVER(name, type) new ParameterDefinition(name, TYPE_DESC(type), true)
 
-#define FUNCTION_ENTRY_VAR(target, functionName) function_entry__##functionName
+#define FUNCTION_ENTRY_VAR(target, functionName) function_entry__##target__##functionName
 #define REGISTER_FUNCTION(target, functionName) typesManager->registerFunction(ENTRY_DEF(TYPE_ENTRY(target)), FUNCTION_ENTRY_VAR(target, functionName));
 #define REGISTER_FUNCTION2(target, functionEntry) typesManager->registerFunction(ENTRY_DEF(TYPE_ENTRY(target)), functionEntry);
 
@@ -157,42 +157,57 @@ Compiler::Compiler(std::vector<Stmt *> stmts) : stmts(std::move(stmts)) {
     auto TYPE_ENTRY(string) = frame->types.add(
             new IdentifierTypeDescriptor("string", new ScalarTypeDefinition("string")));
 
+    auto arrayStringDesc = new ArrayTypeDescriptor(TYPE_DESC(string));
+    arrayStringDesc->resolveType(typesManager, frame, false);
+
     BYTES_OPERATOR_MATH_DECLARATIONS(int, I)
 
     NATIVE_BINARY_OPERATOR_STRING_DECLARATIONS(int)
 
-    BYTES_OPERATOR_DECLARATION(int, %, int, int, []() { \
+    BYTES_OPERATOR_DECLARATION(int, %, int, int, []() {
+        \
         return std::vector<ByteResolver *>({new ByteResolver(OP_IMOD, TODO_POSITION)}); \
+
     })
 
-    BYTES_OPERATOR_DECLARATION(int, &, int, int, []() { \
+    BYTES_OPERATOR_DECLARATION(int, &, int, int, []() {
+        \
         return std::vector<ByteResolver *>({new ByteResolver(OP_B_AND, TODO_POSITION)}); \
+
     })
-    BYTES_OPERATOR_DECLARATION(int, |, int, int, []() { \
+    BYTES_OPERATOR_DECLARATION(int, |, int, int, []() {
+        \
         return std::vector<ByteResolver *>({new ByteResolver(OP_B_OR, TODO_POSITION)}); \
+
     })
-    BYTES_OPERATOR_DECLARATION(int, ^, int, int, []() { \
+    BYTES_OPERATOR_DECLARATION(int, ^, int, int, []() {
+        \
         return std::vector<ByteResolver *>({new ByteResolver(OP_B_XOR, TODO_POSITION)}); \
+
     })
-    BYTES_OPERATOR_DECLARATION(int, <<, int, int, []() { \
+    BYTES_OPERATOR_DECLARATION(int, <<, int, int, []() {
+        \
         return std::vector<ByteResolver *>({new ByteResolver(OP_B_SHIFTL, TODO_POSITION)}); \
+
     })
-    BYTES_OPERATOR_DECLARATION(int, >>, int, int, []() { \
+    BYTES_OPERATOR_DECLARATION(int, >>, int, int, []() {
+        \
         return std::vector<ByteResolver *>({new ByteResolver(OP_B_SHIFTR, TODO_POSITION)}); \
+
     })
     auto FUNCTION_ENTRY_VAR(int, int_unary_bit_not) = ENTRY_DEF(TYPE_ENTRY(int))->addPrefix(
-        SELF_RECEIVER("right", int),
-        new BytesFunctionEntry(
-           "~",
-            new FunctionTypeDescriptor(
-                true,
-                {},
-                {TYPE_DESC(int)}
-            ),
-           []() {
-               return std::vector<ByteResolver *>({new ByteResolver(OP_B_NOT, TODO_POSITION)});
-           }
-        )
+            SELF_RECEIVER("right", int),
+            new BytesFunctionEntry(
+                    "~",
+                    new FunctionTypeDescriptor(
+                            true,
+                            {},
+                            {TYPE_DESC(int)}
+                    ),
+                    []() {
+                        return std::vector<ByteResolver *>({new ByteResolver(OP_B_NOT, TODO_POSITION)});
+                    }
+            )
     );
     REGISTER_FUNCTION(int, int_unary_bit_not);
 
@@ -206,6 +221,22 @@ Compiler::Compiler(std::vector<Stmt *> stmts) : stmts(std::move(stmts)) {
     NATIVE_BINARY_OPERATOR_STRING_DECLARATIONS(bool)
 
     NATIVE_BINARY_OPERATOR_DECLARATION(string, +, string, string, add)
+
+    auto FUNCTION_ENTRY_VAR(string, string_to_int) = ENTRY_DEF(TYPE_ENTRY(string))->addFunction(
+            SELF_RECEIVER("str", string),
+            new NativeFunctionEntry(
+                    "Int",
+                    new FunctionTypeDescriptor(
+                            true,
+                            {
+                                    new ParameterDefinition("base", TYPE_DESC(int), true)
+                            },
+                            {TYPE_DESC(int)}
+                    ),
+                    string_to_int
+            )
+    );
+    REGISTER_FUNCTION(bool, string_to_int);
 
     auto FUNCTION_ENTRY_VAR(bool, unary_prefix_bool_invert) = ENTRY_DEF(TYPE_ENTRY(bool))->addPrefix(
             SELF_RECEIVER("right", bool),
@@ -242,8 +273,28 @@ Compiler::Compiler(std::vector<Stmt *> stmts) : stmts(std::move(stmts)) {
             )
     );
 
+    frame->functions.add(
+            new NativeFunctionEntry(
+                    "args",
+                    new FunctionTypeDescriptor(false, {}, {
+                            arrayStringDesc
+                    }),
+                    args
+            )
+    );
+
     TYPE_CONVERSION_FUNCTION(double, int, OP_D2I)
     TYPE_CONVERSION_FUNCTION(int, double, OP_I2D)
+
+    frame->functions.add(
+            new NativeFunctionEntry(
+                    "panic",
+                    new FunctionTypeDescriptor(false, {
+                            new ParameterDefinition("msg", TYPE_DESC(string), false),
+                    }, {}),
+                    panic
+            )
+    );
 }
 
 Chunk Compiler::compile() {

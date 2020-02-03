@@ -7,57 +7,63 @@
 
 #include "value.h"
 
-void vm_stats(Value args[], int argc, Value ret[]);
-void run_gc(Value args[], int argc, Value ret[]);
+#define NATIVE_FUNCTION(name) void name(Value args[], int argc, Value ret[])
+
+NATIVE_FUNCTION(vm_stats);
+NATIVE_FUNCTION(run_gc);
+NATIVE_FUNCTION(args);
+NATIVE_FUNCTION(panic);
 
 // String
 
-void binary_string_add_string(Value args[], int argc, Value ret[]);
-void binary_string_add_int(Value args[], int argc, Value ret[]);
-void binary_string_add_double(Value args[], int argc, Value ret[]);
-void binary_string_add_bool(Value args[], int argc, Value ret[]);
+NATIVE_FUNCTION(binary_string_add_string);
+NATIVE_FUNCTION(binary_string_add_int);
+NATIVE_FUNCTION(binary_string_add_double);
+NATIVE_FUNCTION(binary_string_add_bool);
+
+NATIVE_FUNCTION(string_to_int);
 
 // Int
 
-void binary_int_add_string(Value args[], int argc, Value ret[]);
+NATIVE_FUNCTION(binary_int_add_string);
 
-void unary_prefix_int_negate(Value args[], int argc, Value ret[]);
+NATIVE_FUNCTION(unary_prefix_int_negate);
 
-void unary_prefix_int_decrement(Value args[], int argc, Value ret[]);
-void unary_prefix_int_increment(Value args[], int argc, Value ret[]);
+NATIVE_FUNCTION(unary_prefix_int_decrement);
+NATIVE_FUNCTION(unary_prefix_int_increment);
 
-void unary_postfix_int_decrement(Value args[], int argc, Value ret[]);
-void unary_postfix_int_increment(Value args[], int argc, Value ret[]);
+NATIVE_FUNCTION(unary_postfix_int_decrement);
+NATIVE_FUNCTION(unary_postfix_int_increment);
 
 // Double
 
-void binary_double_add_string(Value args[], int argc, Value ret[]);
+NATIVE_FUNCTION(binary_double_add_string);
 
-void unary_prefix_double_negate(Value args[], int argc, Value ret[]);
+NATIVE_FUNCTION(unary_prefix_double_negate);
 
-void unary_prefix_double_decrement(Value args[], int argc, Value ret[]);
-void unary_prefix_double_increment(Value args[], int argc, Value ret[]);
+NATIVE_FUNCTION(unary_prefix_double_decrement);
+NATIVE_FUNCTION(unary_prefix_double_increment);
 
-void unary_postfix_double_decrement(Value args[], int argc, Value ret[]);
-void unary_postfix_double_increment(Value args[], int argc, Value ret[]);
+NATIVE_FUNCTION(unary_postfix_double_decrement);
+NATIVE_FUNCTION(unary_postfix_double_increment);
 
 // Bool
 
-void binary_bool_add_string(Value args[], int argc, Value ret[]);
+NATIVE_FUNCTION(binary_bool_add_string);
 
-void unary_prefix_bool_invert(Value args[], int argc, Value ret[]);
+NATIVE_FUNCTION(unary_prefix_bool_invert);
 
 // Print
 
-void println_int(Value args[], int argc, Value ret[]);
-void println_double(Value args[], int argc, Value ret[]);
-void println_string(Value args[], int argc, Value ret[]);
-void println_bool(Value args[], int argc, Value ret[]);
+NATIVE_FUNCTION(println_int);
+NATIVE_FUNCTION(println_double);
+NATIVE_FUNCTION(println_string);
+NATIVE_FUNCTION(println_bool);
 
 // Array
 
-void array_size(Value args[], int argc, Value ret[]);
-void array_add(Value args[], int argc, Value ret[]);
-void array_at(Value args[], int argc, Value ret[]);
+NATIVE_FUNCTION(array_size);
+NATIVE_FUNCTION(array_add);
+NATIVE_FUNCTION(array_at);
 
 #endif //RISOTTOPROJECT_NATIVE_FUNCTIONS_H

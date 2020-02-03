@@ -57,4 +57,10 @@ func mandelbrot(size int) int {
      return sum
 }
 
-println(mandelbrot(500))
+size := args()[0].Int(10)
+
+if size == 0 {
+    panic("invalid size")
+}
+
+println(mandelbrot(size))
