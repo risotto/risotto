@@ -31,6 +31,7 @@ RST_BENCHMARH(mandelbrot, "500")
 RST_BENCHMARH(permute)
 RST_BENCHMARH(sieve)
 RST_BENCHMARH(storage)
+RST_BENCHMARH(fib)
 
 // Run the benchmark
 BENCHMARK_MAIN();

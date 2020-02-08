@@ -48,3 +48,11 @@ TEST(Benchmark, Storage) {
 
     EXPECT_STDOUT("5461\n");
 }
+
+TEST(Benchmark, Fib) {
+    INIT_TEST;
+
+    risotto.runFile(INPUT("../benchmarks/fib"));
+
+    EXPECT_STDOUT("832040\n");
+}
