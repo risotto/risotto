@@ -119,27 +119,23 @@ void gc() {
 }
 
 #define VM_BINARY(code, f, rf, op) \
-code##_label: { \
-    OP_START_ROUTINE \
-    Value l = pop(); \
-    Value r = pop(); \
-    push(rf##2v(v2##f(l) op v2##f(r))); \
-} \
-    OP_END_ROUTINE
+    VM_BLOCK(code, { \
+        Value l = pop(); \
+        Value r = pop(); \
+        push(rf##2v(v2##f(l) op v2##f(r))); \
+    })
 
 #define VM_BINARY_EQ(code, f, op) \
-code##_label: { \
-    OP_START_ROUTINE \
-    OP_T eq = READ_BYTE(); \
-    Value l = pop(); \
-    Value r = pop(); \
-    if (eq) { \
-        push(b2v(v2##f(l) op##= v2##f(r))); \
-    } else { \
-        push(b2v(v2##f(l) op v2##f(r))); \
-    }\
-}\
-    OP_END_ROUTINE
+    VM_BLOCK(code, { \
+        OP_T eq = READ_BYTE(); \
+        Value l = pop(); \
+        Value r = pop(); \
+        if (eq) { \
+            push(b2v(v2##f(l) op##= v2##f(r))); \
+        } else { \
+            push(b2v(v2##f(l) op v2##f(r))); \
+        }\
+    })
 
 #define VM_MATH_OPS(t, f) \
     VM_BINARY(OP_##t##ADD, f, f, +) \
@@ -213,11 +209,9 @@ void trace_execution(bool traceExec) {
 
 #define VM_BLOCK(op, body) \
     op##_label: \
-    { \
         OP_START_ROUTINE; \
         body \
-    } \
-    OP_END_ROUTINE;
+        OP_END_ROUTINE;
 
 static InterpretResult run() {
 #ifdef BENCHMARK_TIMINGS
@@ -292,343 +286,345 @@ static InterpretResult run() {
 
     NEXT_OP;
 
-    VM_BLOCK(OP_NOOP, )
+VM_BLOCK(OP_NOOP,)
 
-    VM_BLOCK(OP_CONST, {
-        Value constant = READ_CONSTANT();
-        push(constant);
-    })
+VM_BLOCK(OP_CONST, {
+    Value constant = READ_CONSTANT();
+    push(constant);
+})
 
-    VM_BLOCK(OP_JUMP, {
-        OP_T addr = READ_BYTE();
+VM_BLOCK(OP_JUMP, {
+    OP_T addr = READ_BYTE();
 
+    VM_GOTO(addr);
+})
+
+VM_BLOCK(OP_JUMPT, {
+    OP_T addr = READ_BYTE();
+    bool b = v2b(pop());
+
+    if (b == true) {
         VM_GOTO(addr);
-    })
+    }
+})
 
-    VM_BLOCK(OP_JUMPT, {
-        OP_T addr = READ_BYTE();
-        bool b = v2b(pop());
+VM_BLOCK(OP_JUMPF, {
+    OP_T addr = READ_BYTE();
+    bool b = v2b(pop());
 
-        if (b == true) {
-            VM_GOTO(addr);
-        }
-    })
+    if (b == false) {
+        VM_GOTO(addr);
+    }
+})
 
-    VM_BLOCK(OP_JUMPF, {
-        OP_T addr = READ_BYTE();
-        bool b = v2b(pop());
+VM_BLOCK(OP_RESOLVE_ADDR, {
+    OP_T vaddr = READ_BYTE();
 
-        if (b == false) {
-            VM_GOTO(addr);
-        }
-    })
-
-    VM_BLOCK(OP_RESOLVE_ADDR, {
-        OP_T vaddr = READ_BYTE();
-
-        Value v = accessRef(pop());
+    Value v = accessRef(pop());
 
 #ifdef DEBUG_TRACE_EXECUTION
-        if (traceExec) {
-            printVtable(v);
-        }
+    if (traceExec) {
+        printVtable(v);
+    }
 #endif
-        if (v.vtable == NULL) {
-            ERROR("vtable is null")
+    if (v.vtable == NULL) {
+        ERROR("vtable is null")
+    }
+
+    bool found = false;
+    int i;
+    vtable_entry *entry;
+    vec_foreach_ptr(&v.vtable->addrs, entry, i)
+    {
+        if (entry->vaddr == vaddr) {
+            push(entry->addr);
+            found = true;
+            break;
         }
+    }
 
-        bool found = false;
-        int i;
-        vtable_entry *entry;
-        vec_foreach_ptr(&v.vtable->addrs, entry, i) {
-            if (entry->vaddr == vaddr) {
-                push(entry->addr);
-                found = true;
-                break;
-            }
-        }
+    if (!found) {
+        ERROR("Unable to find addr")
+    }
+})
 
-        if (!found) {
-            ERROR("Unable to find addr")
-        }
-    })
+VM_BLOCK(OP_CALL, {
+    int argc = READ_BYTE(); // args count
+    int retc = READ_BYTE(); // return values count
 
-    VM_BLOCK(OP_CALL, {
-        int argc = READ_BYTE(); // args count
-        int retc = READ_BYTE(); // return values count
+    // we expect all args to be on the stack
+    bool refs[argc];
+    for (int i = 0; i < argc; ++i) {
+        refs[i] = (bool) READ_BYTE();
+    }
 
-        // we expect all args to be on the stack
-        bool refs[argc];
-        for (int i = 0; i < argc; ++i) {
-            refs[i] = (bool) READ_BYTE();
-        }
+    Value f = accessRef(pop());
 
-        Value f = accessRef(pop());
+    switch (f.type) {
+        case T_INT: { // Function
+            int addr = v2i(f);
 
-        switch (f.type) {
-            case T_INT: { // Function
-                int addr = v2i(f);
+            push(i2v(argc));   // ... save num args ...
+            push(p2v(vm.ip)); // ... save instruction pointer ...
+            cframe();
 
-                push(i2v(argc));   // ... save num args ...
-                push(p2v(vm.ip)); // ... save instruction pointer ...
-                cframe();
+            VM_GOTO(addr);
 
-                VM_GOTO(addr);
+            for (int i = 0; i < argc; ++i) {
+                Value *a = vm.fp - 4 - i;
 
-                for (int i = 0; i < argc; ++i) {
-                    Value *a = vm.fp - 4 - i;
-
-                    if (refs[i] == true) {
-                        push(vp2v(a));
-                    } else {
-                        push(copy(*a));
-                    }
+                if (refs[i] == true) {
+                    push(vp2v(a));
+                } else {
+                    push(copy(*a));
                 }
-
-                break;
             }
-            case T_P: { //  Native function
-                Value args[argc];
-                for (int i = 0; i < argc; ++i) {
-                    args[i] = pop();
-                }
 
-                NativeFunction fun = v2p(f);
-
-                Value returnValues[retc];
-                fun(args, argc, returnValues);
-
-                for (int i = 0; i < retc; ++i) {
-                    push(returnValues[i]);
-                }
-
-                break;
-            }
-            default:
-                ERROR("Unhandled function type")
+            break;
         }
-    })
+        case T_P: { //  Native function
+            Value args[argc];
+            for (int i = 0; i < argc; ++i) {
+                args[i] = pop();
+            }
 
-    VM_BLOCK(OP_FRAME, {
-        cframe();
-    })
+            NativeFunction fun = v2p(f);
 
-    VM_BLOCK(OP_FRAME_END, {
+            Value returnValues[retc];
+            fun(args, argc, returnValues);
+
+            for (int i = 0; i < retc; ++i) {
+                push(returnValues[i]);
+            }
+
+            break;
+        }
+        default:
+            ERROR("Unhandled function type")
+    }
+})
+
+VM_BLOCK(OP_FRAME, {
+    cframe();
+})
+
+VM_BLOCK(OP_FRAME_END, {
+    dframe();
+})
+
+VM_BLOCK(OP_RETURN, {
+    OP_T d = READ_BYTE();
+    OP_T rc = READ_BYTE();
+
+    Value rvals[rc];
+    for (int i = 0; i < rc; ++i) {
+        rvals[i] = pop();     // pop return value from top of the stack
+    }
+
+    for (int j = 0; j < d; ++j) {
         dframe();
-    })
+    }
 
-    VM_BLOCK(OP_RETURN, {
-        OP_T d = READ_BYTE();
-        OP_T rc = READ_BYTE();
+    dframe();
+    vm.ip = v2p(pop()); // restore ip
+    int argc = v2i(pop());     // ... hom many args procedure has ...
+    vm.sp -= argc;     // ... discard all of the args left ...
 
-        Value rvals[rc];
-        for (int i = 0; i < rc; ++i) {
-            rvals[i] = pop();     // pop return value from top of the stack
+    // Reverse pop onto the stack to restablish order
+    for (int i = rc - 1; i >= 0; --i) {
+        push(copy(rvals[i])); // ... leave return value on top of the stack
+    }
+})
+
+VM_BLOCK(OP_LOAD, {
+    OP_T addr = READ_BYTE();
+
+    Value *vp = vm.fp + addr;
+
+    push(vp2v(vp));
+})
+
+VM_BLOCK(OP_LOAD_STACK, {
+    OP_T addr = READ_BYTE();
+
+    Value *v = vm.sp - 1 - addr;
+
+    push(vp2v(v));
+})
+
+VM_BLOCK(OP_LOAD_LOCAL, {
+    OP_T dist = READ_BYTE();
+    OP_T addr = READ_BYTE();
+
+    Value *fp = vm.fp;
+    for (int i = 0; i < dist; ++i) {
+        Value *a = fp - 1;
+        fp = v2p(*a);
+    }
+
+    Value *vp = fp + addr;
+
+    assert(vp < vm.sp);
+    assert(vp >= vm.stack);
+
+    push(vp2v(vp));
+})
+
+VM_BLOCK(OP_LOAD_INSTANCE, {
+    OP_T addr = READ_BYTE();
+    loadInstance(addr);
+})
+
+VM_BLOCK(OP_NEW, {
+    vtable *vtable = v2p(READ_CONSTANT());
+    OP_T size = READ_BYTE();
+
+    Object *instance = malloc(sizeof(*instance));
+    instance->size = size;
+    instance->values = malloc(size * sizeof(*instance->values));
+
+    for (int i = 0; i < size; ++i) {
+        instance->values[i] = n2v();
+    }
+
+    registerObject(instance);
+
+    Value ov = o2v(instance);
+    ov.vtable = vtable;
+
+    push(ov);
+})
+
+VM_BLOCK(OP_SET, {
+    Value o = pop();
+    Value *t = vm.sp - 1;
+
+    set(o, t);
+})
+
+VM_BLOCK(OP_POP, {
+    int n = READ_BYTE();
+
+    for (int i = 0; i < n; ++i) {
+        popp();
+    }
+})
+
+VM_BLOCK(OP_COPY, {
+    push(copy(pop()));
+})
+
+VM_BLOCK(OP_NIL, {
+    push(n2v());
+})
+
+VM_BLOCK(OP_ARRAY, {
+    int elemsc = READ_BYTE();
+
+    ValueArray *array = malloc(sizeof(*array));
+    initValueArray(array);
+    registerObject((Object *) array);
+
+    for (int i = 0; i < elemsc; ++i) {
+        writeValueArray(array, pop());
+    }
+
+    push(a2v(array));
+})
+
+VM_BLOCK(OP_TRUE, {
+    push(b2v(true));
+})
+
+VM_BLOCK(OP_FALSE, {
+    push(b2v(false));
+})
+
+VM_BLOCK(OP_EQ_NIL, {
+    Value v = accessRef(pop());
+
+    push(b2v(typecheck(v, T_NIL)));
+})
+
+VM_BLOCK(OP_NEQ_NIL, {
+    Value v = accessRef(pop());
+
+    push(b2v(!typecheck(v, T_NIL)));
+})
+
+VM_BLOCK(OP_EQ, {
+    Value l = accessRef(pop());
+    Value r = accessRef(pop());
+
+    push(b2v(memcmp(&l.data, &r.data, sizeof(ValueData)) == 0));
+})
+
+VM_BLOCK(OP_NEQ, {
+    Value l = accessRef(pop());
+    Value r = accessRef(pop());
+
+    push(b2v(memcmp(&l.data, &r.data, sizeof(ValueData)) != 0));
+})
+
+VM_MATH_OPS(I, i)
+VM_BINARY(OP_IMOD, i, i, %)
+VM_BINARY(OP_B_AND, i, i, &)
+VM_BINARY(OP_B_OR, i, i, |)
+VM_BINARY(OP_B_XOR, i, i, ^)
+VM_BINARY(OP_B_SHIFTL, i, i, <<)
+VM_BINARY(OP_B_SHIFTR, i, i, >>)
+
+VM_MATH_OPS(D, d)
+
+VM_BLOCK(OP_B_NOT, {
+    Value l = pop();
+    push(i2v(~v2i(l)));
+})
+
+VM_BLOCK(OP_I2D, {
+    Value l = pop();
+    push(d2v(v2i(l)));
+})
+
+VM_BLOCK(OP_D2I, {
+    Value l = pop();
+    push(i2v(v2d(l)));
+})
+
+VM_BLOCK(OP_END, {
+#ifdef BENCHMARK_TIMINGS
+    if (benchmarkExec) {
+        printf("\n======================= TIMINGS =======================\n");
+        clock_t tt = 0;
+        for (int k = 0; k <= Last; ++k) {
+            tt += timings[k];
         }
 
-        for (int j = 0; j < d; ++j) {
-            dframe();
+        for (int k = 0; k <= Last; ++k) {
+            long double t = (long double) timings[k];
+            unsigned long c = timingsc[k];
+
+            if (c > 0) {
+                printf(
+                        "%-3u - %-14s C: %-9lu T: %-10.0Lf AT: %-13.9Lf (%-5.2Lf%%) TT: %-13.9Lf \n",
+                        k,
+                        getName(k),
+                        c,
+                        t,
+                        t / c / CLOCKS_PER_SEC,
+                        (t / tt) * 100,
+                        t / CLOCKS_PER_SEC
+                );
+            }
         }
-
-        dframe();
-        vm.ip = v2p(pop()); // restore ip
-        int argc = v2i(pop());     // ... hom many args procedure has ...
-        vm.sp -= argc;     // ... discard all of the args left ...
-
-        // Reverse pop onto the stack to restablish order
-        for (int i = rc - 1; i >= 0; --i) {
-            push(copy(rvals[i])); // ... leave return value on top of the stack
-        }
-    })
-
-    VM_BLOCK(OP_LOAD, {
-        OP_T addr = READ_BYTE();
-
-        Value *vp = vm.fp + addr;
-
-        push(vp2v(vp));
-    })
-
-    VM_BLOCK(OP_LOAD_STACK, {
-        OP_T addr = READ_BYTE();
-
-        Value *v = vm.sp - 1 - addr;
-
-        push(vp2v(v));
-    })
-
-    VM_BLOCK(OP_LOAD_LOCAL, {
-        OP_T dist = READ_BYTE();
-        OP_T addr = READ_BYTE();
-
-        Value *fp = vm.fp;
-        for (int i = 0; i < dist; ++i) {
-            Value *a = fp - 1;
-            fp = v2p(*a);
-        }
-
-        Value *vp = fp + addr;
-
-        assert(vp < vm.sp);
-        assert(vp >= vm.stack);
-
-        push(vp2v(vp));
-    })
-
-    VM_BLOCK(OP_LOAD_INSTANCE, {
-        OP_T addr = READ_BYTE();
-        loadInstance(addr);
-    })
-
-    VM_BLOCK(OP_NEW, {
-        vtable *vtable = v2p(READ_CONSTANT());
-        OP_T size = READ_BYTE();
-
-        Object *instance = malloc(sizeof(*instance));
-        instance->size = size;
-        instance->values = malloc(size * sizeof(*instance->values));
-
-        for (int i = 0; i < size; ++i) {
-            instance->values[i] = n2v();
-        }
-
-        registerObject(instance);
-
-        Value ov = o2v(instance);
-        ov.vtable = vtable;
-
-        push(ov);
-    })
-
-    VM_BLOCK(OP_SET, {
-        Value o = pop();
-        Value *t = vm.sp - 1;
-
-        set(o, t);
-    })
-
-    VM_BLOCK(OP_POP, {
-        int n = READ_BYTE();
-
-        for (int i = 0; i < n; ++i) {
-            popp();
-        }
-    })
-
-    VM_BLOCK(OP_COPY, {
-        push(copy(pop()));
-    })
-
-    VM_BLOCK(OP_NIL, {
-        push(n2v());
-    })
-
-    VM_BLOCK(OP_ARRAY, {
-        int elemsc = READ_BYTE();
-
-        ValueArray *array = malloc(sizeof(*array));
-        initValueArray(array);
-        registerObject((Object *) array);
-
-        for (int i = 0; i < elemsc; ++i) {
-            writeValueArray(array, pop());
-        }
-
-        push(a2v(array));
-    })
-
-    VM_BLOCK(OP_TRUE, {
-        push(b2v(true));
-    })
-
-    VM_BLOCK(OP_FALSE, {
-        push(b2v(true));
-    })
-
-    VM_BLOCK(OP_EQ_NIL, {
-        Value v = accessRef(pop());
-
-        push(b2v(typecheck(v, T_NIL)));
-    })
-
-    VM_BLOCK(OP_NEQ_NIL, {
-        Value v = accessRef(pop());
-
-        push(b2v(!typecheck(v, T_NIL)));
-    })
-
-    VM_BLOCK(OP_EQ, {
-        Value l = accessRef(pop());
-        Value r = accessRef(pop());
-
-        push(b2v(memcmp(&l.data, &r.data, sizeof(ValueData)) == 0));
-    })
-
-    VM_BLOCK(OP_NEQ, {
-        Value l = accessRef(pop());
-        Value r = accessRef(pop());
-
-        push(b2v(!memcmp(&l.data, &r.data, sizeof(ValueData)) == 0));
-    })
-    VM_MATH_OPS(I, i)
-    VM_BINARY(OP_IMOD, i, i, %)
-    VM_BINARY(OP_B_AND, i, i, &)
-    VM_BINARY(OP_B_OR, i, i, |)
-    VM_BINARY(OP_B_XOR, i, i, ^)
-    VM_BINARY(OP_B_SHIFTL, i, i, <<)
-    VM_BINARY(OP_B_SHIFTR, i, i, >>)
-
-    VM_MATH_OPS(D, d)
-
-    VM_BLOCK(OP_B_NOT, {
-        Value l = pop();
-        push(i2v(~v2i(l)));
-    })
-
-    VM_BLOCK(OP_I2D, {
-        Value l = pop();
-        push(d2v(v2i(l)));
-    })
-
-    VM_BLOCK(OP_D2I, {
-        Value l = pop();
-        push(i2v(v2d(l)));
-    })
-
-    VM_BLOCK(OP_END, {
-        #ifdef BENCHMARK_TIMINGS
-                if (benchmarkExec) {
-                    printf("\n======================= TIMINGS =======================\n");
-                    clock_t tt = 0;
-                    for (int k = 0; k <= Last; ++k) {
-                        tt += timings[k];
-                    }
-
-                    for (int k = 0; k <= Last; ++k) {
-                        long double t = (long double) timings[k];
-                        unsigned long c = timingsc[k];
-
-                        if (c > 0) {
-                            printf(
-                                    "%-3u - %-14s C: %-9lu T: %-10.0Lf AT: %-13.9Lf (%-5.2Lf%%) TT: %-13.9Lf \n",
-                                    k,
-                                    getName(k),
-                                    c,
-                                    t,
-                                    t / c / CLOCKS_PER_SEC,
-                                    (t / tt) * 100,
-                                    t / CLOCKS_PER_SEC
-                            );
-                        }
-                    }
-                    printf("\n");
-                    printf("Total ops: %llu\n", opsc);
-                    printf("C: Count - T: CPU Ticks - AT: Average Time - TT: Total Time\n");
-                    printf("=======================================================\n");
-                }
-        #endif
-        return INTERPRET_OK;
-    })
+        printf("\n");
+        printf("Total ops: %llu\n", opsc);
+        printf("C: Count - T: CPU Ticks - AT: Average Time - TT: Total Time\n");
+        printf("=======================================================\n");
+    }
+#endif
+    return INTERPRET_OK;
+})
 }
 
 InterpretResult interpret(Chunk *chunk, long addr) {
