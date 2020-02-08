@@ -44,7 +44,7 @@ typedef struct {
 } Value;
 
 // This is super confusing syntax:
-// Creates a type `NativeFunction` which is a function `NativeFunctionReturn (Value *, int)`
+// Creates a type `NativeFunction` which is a function of type `NativeFunctionReturn (Value[], int, Value[])`
 typedef void (*NativeFunction)(Value args[], int argsc, Value ret[]);
 
 typedef struct {

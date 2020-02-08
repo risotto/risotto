@@ -156,9 +156,11 @@ NATIVE_FUNCTION(println_double) {
 }
 
 NATIVE_FUNCTION(println_string) {
-    str_t v = v2s(args[0]);
+    char *v = v2s(args[0]);
 
     vm.printf("%s\n", v);
+
+    free(v);
 }
 
 NATIVE_FUNCTION(println_bool) {

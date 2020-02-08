@@ -22,7 +22,6 @@ typedef enum {
     OP_CALL,
     OP_END,
     OP_LOAD,
-    OP_LOAD_GLOBAL,
     OP_LOAD_LOCAL,
     OP_LOAD_STACK,
     OP_LOAD_INSTANCE,
@@ -32,7 +31,6 @@ typedef enum {
     OP_FRAME,
     OP_FRAME_END,
     OP_ARRAY,
-    OP_ARRAY_INSERT,
     OP_TRUE,
     OP_FALSE,
     OP_EQ,
@@ -62,7 +60,7 @@ typedef enum {
     OP_I2D,
     OP_D2I,
 
-    Last = OP_DGT,
+    Last = OP_D2I,
 } OpCode;
 
 typedef struct {

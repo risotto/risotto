@@ -111,48 +111,62 @@ double v2d(Value v) {
     return DGET(v, double);
 }
 
+#define STR_ALLOC(s) malloc((s+1) * sizeof(char))
+
 const char *v2s(Value v) {
     ACCESS_REF(v);
 
     switch (TGET(v)) {
-        case T_NIL:
-            return "nil";
+        case T_NIL: {
+            char *o = STR_ALLOC(3);
+            sprintf(o, "nil");
+            return o;
+        }
         case T_UINT: {
-            char *o = malloc(12 * sizeof(char));
+            char *o = STR_ALLOC(12);
             sprintf(o, "%d", v2ui(v));
             return o;
         }
         case T_INT: {
-            char *o = malloc(12 * sizeof(char));
+            char *o = STR_ALLOC(12);
             sprintf(o, "%d", v2i(v));
             return o;
         }
         case T_DOUBLE: {
             double d = v2d(v);
-            char *o = malloc(18 * sizeof(char));
+            char *o = STR_ALLOC(18);
             sprintf(o, "%lf", d);
             return o;
         }
         case T_OBJECT: {
-            char *o = malloc(20 * sizeof(char));
+            char *o = STR_ALLOC(20);
             sprintf(o, "%p", v2o(v));
             return o;
         }
         case T_P: {
-            char *o = malloc(20 * sizeof(char));
+            char *o = STR_ALLOC(20);
             sprintf(o, "%p", v2p(v));
             return o;
         }
-        case T_STR:
-            return DGET(v, str);
-        case T_BOOL:
-            return v2b(v) ? "true" : "false";
+        case T_STR: {
+            const char *s = DGET(v, str);
+            char *o = STR_ALLOC(strlen(s));
+            sprintf(o, "%s", s);
+            return o;
+        }
+        case T_BOOL: {
+            char *o = STR_ALLOC(4);
+            sprintf(o, v2b(v) ? "true" : "false");
+            return o;
+        }
         case T_ARRAY: {
-            char *o = calloc(1000, sizeof(char));
+            char *o = STR_ALLOC(1000);
             ValueArray *array = v2a(v);
             sprintf(o, "[");
             for (int i = 0; i < array->object.size; ++i) {
-                sprintf(o + strlen(o), "%s", v2s(*(array->object.values + i)));
+                char *s = v2s(*(array->object.values + i));
+                sprintf(o + strlen(o), "%s", s);
+                free(s);
 
                 if (i != array->object.size - 1) {
                     sprintf(o + strlen(o), ", ");

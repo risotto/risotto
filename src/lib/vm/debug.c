@@ -14,12 +14,18 @@ void printValue(Value value) {
         case T_INT:
         case T_DOUBLE:
         case T_ARRAY:
-        case T_BOOL:
-            printf("%s", v2s(value));
+        case T_BOOL: {
+            const char *s = v2s(value);
+            printf("%s", s);
+            free(s);
             return;
-        case T_STR:
-            printf("`%s`", v2s(value));
+        }
+        case T_STR: {
+            const char *s = v2s(value);
+            printf("`%s`", s);
+            free(s);
             return;
+        }
         case T_OBJECT: {
             Object *object = v2o(value);
             printf("O: %p {", object->values);
@@ -130,12 +136,10 @@ char *getName(OP_T instruction) {
         NAME(OP_JUMPF)
         NAME(OP_END)
         NAME(OP_LOAD)
-        NAME(OP_LOAD_GLOBAL)
         NAME(OP_LOAD_STACK)
         NAME(OP_LOAD_LOCAL)
         NAME(OP_LOAD_INSTANCE)
         NAME(OP_ARRAY)
-        NAME(OP_ARRAY_INSERT)
         NAME(OP_CALL)
         NAME(OP_POP)
         NAME(OP_COPY)
@@ -235,8 +239,6 @@ int disassembleInstruction(Chunk *chunk, int offset) {
             return simpleInstruction(getName(instruction), offset);
         case OP_LOAD:
             return intInstruction(getName(instruction), chunk, offset);
-        case OP_LOAD_GLOBAL:
-            return intInstruction(getName(instruction), chunk, offset);
         case OP_RESOLVE_ADDR    :
             return intInstruction(getName(instruction), chunk, offset);
         case OP_LOAD_STACK:
@@ -246,8 +248,6 @@ int disassembleInstruction(Chunk *chunk, int offset) {
         case OP_LOAD_INSTANCE:
             return intInstruction(getName(instruction), chunk, offset);
         case OP_ARRAY:
-            return intInstruction(getName(instruction), chunk, offset);
-        case OP_ARRAY_INSERT:
             return intInstruction(getName(instruction), chunk, offset);
         case OP_CALL:
             return callInstruction(getName(instruction), chunk, offset);
