@@ -11,7 +11,7 @@ TEST(Functions, Fib) {
 
     risotto.runFile(INPUT("fib"));
 
-    EXPECT_STDOUT("75025\n75025\n");
+    EXPECT_STDOUT("832040\n");
 }
 
 TEST(Functions, OutOfOrder) {
