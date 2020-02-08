@@ -7,6 +7,7 @@
 
 #include "chunk.h"
 #include "value.h"
+#include "stats.h"
 
 #define STACK_MAX 256
 #define INITIAL_GC_THRESHOLD 1000
@@ -31,6 +32,7 @@ typedef struct {
     int maxObjects;
     int (*printf) (const char *, ...);
     ValueArray *args;
+    Stats *stats;
 } VM;
 
 typedef enum {
@@ -39,7 +41,7 @@ typedef enum {
     INTERPRET_RUNTIME_ERROR
 } InterpretResult;
 
-void initVM(unsigned int flags, int (*printf) (const char *, ...), ValueArray *args);
+void initVM(unsigned int flags, int (*printf) (const char *, ...), ValueArray *args, Stats *stats);
 VM *getVM();
 void freeVM();
 InterpretResult interpret(Chunk* chunk, long addr);

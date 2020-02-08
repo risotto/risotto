@@ -44,6 +44,8 @@ public:
 
     bool hasFlag(RisottoFlags flag);
 
+    void printStats(Stats *stats);
+
     template<typename T>
     T timing(const std::string &name, std::function<T()> f);
 

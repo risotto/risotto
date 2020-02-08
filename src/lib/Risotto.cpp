@@ -24,10 +24,10 @@ Risotto::Risotto(unsigned int flags) : flags(flags) {
 Risotto::Risotto() : Risotto(RisottoFlags::None) {}
 
 InterpretResult Risotto::runFile(const std::string &path) {
-   return runFile(path, {});
+    return runFile(path, {});
 }
 
-InterpretResult Risotto::runFile(const std::string &path, const std::vector<std::string>& args) {
+InterpretResult Risotto::runFile(const std::string &path, const std::vector<std::string> &args) {
     std::ifstream ifs(path);
     std::string str((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
 
@@ -38,7 +38,7 @@ InterpretResult Risotto::run(const std::string &str) {
     return run(str, {});
 }
 
-InterpretResult Risotto::run(const std::string &str, const std::vector<std::string>& args) {
+InterpretResult Risotto::run(const std::string &str, const std::vector<std::string> &args) {
     return timing<InterpretResult>("Total", [this, str, args]() {
         auto tokens = timing<std::vector<Token *>>("Tokenizer", [str]() {
             auto tokenizer = new Tokenizer(str);
@@ -53,7 +53,7 @@ InterpretResult Risotto::run(const std::string &str, const std::vector<std::stri
     });
 }
 
-InterpretResult Risotto::doRun(const std::vector<Token *> &tokens, const std::vector<std::string>& args) {
+InterpretResult Risotto::doRun(const std::vector<Token *> &tokens, const std::vector<std::string> &args) {
     auto stmts = timing<std::vector<Stmt *>>("Parser", [tokens]() {
         auto parser = new Parser(tokens);
         return parser->program();
@@ -85,11 +85,14 @@ InterpretResult Risotto::doRun(const std::vector<Token *> &tokens, const std::ve
     initValueArray(argsa);
     registerObject((Object *) argsa);
 
-    for (const auto& arg: args) {
+    for (const auto &arg: args) {
         writeValueArray(argsa, s2v(arg.c_str()));
     }
 
-    initVM(vmFlags, this->printfp, argsa);
+    auto stats = Stats{};
+    stats_init(&stats, Last);
+
+    initVM(vmFlags, this->printfp, argsa, &stats);
 
     auto result = timing<InterpretResult>("VM", [&chunk]() {
         return interpret(&chunk, 0);
@@ -98,7 +101,41 @@ InterpretResult Risotto::doRun(const std::vector<Token *> &tokens, const std::ve
     freeVM();
     freeChunk(&chunk);
 
+    if (hasFlag(RisottoFlags::PrintBenchmarkExecution)) {
+        printStats(&stats);
+    }
+
     return result;
+}
+
+void Risotto::printStats(Stats *stats) {
+    printf("\n======================= STATS =======================\n");
+    clock_t tt = 0;
+    for (int k = 0; k <= Last; ++k) {
+        tt += stats->timings[k];
+    }
+
+    for (int k = 0; k <= Last; ++k) {
+        auto t = (long double) stats->timings[k];
+        unsigned long c = stats->timingsc[k];
+
+        if (c > 0) {
+            printf(
+                    "%-3u - %-14s C: %-9lu T: %-10.0Lf AT: %-13.9Lf TT: %-13.9Lf (%-5.2Lf%%)\n",
+                    k,
+                    getName(k),
+                    c,
+                    t,
+                    t / c / CLOCKS_PER_SEC,
+                    t / CLOCKS_PER_SEC,
+                    (t / tt) * 100
+            );
+        }
+    }
+    printf("\n");
+    printf("Total ops: %llu\n", stats->opsc);
+    printf("C: Count - T: CPU Ticks - AT: Average Time - TT: Total Time\n");
+    printf("=======================================================\n");
 }
 
 bool Risotto::hasFlag(RisottoFlags flag) {

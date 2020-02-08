@@ -10,13 +10,16 @@
 #include "../lib/vec/src/vec.h"
 
 #ifdef DEBUG_TRACE_EXECUTION
+
 #include "debug.h"
+
 #endif
 
 #ifdef BENCHMARK_TIMINGS
 
 #include <time.h>
 #include "debug.h"
+#include "stats.h"
 
 #endif
 
@@ -31,7 +34,7 @@ static void resetStack() {
     vm.fp = vm.sp;
 }
 
-void initVM(unsigned int flags, int (*printf)(const char *, ...), ValueArray *args) {
+void initVM(unsigned int flags, int (*printf)(const char *, ...), ValueArray *args, Stats *stats) {
     resetStack();
     vm.flags = flags;
     vm.numObjects = 0;
@@ -39,6 +42,7 @@ void initVM(unsigned int flags, int (*printf)(const char *, ...), ValueArray *ar
     vm.firstObject = NULL;
     vm.printf = printf;
     vm.args = args;
+    vm.stats = stats;
 }
 
 bool hasFlag(VMFlags flag) {
@@ -149,7 +153,6 @@ void gc() {
 #define BENCHMARK_TIMINGS_START_CODE \
             if (benchmarkExec) { \
                 start = clock(); \
-                opsc++; \
             }
 #else
 #define BENCHMARK_TIMINGS_START_CODE
@@ -158,8 +161,7 @@ void gc() {
 #ifdef BENCHMARK_TIMINGS
 #define BENCHMARK_TIMINGS_END_CODE \
         if (benchmarkExec) { \
-            timings[*vm.ip] += clock() - start; \
-            timingsc[*vm.ip]++; \
+            stats_op(vm.stats, *vm.ip, clock() - start); \
         }
 #else
 #define BENCHMARK_TIMINGS_END_CODE
@@ -167,10 +169,11 @@ void gc() {
 
 
 #ifdef DEBUG_TRACE_EXECUTION
+
 void trace_execution(bool traceExec) {
     static int i = 0;
     i++;
-    if (traceExec && (i >12700000|| i < 10)) {
+    if (traceExec && (i > 12700000 || i < 10)) {
         printf("%i", i);
         printf("             ");
         for (Value *slot = vm.stack; slot < vm.sp; slot++) {
@@ -192,6 +195,7 @@ void trace_execution(bool traceExec) {
         disassembleInstruction(vm.chunk, (int) (vm.ip - vm.chunk->code) - 1);
     }
 }
+
 #define TRACE_EXECUTION_CODE trace_execution(traceExec);
 #else
 #define TRACE_EXECUTION_CODE
@@ -217,14 +221,7 @@ static InterpretResult run() {
 #ifdef BENCHMARK_TIMINGS
     bool benchmarkExec = hasFlag(BenchmarkExecution);
 
-    clock_t timings[Last + 1];
-    unsigned long long timingsc[Last + 1];
-    unsigned long long opsc = 0;
-
-    for (int m = 0; m <= Last; ++m) {
-        timings[m] = 0;
-        timingsc[m] = 0;
-    }
+    stats_init(vm.stats, Last);
 
     clock_t start;
 #endif
@@ -284,7 +281,7 @@ static InterpretResult run() {
             &&OP_D2I_label,
     };
 
-    NEXT_OP;
+    NEXT_OP; // Start execution
 
 VM_BLOCK(OP_NOOP,)
 
@@ -592,37 +589,6 @@ VM_BLOCK(OP_D2I, {
 })
 
 VM_BLOCK(OP_END, {
-#ifdef BENCHMARK_TIMINGS
-    if (benchmarkExec) {
-        printf("\n======================= TIMINGS =======================\n");
-        clock_t tt = 0;
-        for (int k = 0; k <= Last; ++k) {
-            tt += timings[k];
-        }
-
-        for (int k = 0; k <= Last; ++k) {
-            long double t = (long double) timings[k];
-            unsigned long c = timingsc[k];
-
-            if (c > 0) {
-                printf(
-                        "%-3u - %-14s C: %-9lu T: %-10.0Lf AT: %-13.9Lf (%-5.2Lf%%) TT: %-13.9Lf \n",
-                        k,
-                        getName(k),
-                        c,
-                        t,
-                        t / c / CLOCKS_PER_SEC,
-                        (t / tt) * 100,
-                        t / CLOCKS_PER_SEC
-                );
-            }
-        }
-        printf("\n");
-        printf("Total ops: %llu\n", opsc);
-        printf("C: Count - T: CPU Ticks - AT: Average Time - TT: Total Time\n");
-        printf("=======================================================\n");
-    }
-#endif
     return INTERPRET_OK;
 })
 }
