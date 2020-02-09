@@ -50,6 +50,7 @@ void set(Value origin, Value *target);
 void push(Value value);
 Value pop();
 Value *popp();
+InterpretResult run();
 
 void registerObject(Object *object);
 void markAll();

@@ -208,16 +208,20 @@ void trace_execution(bool traceExec) {
     BENCHMARK_TIMINGS_START_CODE
 
 #define OP_END_ROUTINE \
-    BENCHMARK_TIMINGS_END_CODE \
-    NEXT_OP;
+    BENCHMARK_TIMINGS_END_CODE
 
 #define VM_BLOCK(op, body) \
-    op##_label: \
-        OP_START_ROUTINE; \
+    INSTRUCT(op): \
+        OP_START_ROUTINE \
         body \
-        OP_END_ROUTINE;
+        OP_END_ROUTINE \
+        NEXT_OP;
 
-static InterpretResult run() {
+#define INSTRUCT(op) lbl_##op
+
+#define GOTO_LABEL(op) &&INSTRUCT(op),
+
+InterpretResult run() {
 #ifdef BENCHMARK_TIMINGS
     bool benchmarkExec = hasFlag(BenchmarkExecution);
 
@@ -231,54 +235,7 @@ static InterpretResult run() {
 #endif
 
     static const void *dispatch_table[] = {
-            &&OP_CONST_label,
-            &&OP_POP_label,
-            &&OP_COPY_label,
-            &&OP_NIL_label,
-            &&OP_RETURN_label,
-            &&OP_JUMP_label,
-            &&OP_JUMPT_label,
-            &&OP_JUMPF_label,
-            &&OP_CALL_label,
-            &&OP_END_label,
-            &&OP_LOAD_label,
-            &&OP_LOAD_LOCAL_label,
-            &&OP_LOAD_STACK_label,
-            &&OP_LOAD_INSTANCE_label,
-            &&OP_NOOP_label,
-            &&OP_NEW_label,
-            &&OP_SET_label,
-            &&OP_FRAME_label,
-            &&OP_FRAME_END_label,
-            &&OP_ARRAY_label,
-            &&OP_TRUE_label,
-            &&OP_FALSE_label,
-            &&OP_EQ_label,
-            &&OP_NEQ_label,
-            &&OP_EQ_NIL_label,
-            &&OP_NEQ_NIL_label,
-            &&OP_RESOLVE_ADDR_label,
-            &&OP_IADD_label,
-            &&OP_ISUB_label,
-            &&OP_IMUL_label,
-            &&OP_IDIV_label,
-            &&OP_ILT_label,
-            &&OP_IGT_label,
-            &&OP_IMOD_label,
-            &&OP_DADD_label,
-            &&OP_DSUB_label,
-            &&OP_DMUL_label,
-            &&OP_DDIV_label,
-            &&OP_DLT_label,
-            &&OP_DGT_label,
-            &&OP_B_AND_label,
-            &&OP_B_OR_label,
-            &&OP_B_XOR_label,
-            &&OP_B_SHIFTL_label,
-            &&OP_B_SHIFTR_label,
-            &&OP_B_NOT_label,
-            &&OP_I2D_label,
-            &&OP_D2I_label,
+            OPCODES(GOTO_LABEL)
     };
 
     NEXT_OP; // Start execution
