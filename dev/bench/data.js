@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1581268758098,
+  "lastUpdate": 1581429970141,
   "repoUrl": "https://github.com/raphaelvigee/risotto",
   "entries": {
     "Benchmark": [
@@ -984,6 +984,72 @@ window.BENCHMARK_DATA = {
             "value": 679738238.9999882,
             "unit": "ns/iter",
             "extra": "iterations: 1\ncpu: 679708732.0000017 ns\nthreads: 1"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "contact@raphaelvigee.com",
+            "name": "rvigee",
+            "username": "raphaelvigee"
+          },
+          "committer": {
+            "email": "contact@raphaelvigee.com",
+            "name": "rvigee",
+            "username": "raphaelvigee"
+          },
+          "distinct": true,
+          "id": "be9db738d426b0aff84b252c4a6c489f47429aee",
+          "message": "Add dockerfile",
+          "timestamp": "2020-02-11T14:03:56Z",
+          "tree_id": "6146dd8bf679ca26cc7a9b8b1fab6639cac2caf4",
+          "url": "https://github.com/raphaelvigee/risotto/commit/be9db738d426b0aff84b252c4a6c489f47429aee"
+        },
+        "date": 1581429969848,
+        "tool": "googlecpp",
+        "benches": [
+          {
+            "name": "BM_bounce",
+            "value": 8557642.670731772,
+            "unit": "ns/iter",
+            "extra": "iterations: 82\ncpu: 8553708.658536585 ns\nthreads: 1"
+          },
+          {
+            "name": "BM_list",
+            "value": 8182724.39534877,
+            "unit": "ns/iter",
+            "extra": "iterations: 86\ncpu: 8181545.988372094 ns\nthreads: 1"
+          },
+          {
+            "name": "BM_mandelbrot",
+            "value": 8432664479.0000105,
+            "unit": "ns/iter",
+            "extra": "iterations: 1\ncpu: 8430396482.000001 ns\nthreads: 1"
+          },
+          {
+            "name": "BM_permute",
+            "value": 13768917.60000035,
+            "unit": "ns/iter",
+            "extra": "iterations: 50\ncpu: 13766381.340000002 ns\nthreads: 1"
+          },
+          {
+            "name": "BM_sieve",
+            "value": 9163737.097222304,
+            "unit": "ns/iter",
+            "extra": "iterations: 72\ncpu: 9163194.958333336 ns\nthreads: 1"
+          },
+          {
+            "name": "BM_storage",
+            "value": 16153997.363636691,
+            "unit": "ns/iter",
+            "extra": "iterations: 44\ncpu: 16154026.499999994 ns\nthreads: 1"
+          },
+          {
+            "name": "BM_fib",
+            "value": 790626102.0000045,
+            "unit": "ns/iter",
+            "extra": "iterations: 1\ncpu: 790314462.9999996 ns\nthreads: 1"
           }
         ]
       }
