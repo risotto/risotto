@@ -16,7 +16,10 @@
 #ifdef BENCHMARK_TIMINGS
 
 #include <time.h>
-#include "debug.h"
+
+unsigned long long nanosec(struct timespec t) {
+    return (t.tv_sec * 1000000000) + t.tv_nsec;
+}
 
 #endif
 
@@ -26,16 +29,12 @@
 
 VM vm;
 
-unsigned long long nanosec(struct timespec t) {
-    return (t.tv_sec*1000000000)+t.tv_nsec;
-}
-
 static void resetStack() {
     vm.sp = vm.stack;
     vm.fp = vm.sp;
 }
 
-void initVM(unsigned int flags, int (*printf) (const char *, ...), ValueArray *args) {
+void initVM(unsigned int flags, int (*printf)(const char *, ...), ValueArray *args) {
     resetStack();
     vm.flags = flags;
     vm.numObjects = 0;
@@ -246,7 +245,7 @@ static InterpretResult run() {
 #ifdef DEBUG_TRACE_EXECUTION
                 if (traceExec) {
                     printVtable(v);
-               }
+                }
 #endif
                 if (v.vtable == NULL) {
                     ERROR("vtable is null")
@@ -342,11 +341,10 @@ static InterpretResult run() {
                     rvals[i] = pop();     // pop return value from top of the stack
                 }
 
-                for (int j = 0; j < d; ++j) {
+                for (int j = 0; j < d + 1; ++j) {
                     dframe();
                 }
 
-                dframe();
                 vm.ip = v2p(pop()); // restore ip
                 int argc = v2i(pop());     // ... hom many args procedure has ...
                 vm.sp -= argc;     // ... discard all of the args left ...
