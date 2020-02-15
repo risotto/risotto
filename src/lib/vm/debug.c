@@ -115,60 +115,11 @@ static int intInstruction(const char *name, Chunk *chunk, int offset) {
     return offset + 2;
 }
 
-#define NAME(op) case op: return #op;
+#define OPCODE_NAME(op) case op: return #op;
 
 char *getName(OP_T instruction) {
     switch (instruction) {
-        NAME(OP_SET)
-        NAME(OP_NOOP)
-        NAME(OP_FRAME)
-        NAME(OP_FRAME_END)
-        NAME(OP_CONST)
-        NAME(OP_RETURN)
-        NAME(OP_JUMP)
-        NAME(OP_JUMPT)
-        NAME(OP_JUMPF)
-        NAME(OP_END)
-        NAME(OP_LOAD)
-        NAME(OP_LOAD_GLOBAL)
-        NAME(OP_LOAD_STACK)
-        NAME(OP_LOAD_LOCAL)
-        NAME(OP_LOAD_INSTANCE)
-        NAME(OP_ARRAY)
-        NAME(OP_ARRAY_INSERT)
-        NAME(OP_CALL)
-        NAME(OP_POP)
-        NAME(OP_COPY)
-        NAME(OP_NIL)
-        NAME(OP_TRUE)
-        NAME(OP_FALSE)
-        NAME(OP_EQ)
-        NAME(OP_NEQ)
-        NAME(OP_EQ_NIL)
-        NAME(OP_NEQ_NIL)
-        NAME(OP_NEW)
-        NAME(OP_RESOLVE_ADDR)
-        NAME(OP_IADD)
-        NAME(OP_ISUB)
-        NAME(OP_IMUL)
-        NAME(OP_IDIV)
-        NAME(OP_ILT)
-        NAME(OP_IGT)
-        NAME(OP_IMOD)
-        NAME(OP_DADD)
-        NAME(OP_DSUB)
-        NAME(OP_DMUL)
-        NAME(OP_DDIV)
-        NAME(OP_DLT)
-        NAME(OP_DGT)
-        NAME(OP_B_AND)
-        NAME(OP_B_OR)
-        NAME(OP_B_XOR)
-        NAME(OP_B_SHIFTL)
-        NAME(OP_B_SHIFTR)
-        NAME(OP_B_NOT)
-        NAME(OP_I2D)
-        NAME(OP_D2I)
+        OPCODES(OPCODE_NAME)
         default:
             return "Unknown opcode";
     }
@@ -235,8 +186,6 @@ int disassembleInstruction(Chunk *chunk, int offset) {
             return simpleInstruction(getName(instruction), offset);
         case OP_LOAD:
             return intInstruction(getName(instruction), chunk, offset);
-        case OP_LOAD_GLOBAL:
-            return intInstruction(getName(instruction), chunk, offset);
         case OP_RESOLVE_ADDR    :
             return intInstruction(getName(instruction), chunk, offset);
         case OP_LOAD_STACK:
@@ -246,8 +195,6 @@ int disassembleInstruction(Chunk *chunk, int offset) {
         case OP_LOAD_INSTANCE:
             return intInstruction(getName(instruction), chunk, offset);
         case OP_ARRAY:
-            return intInstruction(getName(instruction), chunk, offset);
-        case OP_ARRAY_INSERT:
             return intInstruction(getName(instruction), chunk, offset);
         case OP_CALL:
             return callInstruction(getName(instruction), chunk, offset);
