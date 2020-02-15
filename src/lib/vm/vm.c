@@ -26,6 +26,10 @@
 
 VM vm;
 
+unsigned long long nanosec(struct timespec t) {
+    return (t.tv_sec*1000000000)+t.tv_nsec;
+}
+
 static void resetStack() {
     vm.sp = vm.stack;
     vm.fp = vm.sp;
@@ -150,7 +154,7 @@ static InterpretResult run() {
 #ifdef BENCHMARK_TIMINGS
     bool benchmarkExec = hasFlag(BenchmarkExecution);
 
-    clock_t timings[Last + 1];
+    unsigned long long timings[Last + 1];
     unsigned long long timingsc[Last + 1];
     unsigned long long opsc = 0;
 
@@ -159,7 +163,8 @@ static InterpretResult run() {
         timingsc[m] = 0;
     }
 
-    clock_t start;
+    struct timespec tstart;
+    struct timespec tend;
 #endif
 
 #ifdef DEBUG_TRACE_EXECUTION
@@ -194,7 +199,7 @@ static InterpretResult run() {
 
 #ifdef BENCHMARK_TIMINGS
         if (benchmarkExec) {
-            start = clock();
+            clock_gettime(CLOCK_MONOTONIC, &tstart);
             opsc++;
         }
 #endif
@@ -512,31 +517,30 @@ static InterpretResult run() {
 #ifdef BENCHMARK_TIMINGS
                 if (benchmarkExec) {
                     printf("\n======================= TIMINGS =======================\n");
-                    clock_t tt = 0;
+                    unsigned long long tt = 0;
                     for (int k = 0; k <= Last; ++k) {
                         tt += timings[k];
                     }
 
                     for (int k = 0; k <= Last; ++k) {
-                        long double t = (long double) timings[k];
+                        unsigned long long t = timings[k];
                         unsigned long c = timingsc[k];
 
                         if (c > 0) {
                             printf(
-                                    "%-3u - %-14s C: %-9lu T: %-10.0Lf AT: %-13.9Lf (%-5.2Lf%%) TT: %-13.9Lf \n",
+                                    "%-3u - %-14s C: %-13lu AT: %-5llu (%-5.2Lf%%) TT: %-13llu \n",
                                     k,
                                     getName(k),
                                     c,
-                                    t,
-                                    t / c / CLOCKS_PER_SEC,
-                                    (t / tt) * 100,
-                                    t / CLOCKS_PER_SEC
+                                    t / c,
+                                    ((long double) t / tt) * 100,
+                                    t
                             );
                         }
                     }
                     printf("\n");
-                    printf("Total ops: %lu\n", opsc);
-                    printf("C: Count - T: CPU Ticks - AT: Average Time - TT: Total Time\n");
+                    printf("Total ops: %llu\n", opsc);
+                    printf("C: Count - AT: Average Time - TT: Total Time\n");
                     printf("=======================================================\n");
                 }
 #endif
@@ -549,7 +553,9 @@ static InterpretResult run() {
 
 #ifdef BENCHMARK_TIMINGS
         if (benchmarkExec) {
-            timings[instruction] += clock() - start;
+            clock_gettime(CLOCK_MONOTONIC, &tend);
+
+            timings[instruction] += nanosec(tend) - nanosec(tstart);
             timingsc[instruction]++;
         }
 #endif
