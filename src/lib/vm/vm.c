@@ -534,7 +534,7 @@ static InterpretResult run() {
                                     c,
                                     t / c,
                                     ((long double) t / tt) * 100,
-                                    tt
+                                    t
                             );
                         }
                     }
