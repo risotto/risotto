@@ -49,8 +49,6 @@ std::vector<ByteResolver *> FunctionStmt::compile(Compiler *compiler) {
     // Ensure functions have a return TODO: add branches check
     if (functionEntry->descriptor->returnTypes.empty()) {
         bytes.push_back(new ByteResolver(OP_RETURN));
-        bytes.push_back(new ByteResolver(0)); // no frame to drop
-        bytes.push_back(new ByteResolver(0)); // no value to return
     }
 
     // Restore frame

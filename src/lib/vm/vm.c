@@ -42,6 +42,7 @@ void initVM(unsigned int flags, int (*printf)(const char *, ...), ValueArray *ar
     vm.firstObject = NULL;
     vm.printf = printf;
     vm.args = args;
+    vec_init(&vm.fcs);
 }
 
 bool hasFlag(VMFlags flag) {
@@ -271,7 +272,6 @@ static InterpretResult run() {
                 int argc = READ_BYTE(); // args count
                 int retc = READ_BYTE(); // return values count
 
-                // we expect all args to be on the stack
                 bool refs[argc];
                 for (int i = 0; i < argc; ++i) {
                     refs[i] = (bool) READ_BYTE();
@@ -283,14 +283,20 @@ static InterpretResult run() {
                     case T_INT: { // Function
                         int addr = v2i(f);
 
-                        push(i2v(argc));   // ... save num args ...
-                        push(p2v(vm.ip)); // ... save instruction pointer ...
+                        FunctionCall fc = (FunctionCall) {
+                                .argc = argc,
+                                .retc = retc,
+                                .ip = vm.ip,
+                                .fp = vm.fp,
+                                .sp = vm.sp,
+                        };
+                        vec_push(&vm.fcs, fc);
                         cframe();
 
                         GOTO(addr);
 
                         for (int i = 0; i < argc; ++i) {
-                            Value *a = vm.fp - 4 - i;
+                            Value *a = vm.fp - 2 - i;
 
                             if (refs[i] == true) {
                                 push(vp2v(a));
@@ -301,7 +307,7 @@ static InterpretResult run() {
 
                         break;
                     }
-                    case T_P: { //  Native function
+                    case T_P: { // Native function
                         Value args[argc];
                         for (int i = 0; i < argc; ++i) {
                             args[i] = pop();
@@ -333,26 +339,22 @@ static InterpretResult run() {
                 break;
             }
             case OP_RETURN: {
-                OP_T d = READ_BYTE();
-                OP_T rc = READ_BYTE();
+                FunctionCall fc = vec_pop(&vm.fcs);
+                int rc = fc.retc;
 
                 Value rvals[rc];
-                for (int i = 0; i < rc; ++i) {
-                    rvals[i] = pop();     // pop return value from top of the stack
+                for (int i = rc - 1; i >= 0 ; --i) {
+                    rvals[i] = copy(pop());
                 }
 
-                for (int j = 0; j < d + 1; ++j) {
-                    dframe();
-                }
+                vm.ip = fc.ip;
+                vm.sp = fc.sp;
+                vm.fp = fc.fp;
 
-                vm.ip = v2p(pop()); // restore ip
-                int argc = v2i(pop());     // ... hom many args procedure has ...
-                vm.sp -= argc;     // ... discard all of the args left ...
+                vm.sp -= fc.argc;
 
-                // Reverse pop onto the stack to restablish order
-                for (int i = rc - 1; i >= 0; --i) {
-                    push(copy(rvals[i])); // ... leave return value on top of the stack
-                }
+                memcpy(vm.sp, rvals, sizeof(Value) * rc);
+                vm.sp += rc;
 
                 break;
             }
@@ -532,7 +534,7 @@ static InterpretResult run() {
                                     c,
                                     t / c,
                                     ((long double) t / tt) * 100,
-                                    t
+                                    tt
                             );
                         }
                     }

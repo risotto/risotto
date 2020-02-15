@@ -24,6 +24,7 @@ typedef struct {
     Value stack[STACK_MAX];
     Value *sp;
     Value *fp;
+    function_call_vec_t fcs;
     Object *firstObject;
     /* The total number of currently allocated values. */
     int numObjects;

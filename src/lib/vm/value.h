@@ -54,6 +54,17 @@ typedef struct {
 
 typedef vec_t(vtable_entry) vtable_entry_vec_t;
 
+typedef struct {
+    int argc;
+    int retc;
+
+    OP_T *ip;
+    Value *sp;
+    Value *fp;
+} FunctionCall;
+
+typedef vec_t(FunctionCall) function_call_vec_t;
+
 struct vtable {
     unsigned int size;
     vtable_entry_vec_t addrs;

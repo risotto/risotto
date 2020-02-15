@@ -62,7 +62,7 @@ typedef enum {
     OP_I2D,
     OP_D2I,
 
-    Last = OP_DGT,
+    Last = OP_D2I,
 } OpCode;
 
 typedef struct {
