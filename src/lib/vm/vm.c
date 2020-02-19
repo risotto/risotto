@@ -205,9 +205,6 @@ static InterpretResult run() {
 #endif
 
         switch (instruction) {
-            case OP_NOOP: {
-                break;
-            }
             case OP_CONST: {
                 Value constant = READ_CONSTANT();
                 push(constant);

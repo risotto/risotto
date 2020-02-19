@@ -166,8 +166,6 @@ int disassembleInstruction(Chunk *chunk, int offset) {
             return simpleInstruction(getName(instruction), offset);
         case OP_SET:
             return simpleInstruction(getName(instruction), offset);
-        case OP_NOOP:
-            return simpleInstruction(getName(instruction), offset);
         case OP_FRAME:
             return simpleInstruction(getName(instruction), offset);
         case OP_FRAME_END:
@@ -175,7 +173,7 @@ int disassembleInstruction(Chunk *chunk, int offset) {
         case OP_CONST:
             return constantInstruction(getName(instruction), chunk, offset);
         case OP_RETURN:
-            return biIntInstruction(getName(instruction), "D", "C", chunk, offset);
+            return simpleInstruction(getName(instruction), offset);
         case OP_JUMP:
             return addrInstruction(getName(instruction), chunk, offset);
         case OP_JUMPT:

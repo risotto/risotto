@@ -25,7 +25,6 @@
     X(OP_LOAD_LOCAL) \
     X(OP_LOAD_STACK) \
     X(OP_LOAD_INSTANCE) \
-    X(OP_NOOP) \
     X(OP_NEW) \
     X(OP_SET) \
     X(OP_FRAME) \
