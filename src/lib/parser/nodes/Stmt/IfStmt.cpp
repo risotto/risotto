@@ -68,10 +68,6 @@ ByteResolver *IfStmt::generateNextBranchByte(IfBranch *currentBranch) {
 }
 
 ByteResolver *IfStmt::generateExitByte(IfBranch *branch) {
-//    if (branch == branches.back()) {
-//        return nullptr;
-//    }
-
     return new ByteResolver([this](Compiler *c) {
         for (auto it = branches.rbegin(); it != branches.rend(); ++it) {
             auto br = *it;
