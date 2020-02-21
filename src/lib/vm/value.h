@@ -134,4 +134,6 @@ Value accessRef(Value v);
 
 Value *accessRefp(Value *v);
 
+bool veq(Value l, Value r);
+
 #endif //RISOTTOVM_VALUE_H

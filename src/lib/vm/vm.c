@@ -477,14 +477,14 @@ static InterpretResult run() {
                 Value l = accessRef(pop());
                 Value r = accessRef(pop());
 
-                push(b2v(memcmp(&l.data, &r.data, sizeof(ValueData)) == 0));
+                push(b2v(veq(l, r)));
                 break;
             }
             case OP_NEQ: {
                 Value l = accessRef(pop());
                 Value r = accessRef(pop());
 
-                push(b2v(memcmp(&l.data, &r.data, sizeof(ValueData)) != 0));
+                push(b2v(!veq(l, r)));
                 break;
             }
             VM_MATH_OPS(I, i)

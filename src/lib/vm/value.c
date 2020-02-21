@@ -226,3 +226,39 @@ Value *accessRefp(Value *value) {
 
     return v;
 }
+
+bool veq(Value l, Value r) {
+    l = accessRef(l);
+    r = accessRef(r);
+
+    if (l.type != r.type) {
+        return false;
+    }
+
+    switch (l.type) {
+        case T_NIL:
+            return true;
+        case T_UINT:
+            return DGET(l, uint) == DGET(r, uint);
+        case T_INT:
+            return DGET(l, int) == DGET(r, int);
+        case T_DOUBLE:
+            return DGET(l, double) == DGET(r, double);
+        case T_P:
+        case T_OBJECT:
+        case T_ARRAY:
+            return DGET(l, p) == DGET(r, p);
+        case T_STR: {
+            const char *ls = v2s(l);
+            const char *rs = v2s(r);
+
+            bool res = strcmp(ls, rs);
+            free((void *) ls);
+            free((void *) rs);
+
+            return res;
+        }
+        case T_BOOL:
+            return DGET(l, bool) == DGET(r, bool);
+    }
+}
