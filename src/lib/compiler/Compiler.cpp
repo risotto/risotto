@@ -144,18 +144,18 @@ NATIVE_UNARY_PREFIX_OPERATOR_DECLARATION(target, --, return, decrement) \
         return std::vector<ByteResolver *>({new ByteResolver(OP_##prefix##GT, TODO_POSITION), new ByteResolver(true)}); \
     })
 
-Compiler::Compiler(std::vector<Stmt *> stmts) : stmts(std::move(stmts)) {
+Compiler::Compiler(std::vector<Stmt *> stmts, const PrimitiveTypes *pt) : stmts(std::move(stmts)), pt(pt) {
     frame = new Frame();
     typesManager = new TypesManager();
 
     initChunk(&chunk);
 
-    auto TYPE_ENTRY(int) = frame->types.add(new IdentifierTypeDescriptor("int", new ScalarTypeDefinition("int")));
+    auto TYPE_ENTRY(int) = frame->types.add(new IdentifierTypeDescriptor("int", new ScalarTypeDefinition("int", pt->_int.vtable)));
     auto TYPE_ENTRY(double) = frame->types.add(
-            new IdentifierTypeDescriptor("double", new ScalarTypeDefinition("double")));
-    auto TYPE_ENTRY(bool) = frame->types.add(new IdentifierTypeDescriptor("bool", new ScalarTypeDefinition("bool")));
+            new IdentifierTypeDescriptor("double", new ScalarTypeDefinition("double", pt->_double.vtable)));
+    auto TYPE_ENTRY(bool) = frame->types.add(new IdentifierTypeDescriptor("bool", new ScalarTypeDefinition("bool", pt->_bool.vtable)));
     auto TYPE_ENTRY(string) = frame->types.add(
-            new IdentifierTypeDescriptor("string", new ScalarTypeDefinition("string")));
+            new IdentifierTypeDescriptor("string", new ScalarTypeDefinition("string", pt->_string.vtable)));
 
     auto arrayStringDesc = new ArrayTypeDescriptor(TYPE_DESC(string));
     arrayStringDesc->resolveType(typesManager, frame, false);
@@ -165,35 +165,23 @@ Compiler::Compiler(std::vector<Stmt *> stmts) : stmts(std::move(stmts)) {
     NATIVE_BINARY_OPERATOR_STRING_DECLARATIONS(int)
 
     BYTES_OPERATOR_DECLARATION(int, %, int, int, []() {
-        \
-        return std::vector<ByteResolver *>({new ByteResolver(OP_IMOD, TODO_POSITION)}); \
-
+        return std::vector<ByteResolver *>({new ByteResolver(OP_IMOD, TODO_POSITION)});
     })
 
     BYTES_OPERATOR_DECLARATION(int, &, int, int, []() {
-        \
-        return std::vector<ByteResolver *>({new ByteResolver(OP_B_AND, TODO_POSITION)}); \
-
+        return std::vector<ByteResolver *>({new ByteResolver(OP_B_AND, TODO_POSITION)});
     })
     BYTES_OPERATOR_DECLARATION(int, |, int, int, []() {
-        \
-        return std::vector<ByteResolver *>({new ByteResolver(OP_B_OR, TODO_POSITION)}); \
-
+        return std::vector<ByteResolver *>({new ByteResolver(OP_B_OR, TODO_POSITION)});
     })
     BYTES_OPERATOR_DECLARATION(int, ^, int, int, []() {
-        \
-        return std::vector<ByteResolver *>({new ByteResolver(OP_B_XOR, TODO_POSITION)}); \
-
+        return std::vector<ByteResolver *>({new ByteResolver(OP_B_XOR, TODO_POSITION)});
     })
     BYTES_OPERATOR_DECLARATION(int, <<, int, int, []() {
-        \
-        return std::vector<ByteResolver *>({new ByteResolver(OP_B_SHIFTL, TODO_POSITION)}); \
-
+        return std::vector<ByteResolver *>({new ByteResolver(OP_B_SHIFTL, TODO_POSITION)});
     })
     BYTES_OPERATOR_DECLARATION(int, >>, int, int, []() {
-        \
-        return std::vector<ByteResolver *>({new ByteResolver(OP_B_SHIFTR, TODO_POSITION)}); \
-
+        return std::vector<ByteResolver *>({new ByteResolver(OP_B_SHIFTR, TODO_POSITION)});
     })
     auto FUNCTION_ENTRY_VAR(int, int_unary_bit_not) = ENTRY_DEF(TYPE_ENTRY(int))->addPrefix(
             SELF_RECEIVER("right", int),
@@ -243,7 +231,7 @@ Compiler::Compiler(std::vector<Stmt *> stmts) : stmts(std::move(stmts)) {
             new NativeFunctionEntry(
                     "!",
                     new FunctionTypeDescriptor(
-                            true, \
+                            true,
                             {},
                             {TYPE_DESC(bool)}
                     ),

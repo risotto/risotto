@@ -4,6 +4,7 @@
 
 #include <stdio.h>
 
+#include "types.h"
 #include "debug.h"
 
 void printValue(Value value) {
@@ -219,17 +220,17 @@ int disassembleInstruction(Chunk *chunk, int offset) {
 }
 
 void printVtable(Value v) {
-    if (v.vtable == NULL) {
+    if (VTGET(v) == NULL) {
         printf("<null>\n");
         return;
     }
 
-    printf("==== vtable %p ====\n", v.vtable);
+    printf("==== vtable %p ====\n", VTGET(v));
     printf("%-4s %-4s %s\n", "i", "va", "a");
 
     int i;
     vtable_entry *entry;
-    vec_foreach_ptr(&v.vtable->addrs, entry, i) {
+    vec_foreach_ptr(&VTGET(v)->addrs, entry, i) {
             printf("%-4d %-4d ", i, entry->vaddr);
             printValue(entry->addr);
             printf("\n");

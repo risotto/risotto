@@ -13,6 +13,7 @@
 #include "TypesManager.h"
 
 extern "C" {
+#include <lib/vm/vm.h>
 #include <lib/vm/chunk.h>
 }
 
@@ -20,13 +21,14 @@ class Compiler {
 private:
     std::vector<Stmt *> stmts;
     std::vector<ByteResolver *> bytes;
+    const PrimitiveTypes *pt;
 
 public:
-    Chunk chunk;
+    Chunk chunk{};
     Frame *frame;
     TypesManager *typesManager;
 
-    explicit Compiler(std::vector<Stmt *> stmts);
+    explicit Compiler(std::vector<Stmt *> stmts, const PrimitiveTypes *pt);
 
     Chunk compile();
 

@@ -8,6 +8,7 @@
 #include <utility>
 #include <lib/parser/nodes/TypeDescriptor.h>
 #include <lib/compiler/utils/Utils.h>
+#include <cassert>
 
 bool TypeDefinition::canReceiveType(TypeDefinition *type) {
     return isSame(type) || isSame(&NilTypeDefinition::Def);
@@ -35,7 +36,9 @@ FunctionEntry *TypeDefinition::addPrefix(ParameterDefinition *self, FunctionEntr
     return prefixes.add(entry);
 }
 
-TypeDefinition::TypeDefinition() : vtable(new struct vtable) {
+TypeDefinition::TypeDefinition() : TypeDefinition(new struct vtable) {}
+
+TypeDefinition::TypeDefinition(struct vtable *vtable) : vtable(vtable) {
     vec_init(vtable);
 }
 
@@ -43,7 +46,8 @@ bool TypeDefinition::isSame(TypeDefinition *other) {
     return this == other;
 }
 
-FunctionTypeDefinition::FunctionTypeDefinition(FunctionTypeDescriptor *descriptor) : descriptor(descriptor) {
+FunctionTypeDefinition::FunctionTypeDefinition(FunctionTypeDescriptor *descriptor)
+        : TypeDefinition(), descriptor(descriptor) {
 
 }
 
@@ -71,7 +75,7 @@ bool FunctionTypeDefinition::isSame(TypeDefinition *other) {
     return false;
 }
 
-ArrayTypeDefinition::ArrayTypeDefinition(TypeDescriptor *element) : element(element) {
+ArrayTypeDefinition::ArrayTypeDefinition(TypeDescriptor *element) : TypeDefinition(), element(element) {
 
 }
 
@@ -87,13 +91,18 @@ bool ArrayTypeDefinition::isSame(TypeDefinition *other) {
     return false;
 }
 
-ScalarTypeDefinition::ScalarTypeDefinition(std::string name) : name(std::move(name)) {}
+ScalarTypeDefinition::ScalarTypeDefinition(std::string name) : TypeDefinition(), name(std::move(name)) {}
+
+ScalarTypeDefinition::ScalarTypeDefinition(std::string name, struct vtable *vtable)
+        : TypeDefinition(vtable), name(std::move(name)) {
+    assert(vtable != nullptr);
+}
 
 bool ScalarTypeDefinition::isSame(TypeDefinition *other) {
     return TypeDefinition::isSame(other);
 }
 
-StructTypeDefinition::StructTypeDefinition(VariablesTable fields) : fields(std::move(fields)) {}
+StructTypeDefinition::StructTypeDefinition(VariablesTable fields) : TypeDefinition(), fields(std::move(fields)) {}
 
 FunctionEntry *
 StructTypeDefinition::addConstructor(ParameterDefinition *self, FunctionEntry *entry) {
@@ -119,7 +128,7 @@ int StructTypeDefinition::getFieldIndex(VariableEntry *entry) {
 InterfaceTypeDefinition::InterfaceTypeDefinition(
         InterfaceTypeDescriptor *descriptor,
         const std::vector<FunctionEntry *> &functions
-) : descriptor(descriptor) {
+) : TypeDefinition(), descriptor(descriptor) {
     for (auto function: functions) {
         this->addFunction(
                 new ParameterDefinition("i", descriptor, true),
@@ -153,7 +162,7 @@ bool InterfaceTypeDefinition::canReceiveType(TypeDefinition *type) {
     return true;
 }
 
-NilTypeDefinition::NilTypeDefinition() = default;
+NilTypeDefinition::NilTypeDefinition() : TypeDefinition() {}
 
 bool NilTypeDefinition::isSame(TypeDefinition *other) {
     return true;

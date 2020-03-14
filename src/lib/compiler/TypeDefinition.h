@@ -22,6 +22,8 @@ public:
 
     TypeDefinition();
 
+    explicit TypeDefinition(struct vtable *vtable);
+
     virtual bool canReceiveType(TypeDefinition *type);
 
     FunctionEntry *addFunction(ParameterDefinition *self, FunctionEntry *entry);
@@ -61,6 +63,8 @@ public:
     std::string name;
 
     explicit ScalarTypeDefinition(std::string name);
+
+    ScalarTypeDefinition(std::string name, struct vtable *vtable);
 
     bool isSame(TypeDefinition *other) override;
 };

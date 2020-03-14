@@ -24,10 +24,10 @@ Risotto::Risotto(unsigned int flags) : flags(flags) {
 Risotto::Risotto() : Risotto(RisottoFlags::None) {}
 
 InterpretResult Risotto::runFile(const std::string &path) {
-   return runFile(path, {});
+    return runFile(path, {});
 }
 
-InterpretResult Risotto::runFile(const std::string &path, const std::vector<std::string>& args) {
+InterpretResult Risotto::runFile(const std::string &path, const std::vector<std::string> &args) {
     std::ifstream ifs(path);
     std::string str((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
 
@@ -38,22 +38,24 @@ InterpretResult Risotto::run(const std::string &str) {
     return run(str, {});
 }
 
-InterpretResult Risotto::run(const std::string &str, const std::vector<std::string>& args) {
+InterpretResult Risotto::run(const std::string &str, const std::vector<std::string> &args) {
     return timing<InterpretResult>("Total", [this, str, args]() {
-        auto tokens = timing<std::vector<Token *>>("Tokenizer", [str]() {
-            auto tokenizer = new Tokenizer(str);
-            return tokenizer->tokenize();
-        });
-
-        if (hasFlag(RisottoFlags::PrintTokens)) {
-            TokensPrinter::print(tokens);
-        }
-
-        return doRun(tokens, args);
+        return doRun(str, args);
     });
 }
 
-InterpretResult Risotto::doRun(const std::vector<Token *> &tokens, const std::vector<std::string>& args) {
+InterpretResult Risotto::doRun(const std::string &str, const std::vector<std::string> &args) {
+    initPrimitives();
+
+    auto tokens = timing<std::vector<Token *>>("Tokenizer", [str]() {
+        auto tokenizer = new Tokenizer(str);
+        return tokenizer->tokenize();
+    });
+
+    if (hasFlag(RisottoFlags::PrintTokens)) {
+        TokensPrinter::print(tokens);
+    }
+
     auto stmts = timing<std::vector<Stmt *>>("Parser", [tokens]() {
         auto parser = new Parser(tokens);
         return parser->program();
@@ -63,8 +65,10 @@ InterpretResult Risotto::doRun(const std::vector<Token *> &tokens, const std::ve
         std::cout << ASTPrinter::print(stmts);
     }
 
-    auto chunk = timing<Chunk>("Compiler", [stmts]() {
-        return Compiler(stmts).compile();
+    const PrimitiveTypes *pt = getPrimitives();
+
+    auto chunk = timing<Chunk>("Compiler", [stmts, pt]() {
+        return Compiler(stmts, pt).compile();
     });
 
     if (hasFlag(RisottoFlags::PrintDisassembled)) {
@@ -85,7 +89,7 @@ InterpretResult Risotto::doRun(const std::vector<Token *> &tokens, const std::ve
     initValueArray(argsa);
     registerObject((Object *) argsa);
 
-    for (const auto& arg: args) {
+    for (const auto &arg: args) {
         writeValueArray(argsa, s2v(arg.c_str()));
     }
 

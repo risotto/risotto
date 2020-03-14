@@ -8,7 +8,7 @@
 
 #include "memory.h"
 #include "value.h"
-#include "vm.h"
+#include "types.h"
 
 void initValueArray(ValueArray *array) {
     array->object.values = NULL;
@@ -33,21 +33,20 @@ void freeValueArray(ValueArray *array) {
     initValueArray(array);
 }
 
-
 Value n2v() {
-    return NEW_VALUE(T_NIL, p, 0);
+    return NEW_VALUE(&getPrimitives()->_nil, p, 0);
 }
 
 Value i2v(int v) {
-    return NEW_VALUE(T_INT, int, v);
+    return NEW_VALUE(&getPrimitives()->_int, int, v);
 }
 
 Value ui2v(unsigned int v) {
-    return NEW_VALUE(T_UINT, uint, v);
+    return NEW_VALUE(&getPrimitives()->_uint, uint, v);
 }
 
 Value b2v(bool v) {
-    return NEW_VALUE(T_BOOL, bool, v);
+    return NEW_VALUE(&getPrimitives()->_bool, bool, v);
 }
 
 Value a2v(ValueArray *v) {
@@ -60,23 +59,23 @@ Value vp2v(Value *v) {
         return vl;
     }
 
-    return NEW_VALUE(T_VALUE_P, p, v);
+    return NEW_VALUE(&getPrimitives()->_value_p, p, v);
 }
 
 Value p2v(void *v) {
-    return NEW_VALUE(T_P, p, v);
+    return NEW_VALUE(&getPrimitives()->_p, p, v);
 }
 
 Value d2v(double v) {
-    return NEW_VALUE(T_DOUBLE, double, v);
+    return NEW_VALUE(&getPrimitives()->_double, double, v);
 }
 
 Value s2v(const char *v) {
-    return NEW_VALUE(T_STR, str, v);
+    return NEW_VALUE(&getPrimitives()->_string, str, v);
 }
 
-Value o2v(Object *v) {
-    return NEW_VALUE(T_OBJECT, p, v);
+Value o2v(Object *v, ValueTypeContainer *tc) {
+    return NEW_VALUE(tc, p, v);
 }
 
 int v2i(Value v) {
@@ -211,7 +210,7 @@ Value copy(Value v) {
 bool typecheck(Value value, ValueType type) {
     ACCESS_REF(value);
 
-    return value.type == type;
+    return TGET(value) == type;
 }
 
 Value accessRef(Value v) {
@@ -220,7 +219,7 @@ Value accessRef(Value v) {
 
 Value *accessRefp(Value *value) {
     Value *v = value;
-    while (v->type == T_VALUE_P) {
+    while (TGETP(v) == T_VALUE_P) {
         v = v->data._p;
     }
 
@@ -231,11 +230,11 @@ bool veq(Value l, Value r) {
     l = accessRef(l);
     r = accessRef(r);
 
-    if (l.type != r.type) {
+    if (TGET(l) != TGET(r)) {
         return false;
     }
 
-    switch (l.type) {
+    switch (TGET(l)) {
         case T_NIL:
             return true;
         case T_UINT:
@@ -261,4 +260,12 @@ bool veq(Value l, Value r) {
         case T_BOOL:
             return DGET(l, bool) == DGET(r, bool);
     }
+}
+
+void set(Value origin, Value *target) {
+    target = accessRefp(target);
+    origin = accessRef(origin);
+
+    target->data = origin.data;
+    target->tc = origin.tc;
 }
