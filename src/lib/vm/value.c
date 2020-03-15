@@ -34,19 +34,19 @@ void freeValueArray(ValueArray *array) {
 }
 
 Value n2v() {
-    return NEW_VALUE(&getPrimitives()->_nil, p, 0);
+    return NEW_VALUE(&primitives._nil, p, 0);
 }
 
 Value i2v(int v) {
-    return NEW_VALUE(&getPrimitives()->_int, int, v);
+    return NEW_VALUE(&primitives._int, int, v);
 }
 
 Value ui2v(unsigned int v) {
-    return NEW_VALUE(&getPrimitives()->_uint, uint, v);
+    return NEW_VALUE(&primitives._uint, uint, v);
 }
 
 Value b2v(bool v) {
-    return NEW_VALUE(&getPrimitives()->_bool, bool, v);
+    return NEW_VALUE(&primitives._bool, bool, v);
 }
 
 Value a2v(ValueArray *v) {
@@ -59,19 +59,19 @@ Value vp2v(Value *v) {
         return vl;
     }
 
-    return NEW_VALUE(&getPrimitives()->_value_p, p, v);
+    return NEW_VALUE(&primitives._value_p, p, v);
 }
 
 Value p2v(void *v) {
-    return NEW_VALUE(&getPrimitives()->_p, p, v);
+    return NEW_VALUE(&primitives._p, p, v);
 }
 
 Value d2v(double v) {
-    return NEW_VALUE(&getPrimitives()->_double, double, v);
+    return NEW_VALUE(&primitives._double, double, v);
 }
 
 Value s2v(const char *v) {
-    return NEW_VALUE(&getPrimitives()->_string, str, v);
+    return NEW_VALUE(&primitives._string, str, v);
 }
 
 Value o2v(Object *v, ValueTypeContainer *tc) {

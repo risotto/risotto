@@ -27,8 +27,8 @@ struct ValueTypeContainer {
 
 typedef PRIMITIVES_STRUCT(ValueTypeContainer) PrimitiveTypes;
 
-void initPrimitives();
+extern PrimitiveTypes primitives;
 
-const PrimitiveTypes *getPrimitives();
+void initPrimitives();
 
 #endif //RISOTTOV2_TYPES_H

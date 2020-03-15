@@ -65,10 +65,8 @@ InterpretResult Risotto::doRun(const std::string &str, const std::vector<std::st
         std::cout << ASTPrinter::print(stmts);
     }
 
-    const PrimitiveTypes *pt = getPrimitives();
-
-    auto chunk = timing<Chunk>("Compiler", [stmts, pt]() {
-        return Compiler(stmts, pt).compile();
+    auto chunk = timing<Chunk>("Compiler", [stmts]() {
+        return Compiler(stmts, &primitives).compile();
     });
 
     if (hasFlag(RisottoFlags::PrintDisassembled)) {

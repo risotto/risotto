@@ -4,7 +4,7 @@
 
 #include <stdio.h>
 #include "value.h"
-#include "vm.c"
+#include "vm.h"
 #include "native_functions.h"
 
 #define str_t const char *

@@ -20,7 +20,3 @@ void initPrimitives() {
 
     primitives = p;
 }
-
-const PrimitiveTypes *getPrimitives() {
-    return &primitives;
-}

@@ -37,6 +37,8 @@ typedef struct {
     const PrimitiveTypes *primitiveTypes;
 } VM;
 
+extern VM vm;
+
 typedef enum {
     INTERPRET_OK,
     INTERPRET_COMPILE_ERROR,
