@@ -100,11 +100,21 @@ static int callInstruction(const char *name, Chunk *chunk, int offset) {
 }
 
 static int newInstruction(const char *name, Chunk *chunk, int offset) {
+    int tcAddr = chunk->code[offset + 1];
+    int c = chunk->code[offset + 2];
+    printf("%-11s VTC: ", name);
+    printValue(chunk->constants.object.values[tcAddr]);
+    printf(" C:%-3d\n", c);
+
+    return offset + 3 + c;
+}
+
+static int arrayInstruction(const char *name, Chunk *chunk, int offset) {
     int vtableAddr = chunk->code[offset + 1];
     int c = chunk->code[offset + 2];
-    printf("%-11s VA: ", name);
+    printf("%-11s C: %-3d VA: ", name, c);
     printValue(chunk->constants.object.values[vtableAddr]);
-    printf(" C:%-3d\n", c);
+    printf("\n");
 
     return offset + 3 + c;
 }
@@ -194,7 +204,7 @@ int disassembleInstruction(Chunk *chunk, int offset) {
         case OP_LOAD_INSTANCE:
             return intInstruction(getName(instruction), chunk, offset);
         case OP_ARRAY:
-            return intInstruction(getName(instruction), chunk, offset);
+            return arrayInstruction(getName(instruction), chunk, offset);
         case OP_CALL:
             return callInstruction(getName(instruction), chunk, offset);
         case OP_POP:

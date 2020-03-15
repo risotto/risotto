@@ -8,6 +8,8 @@
 #include "valuetype.h"
 #include "vtable.h"
 
+#define MALLOC_VTABLE malloc(sizeof(struct vtable))
+
 struct ValueTypeContainer {
     ValueType type;
     struct vtable *vtable;

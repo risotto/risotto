@@ -440,6 +440,7 @@ static InterpretResult run() {
                 break;
             }
             case OP_ARRAY: {
+                ValueTypeContainer *tc = v2p(READ_CONSTANT());
                 int elemsc = READ_BYTE();
 
                 ValueArray *array = malloc(sizeof(*array));
@@ -450,7 +451,7 @@ static InterpretResult run() {
                     writeValueArray(array, pop());
                 }
 
-                push(a2v(array));
+                push(a2v(array, tc));
                 break;
             }
             case OP_TRUE: {

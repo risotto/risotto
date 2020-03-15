@@ -74,7 +74,7 @@ Value b2v(bool b);
 
 Value vp2v(Value *);
 
-Value a2v(ValueArray *);
+Value a2v(ValueArray *, ValueTypeContainer *tc);
 
 void *v2p(Value v);
 

@@ -36,14 +36,26 @@ FunctionEntry *TypeDefinition::addPrefix(ParameterDefinition *self, FunctionEntr
     return prefixes.add(entry);
 }
 
-TypeDefinition::TypeDefinition() : TypeDefinition(new struct vtable) {}
+TypeDefinition::TypeDefinition() {}
 
-TypeDefinition::TypeDefinition(struct vtable *vtable) : vtable(vtable) {
-    vec_init(vtable);
+TypeDefinition::TypeDefinition(const ValueTypeContainer *_vtc) : TypeDefinition() {
+    assert(_vtc != nullptr);
+
+    vtc = _vtc;
 }
 
 bool TypeDefinition::isSame(TypeDefinition *other) {
     return this == other;
+}
+
+const ValueTypeContainer *TypeDefinition::getVTC() {
+    if (vtc == nullptr) {
+        vtc = resolveVTC();
+    }
+
+    assert(vtc != nullptr);
+
+    return vtc;
 }
 
 FunctionTypeDefinition::FunctionTypeDefinition(FunctionTypeDescriptor *descriptor)
@@ -75,9 +87,18 @@ bool FunctionTypeDefinition::isSame(TypeDefinition *other) {
     return false;
 }
 
-ArrayTypeDefinition::ArrayTypeDefinition(TypeDescriptor *element) : TypeDefinition(), element(element) {
+const ValueTypeContainer *FunctionTypeDefinition::resolveVTC() {
+    auto tc = new ValueTypeContainer;
+    tc->type = T_P; // TODO: Change to T_FUNCTION
+    tc->vtable = new vtable;
 
+    vec_init(tc->vtable);
+
+    return tc;
 }
+
+ArrayTypeDefinition::ArrayTypeDefinition(TypeDescriptor *element)
+        : TypeDefinition(), element(element) {}
 
 bool ArrayTypeDefinition::isSame(TypeDefinition *other) {
     if (TypeDefinition::isSame(other)) {
@@ -91,18 +112,29 @@ bool ArrayTypeDefinition::isSame(TypeDefinition *other) {
     return false;
 }
 
-ScalarTypeDefinition::ScalarTypeDefinition(std::string name) : TypeDefinition(), name(std::move(name)) {}
+const ValueTypeContainer *ArrayTypeDefinition::resolveVTC() {
+    auto tc = new ValueTypeContainer;
+    tc->type = T_ARRAY;
+    tc->vtable = new vtable;
 
-ScalarTypeDefinition::ScalarTypeDefinition(std::string name, struct vtable *vtable)
-        : TypeDefinition(vtable), name(std::move(name)) {
-    assert(vtable != nullptr);
+    vec_init(tc->vtable);
+
+    return tc;
 }
+
+ScalarTypeDefinition::ScalarTypeDefinition(std::string name, const ValueTypeContainer *vtc)
+        : TypeDefinition(vtc), name(std::move(name)) {}
 
 bool ScalarTypeDefinition::isSame(TypeDefinition *other) {
     return TypeDefinition::isSame(other);
 }
 
-StructTypeDefinition::StructTypeDefinition(VariablesTable fields) : TypeDefinition(), fields(std::move(fields)) {}
+const ValueTypeContainer *ScalarTypeDefinition::resolveVTC() {
+    throw std::logic_error("ScalarTypeDefinition should have a VTC");
+}
+
+StructTypeDefinition::StructTypeDefinition(VariablesTable fields) :
+        TypeDefinition(), fields(std::move(fields)) {}
 
 FunctionEntry *
 StructTypeDefinition::addConstructor(ParameterDefinition *self, FunctionEntry *entry) {
@@ -123,6 +155,16 @@ int StructTypeDefinition::getFieldIndex(VariableEntry *entry) {
     }
 
     return -1;
+}
+
+const ValueTypeContainer *StructTypeDefinition::resolveVTC() {
+    auto tc = new ValueTypeContainer;
+    tc->type = T_OBJECT;
+    tc->vtable = new vtable;
+
+    vec_init(tc->vtable);
+
+    return tc;
 }
 
 InterfaceTypeDefinition::InterfaceTypeDefinition(
@@ -162,6 +204,10 @@ bool InterfaceTypeDefinition::canReceiveType(TypeDefinition *type) {
     return true;
 }
 
+const ValueTypeContainer *InterfaceTypeDefinition::resolveVTC() {
+    throw std::logic_error("this should not happen");
+}
+
 NilTypeDefinition::NilTypeDefinition() : TypeDefinition() {}
 
 bool NilTypeDefinition::isSame(TypeDefinition *other) {
@@ -169,3 +215,7 @@ bool NilTypeDefinition::isSame(TypeDefinition *other) {
 }
 
 NilTypeDefinition NilTypeDefinition::Def = NilTypeDefinition();
+
+const ValueTypeContainer *NilTypeDefinition::resolveVTC() {
+    return &primitives._nil;
+}

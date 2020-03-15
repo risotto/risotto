@@ -49,8 +49,8 @@ Value b2v(bool v) {
     return NEW_VALUE(&primitives._bool, bool, v);
 }
 
-Value a2v(ValueArray *v) {
-    return NEW_VALUE(T_ARRAY, p, v);
+Value a2v(ValueArray *v, ValueTypeContainer *tc) {
+    return NEW_VALUE(tc, p, v);
 }
 
 Value vp2v(Value *v) {
@@ -194,7 +194,7 @@ Value copy(Value v) {
         return v;
     }
 
-    Value nv = NEW_VALUE(T_NIL, p, 0);
+    Value nv = NEW_VALUE(&primitives._nil, p, 0);
     set(v, &nv);
 
     if (typecheck(nv, T_ARRAY) || typecheck(nv, T_OBJECT)) {

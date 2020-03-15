@@ -18,8 +18,10 @@ NATIVE_FUNCTION(run_gc) {
     gc();
 }
 
+struct ValueTypeContainer argsVTC = (struct ValueTypeContainer) { .type = T_ARRAY, .vtable = NULL };
+
 NATIVE_FUNCTION(args) {
-    ret[0] = a2v(vm.args);
+    ret[0] = a2v(vm.args, &argsVTC);
 }
 
 NATIVE_FUNCTION(panic) {

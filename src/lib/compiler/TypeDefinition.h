@@ -18,11 +18,9 @@ public:
     FunctionsTable operators = FunctionsTable();
     FunctionsTable prefixes = FunctionsTable();
 
-    struct vtable *vtable;
-
     TypeDefinition();
 
-    explicit TypeDefinition(struct vtable *vtable);
+    explicit TypeDefinition(const ValueTypeContainer *vtc);
 
     virtual bool canReceiveType(TypeDefinition *type);
 
@@ -36,8 +34,15 @@ public:
 
     virtual bool isSame(TypeDefinition *other);
 
+    const ValueTypeContainer *getVTC();
+
+    virtual const ValueTypeContainer *resolveVTC() = 0;
+
 protected:
     static void addSelf(ParameterDefinition *self, FunctionEntry *entry);
+
+private:
+    const ValueTypeContainer *vtc = nullptr;
 };
 
 class NilTypeDefinition : public TypeDefinition {
@@ -47,6 +52,8 @@ public:
     NilTypeDefinition();
 
     bool isSame(TypeDefinition *other) override;
+
+    const ValueTypeContainer *resolveVTC() override;
 };
 
 class ArrayTypeDefinition : public TypeDefinition {
@@ -56,17 +63,19 @@ public:
     explicit ArrayTypeDefinition(TypeDescriptor *element);
 
     bool isSame(TypeDefinition *other) override;
+
+    const ValueTypeContainer *resolveVTC() override;
 };
 
 class ScalarTypeDefinition : public TypeDefinition {
 public:
     std::string name;
 
-    explicit ScalarTypeDefinition(std::string name);
-
-    ScalarTypeDefinition(std::string name, struct vtable *vtable);
+    ScalarTypeDefinition(std::string name, const ValueTypeContainer *vtc);
 
     bool isSame(TypeDefinition *other) override;
+
+    const ValueTypeContainer *resolveVTC() override;
 };
 
 class FunctionTypeDefinition : public TypeDefinition {
@@ -78,6 +87,8 @@ public:
     bool canReceiveType(TypeDefinition *type) override;
 
     bool isSame(TypeDefinition *other) override;
+
+    const ValueTypeContainer *resolveVTC() override;
 };
 
 class StructTypeDefinition : public TypeDefinition {
@@ -90,6 +101,8 @@ public:
     FunctionEntry *addConstructor(ParameterDefinition *self, FunctionEntry *entry);
 
     int getFieldIndex(VariableEntry *entry);
+
+    const ValueTypeContainer *resolveVTC() override;
 };
 
 class InterfaceTypeDefinition : public TypeDefinition {
@@ -100,6 +113,8 @@ public:
                                      const std::vector<FunctionEntry *> &functions);
 
     bool canReceiveType(TypeDefinition *type) override;
+
+    const ValueTypeContainer *resolveVTC() override;
 };
 
 #endif //RISOTTOV2_TypeDefinition_H

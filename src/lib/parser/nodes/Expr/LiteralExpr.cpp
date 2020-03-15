@@ -47,17 +47,17 @@ std::vector<ByteResolver *> LiteralExpr::compile(Compiler *compiler) {
             auto v = literalToValue(value);
             auto constAddr = compiler->registerConst(v);
 
-    bytes.push_back(new ByteResolver(OP_CONST, value->position));
-    bytes.push_back(new ByteResolver([constAddr](Compiler *c) { return constAddr; }));
+            bytes.push_back(new ByteResolver(OP_CONST, value->position));
+            bytes.push_back(new ByteResolver([constAddr](Compiler *c) { return constAddr; }));
 
-    return bytes;
+            return bytes;
     }
 }
 
-TypeDescriptor *getTypeDescriptor(Compiler *compiler, const std::string& name) {
-    auto typeDef = compiler->frame->findNamedType(name);
+TypeDescriptor *getTypeDescriptor(Compiler *compiler, const std::string &name) {
+    auto typeDesc = compiler->frame->findNamedType(name);
 
-    return new IdentifierTypeDescriptor(name, typeDef->getTypeDefinition());
+    return new IdentifierTypeDescriptor(name, typeDesc->getTypeDefinition());
 }
 
 ReturnTypes LiteralExpr::computeReturnType(Compiler *compiler) {
@@ -75,7 +75,8 @@ ReturnTypes LiteralExpr::computeReturnType(Compiler *compiler) {
             return getTypeDescriptor(compiler, "string");
         default:
             throw CompilerError("Unhandled type " + std::string(wise_enum::to_string(value->type)));
-    }}
+    }
+}
 
 void LiteralExpr::symbolize(Compiler *compiler) {
     // noop

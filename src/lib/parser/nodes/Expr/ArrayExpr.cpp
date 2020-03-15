@@ -8,6 +8,7 @@ extern "C" {
 #include "ArrayExpr.h"
 #include <utility>
 #include <lib/compiler/Compiler.h>
+#include <assert.h>
 #include "lib/parser/nodes/TypeDescriptor.h"
 #include "lib/compiler/ReturnTypes.h"
 
@@ -23,7 +24,12 @@ std::vector<ByteResolver *> ArrayExpr::compile(Compiler *compiler) {
         bytes.insert(bytes.end(), e.begin(), e.end());
     }
 
+    auto vtc = getReturnType(compiler)[0]->getTypeDefinition()->getVTC();
+
+    auto vtableAddr = compiler->registerConst(p2v((void *) vtc));
+
     bytes.push_back(new ByteResolver(OP_ARRAY, TODO_POSITION));
+    bytes.push_back(new ByteResolver(vtableAddr));
     bytes.push_back(new ByteResolver(static_cast<int>(elements.size())));
 
     return bytes;

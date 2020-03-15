@@ -150,12 +150,12 @@ Compiler::Compiler(std::vector<Stmt *> stmts, const PrimitiveTypes *pt) : stmts(
 
     initChunk(&chunk);
 
-    auto TYPE_ENTRY(int) = frame->types.add(new IdentifierTypeDescriptor("int", new ScalarTypeDefinition("int", pt->_int.vtable)));
+    auto TYPE_ENTRY(int) = frame->types.add(new IdentifierTypeDescriptor("int", new ScalarTypeDefinition("int", &pt->_int)));
     auto TYPE_ENTRY(double) = frame->types.add(
-            new IdentifierTypeDescriptor("double", new ScalarTypeDefinition("double", pt->_double.vtable)));
-    auto TYPE_ENTRY(bool) = frame->types.add(new IdentifierTypeDescriptor("bool", new ScalarTypeDefinition("bool", pt->_bool.vtable)));
+            new IdentifierTypeDescriptor("double", new ScalarTypeDefinition("double", &pt->_double)));
+    auto TYPE_ENTRY(bool) = frame->types.add(new IdentifierTypeDescriptor("bool", new ScalarTypeDefinition("bool", &pt->_bool)));
     auto TYPE_ENTRY(string) = frame->types.add(
-            new IdentifierTypeDescriptor("string", new ScalarTypeDefinition("string", pt->_string.vtable)));
+            new IdentifierTypeDescriptor("string", new ScalarTypeDefinition("string", &pt->_string)));
 
     auto arrayStringDesc = new ArrayTypeDescriptor(TYPE_DESC(string));
     arrayStringDesc->resolveType(typesManager, frame, false);
