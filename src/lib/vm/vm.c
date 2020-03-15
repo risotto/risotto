@@ -36,6 +36,7 @@ static void resetStack() {
 
 void initVM(unsigned int flags, int (*printf)(const char *, ...), ValueArray *args) {
     resetStack();
+    vm.maxstack = vm.stack + STACK_MAX;
     vm.flags = flags;
     vm.numObjects = 0;
     vm.maxObjects = INITIAL_GC_THRESHOLD;
@@ -245,14 +246,14 @@ static InterpretResult run() {
                     printVtable(v);
                 }
 #endif
-                if (v.vtable == NULL) {
+                if (v.tc->vtable == NULL) {
                     ERROR("vtable is null")
                 }
 
                 bool found = false;
                 int i;
                 vtable_entry *entry;
-                vec_foreach_ptr(&v.vtable->addrs, entry, i) {
+                vec_foreach_ptr(&v.tc->vtable->addrs, entry, i) {
                         if (entry->vaddr == vaddr) {
                             push(entry->addr);
                             found = true;
@@ -276,7 +277,7 @@ static InterpretResult run() {
 
                 Value f = accessRef(pop());
 
-                switch (f.type) {
+                switch (TGET(f)) {
                     case T_INT: { // Function
                         int addr = v2i(f);
 
@@ -340,7 +341,7 @@ static InterpretResult run() {
                 int rc = fc.retc;
 
                 Value rvals[rc];
-                for (int i = rc - 1; i >= 0 ; --i) {
+                for (int i = rc - 1; i >= 0; --i) {
                     rvals[i] = copy(pop());
                 }
 
@@ -395,7 +396,7 @@ static InterpretResult run() {
                 break;
             }
             case OP_NEW: {
-                vtable *vtable = v2p(READ_CONSTANT());
+                ValueTypeContainer *tc = v2p(READ_CONSTANT());
                 OP_T size = READ_BYTE();
 
                 Object *instance = malloc(sizeof(*instance));
@@ -408,8 +409,7 @@ static InterpretResult run() {
 
                 registerObject(instance);
 
-                Value ov = o2v(instance);
-                ov.vtable = vtable;
+                Value ov = o2v(instance, tc);
 
                 push(ov);
                 break;
@@ -440,6 +440,7 @@ static InterpretResult run() {
                 break;
             }
             case OP_ARRAY: {
+                ValueTypeContainer *tc = v2p(READ_CONSTANT());
                 int elemsc = READ_BYTE();
 
                 ValueArray *array = malloc(sizeof(*array));
@@ -450,7 +451,7 @@ static InterpretResult run() {
                     writeValueArray(array, pop());
                 }
 
-                push(a2v(array));
+                push(a2v(array, tc));
                 break;
             }
             case OP_TRUE: {
@@ -583,22 +584,12 @@ void loadInstance(int index) {
     push(vp2v(p));
 }
 
-void set(Value origin, Value *target) {
-    target = accessRefp(target);
-    origin = accessRef(origin);
-
-    target->data = origin.data;
-    target->type = origin.type;
-    target->vtable = origin.vtable;
-}
-
 void push(Value value) {
-    if (vm.sp > vm.stack + STACK_MAX - 1) {
+    if (vm.sp > vm.maxstack) {
         ERROR("Stack overflow")
     }
 
-    *vm.sp = value;
-    vm.sp++;
+    *vm.sp++ = value;
 }
 
 void cframe() {

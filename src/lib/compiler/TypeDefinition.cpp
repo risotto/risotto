@@ -8,6 +8,7 @@
 #include <utility>
 #include <lib/parser/nodes/TypeDescriptor.h>
 #include <lib/compiler/utils/Utils.h>
+#include <cassert>
 
 bool TypeDefinition::canReceiveType(TypeDefinition *type) {
     return isSame(type) || isSame(&NilTypeDefinition::Def);
@@ -35,15 +36,30 @@ FunctionEntry *TypeDefinition::addPrefix(ParameterDefinition *self, FunctionEntr
     return prefixes.add(entry);
 }
 
-TypeDefinition::TypeDefinition() : vtable(new struct vtable) {
-    vec_init(vtable);
+TypeDefinition::TypeDefinition() {}
+
+TypeDefinition::TypeDefinition(const ValueTypeContainer *_vtc) : TypeDefinition() {
+    assert(_vtc != nullptr);
+
+    vtc = _vtc;
 }
 
 bool TypeDefinition::isSame(TypeDefinition *other) {
     return this == other;
 }
 
-FunctionTypeDefinition::FunctionTypeDefinition(FunctionTypeDescriptor *descriptor) : descriptor(descriptor) {
+const ValueTypeContainer *TypeDefinition::getVTC() {
+    if (vtc == nullptr) {
+        vtc = resolveVTC();
+    }
+
+    assert(vtc != nullptr);
+
+    return vtc;
+}
+
+FunctionTypeDefinition::FunctionTypeDefinition(FunctionTypeDescriptor *descriptor)
+        : TypeDefinition(), descriptor(descriptor) {
 
 }
 
@@ -71,9 +87,18 @@ bool FunctionTypeDefinition::isSame(TypeDefinition *other) {
     return false;
 }
 
-ArrayTypeDefinition::ArrayTypeDefinition(TypeDescriptor *element) : element(element) {
+const ValueTypeContainer *FunctionTypeDefinition::resolveVTC() {
+    auto tc = new ValueTypeContainer;
+    tc->type = T_P; // TODO: Change to T_FUNCTION
+    tc->vtable = new vtable;
 
+    vec_init(tc->vtable);
+
+    return tc;
 }
+
+ArrayTypeDefinition::ArrayTypeDefinition(TypeDescriptor *element)
+        : TypeDefinition(), element(element) {}
 
 bool ArrayTypeDefinition::isSame(TypeDefinition *other) {
     if (TypeDefinition::isSame(other)) {
@@ -87,13 +112,29 @@ bool ArrayTypeDefinition::isSame(TypeDefinition *other) {
     return false;
 }
 
-ScalarTypeDefinition::ScalarTypeDefinition(std::string name) : name(std::move(name)) {}
+const ValueTypeContainer *ArrayTypeDefinition::resolveVTC() {
+    auto tc = new ValueTypeContainer;
+    tc->type = T_ARRAY;
+    tc->vtable = new vtable;
+
+    vec_init(tc->vtable);
+
+    return tc;
+}
+
+ScalarTypeDefinition::ScalarTypeDefinition(std::string name, const ValueTypeContainer *vtc)
+        : TypeDefinition(vtc), name(std::move(name)) {}
 
 bool ScalarTypeDefinition::isSame(TypeDefinition *other) {
     return TypeDefinition::isSame(other);
 }
 
-StructTypeDefinition::StructTypeDefinition(VariablesTable fields) : fields(std::move(fields)) {}
+const ValueTypeContainer *ScalarTypeDefinition::resolveVTC() {
+    throw std::logic_error("ScalarTypeDefinition should have a VTC");
+}
+
+StructTypeDefinition::StructTypeDefinition(VariablesTable fields) :
+        TypeDefinition(), fields(std::move(fields)) {}
 
 FunctionEntry *
 StructTypeDefinition::addConstructor(ParameterDefinition *self, FunctionEntry *entry) {
@@ -116,10 +157,20 @@ int StructTypeDefinition::getFieldIndex(VariableEntry *entry) {
     return -1;
 }
 
+const ValueTypeContainer *StructTypeDefinition::resolveVTC() {
+    auto tc = new ValueTypeContainer;
+    tc->type = T_OBJECT;
+    tc->vtable = new vtable;
+
+    vec_init(tc->vtable);
+
+    return tc;
+}
+
 InterfaceTypeDefinition::InterfaceTypeDefinition(
         InterfaceTypeDescriptor *descriptor,
         const std::vector<FunctionEntry *> &functions
-) : descriptor(descriptor) {
+) : TypeDefinition(), descriptor(descriptor) {
     for (auto function: functions) {
         this->addFunction(
                 new ParameterDefinition("i", descriptor, true),
@@ -153,10 +204,18 @@ bool InterfaceTypeDefinition::canReceiveType(TypeDefinition *type) {
     return true;
 }
 
-NilTypeDefinition::NilTypeDefinition() = default;
+const ValueTypeContainer *InterfaceTypeDefinition::resolveVTC() {
+    throw std::logic_error("this should not happen");
+}
+
+NilTypeDefinition::NilTypeDefinition() : TypeDefinition() {}
 
 bool NilTypeDefinition::isSame(TypeDefinition *other) {
     return true;
 }
 
 NilTypeDefinition NilTypeDefinition::Def = NilTypeDefinition();
+
+const ValueTypeContainer *NilTypeDefinition::resolveVTC() {
+    return &primitives._nil;
+}

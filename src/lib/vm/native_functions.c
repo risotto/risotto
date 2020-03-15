@@ -4,7 +4,7 @@
 
 #include <stdio.h>
 #include "value.h"
-#include "vm.c"
+#include "vm.h"
 #include "native_functions.h"
 
 #define str_t const char *
@@ -18,8 +18,10 @@ NATIVE_FUNCTION(run_gc) {
     gc();
 }
 
+struct ValueTypeContainer argsVTC = (struct ValueTypeContainer) { .type = T_ARRAY, .vtable = NULL };
+
 NATIVE_FUNCTION(args) {
-    ret[0] = a2v(vm.args);
+    ret[0] = a2v(vm.args, &argsVTC);
 }
 
 NATIVE_FUNCTION(panic) {

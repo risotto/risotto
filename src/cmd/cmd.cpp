@@ -8,7 +8,7 @@ int main(int argc, char *argv[]) {
     cxxopts::Options options(argv[0], "Risotto - YAPL ¯\\_(ツ)_/¯");
 
     options.add_options()
-            ("file", "File name", cxxopts::value<std::string>())
+            ("file", "File name", cxxopts::value<std::string>()->default_value(""))
             ("args", "Arguments", cxxopts::value<std::vector<std::string>>()->default_value(""))
             ("h,help", "Show this screen");
 
@@ -41,7 +41,8 @@ int main(int argc, char *argv[]) {
     auto path = result["file"].as<std::string>();
 
     if (path.empty()) {
-        throw std::logic_error("path must be provided");
+        std::cout << options.help();
+        return 1;
     }
 
     auto flags = (unsigned int) RisottoFlags::None;

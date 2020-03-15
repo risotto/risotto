@@ -49,7 +49,7 @@ public:
 
 
 private:
-    InterpretResult doRun(const std::vector<Token *> &tokens, const std::vector<std::string>& args);
+    InterpretResult doRun(const std::string &str, const std::vector<std::string>& args);
 };
 
 

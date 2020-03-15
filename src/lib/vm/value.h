@@ -7,24 +7,14 @@
 
 #include "common.h"
 #include "../lib/vec/src/vec.h"
+#include "valuetype.h"
 
 #define DGET(value, type) (value).data._##type
-#define TGET(value) (value).type
-#define NEW_VALUE(t, tu, value) (Value) {.type = t, .data={._##tu = value}}
+#define TGET(value) (value).tc->type
+#define VTGET(value) (value).tc->vtable
+#define TGETP(value) (value)->tc->type
+#define NEW_VALUE(_tc, tu, value) (Value) {.tc = _tc, .data={._##tu = value}}
 #define ACCESS_REF(value) value = accessRef(value)
-
-typedef enum {
-    T_NIL,
-    T_UINT,
-    T_INT,
-    T_DOUBLE,
-    T_P,
-    T_STR,
-    T_OBJECT,
-    T_BOOL,
-    T_ARRAY,
-    T_VALUE_P,
-} ValueType;
 
 typedef union {
     unsigned int _uint;
@@ -35,40 +25,16 @@ typedef union {
     bool _bool;
 } ValueData;
 
-typedef struct vtable vtable;
+typedef struct ValueTypeContainer ValueTypeContainer;
 
 typedef struct {
     ValueData data;
-    ValueType type;
-    vtable *vtable;
+    const ValueTypeContainer *tc;
 } Value;
 
 // This is super confusing syntax:
-// Creates a type `NativeFunction` which is a function `NativeFunctionReturn (Value *, int)`
+// Creates a type `NativeFunction` which is a function `void (Value[], int, Value[])`
 typedef void (*NativeFunction)(Value args[], int argsc, Value ret[]);
-
-typedef struct {
-    int vaddr;
-    Value addr;
-} vtable_entry;
-
-typedef vec_t(vtable_entry) vtable_entry_vec_t;
-
-typedef struct {
-    int argc;
-    int retc;
-
-    OP_T *ip;
-    Value *sp;
-    Value *fp;
-} FunctionCall;
-
-typedef vec_t(FunctionCall) function_call_vec_t;
-
-struct vtable {
-    unsigned int size;
-    vtable_entry_vec_t addrs;
-};
 
 typedef struct Object Object;
 
@@ -102,13 +68,13 @@ Value d2v(double v);
 
 Value s2v(const char *v);
 
-Value o2v(Object *v);
+Value o2v(Object *v, struct ValueTypeContainer *tc);
 
 Value b2v(bool b);
 
 Value vp2v(Value *);
 
-Value a2v(ValueArray *);
+Value a2v(ValueArray *, ValueTypeContainer *tc);
 
 void *v2p(Value v);
 
@@ -135,5 +101,7 @@ Value accessRef(Value v);
 Value *accessRefp(Value *v);
 
 bool veq(Value l, Value r);
+
+void set(Value origin, Value *target);
 
 #endif //RISOTTOVM_VALUE_H

@@ -38,11 +38,11 @@ void NewCallExpr::loadArgs(Compiler *compiler, std::vector<ByteResolver *> &byte
 
     auto structTypeDef = getStructTypeDef(compiler);
 
-    auto v = p2v(structTypeDef->vtable);
-    auto vtableAddr = compiler->registerConst(v);
+    auto v = p2v((void *) structTypeDef->getVTC());
+    auto tcAddr = compiler->registerConst(v);
 
     bytes.push_back(new ByteResolver(OP_NEW, identifier->position));
-    bytes.push_back(new ByteResolver(vtableAddr));
+    bytes.push_back(new ByteResolver(tcAddr));
     bytes.push_back(new ByteResolver(structTypeDef->fields.size()));
 }
 

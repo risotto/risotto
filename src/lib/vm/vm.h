@@ -7,6 +7,7 @@
 
 #include "chunk.h"
 #include "value.h"
+#include "types.h"
 
 #define STACK_MAX 256
 #define INITIAL_GC_THRESHOLD 1000
@@ -22,6 +23,7 @@ typedef struct {
     Chunk* chunk;
     OP_T* ip;
     Value stack[STACK_MAX];
+    Value *maxstack;
     Value *sp;
     Value *fp;
     function_call_vec_t fcs;
@@ -32,7 +34,10 @@ typedef struct {
     int maxObjects;
     int (*printf) (const char *, ...);
     ValueArray *args;
+    const PrimitiveTypes *primitiveTypes;
 } VM;
+
+extern VM vm;
 
 typedef enum {
     INTERPRET_OK,
@@ -45,7 +50,6 @@ VM *getVM();
 void freeVM();
 InterpretResult interpret(Chunk* chunk, long addr);
 void loadInstance(int index);
-void set(Value origin, Value *target);
 void push(Value value);
 Value pop();
 Value *popp();

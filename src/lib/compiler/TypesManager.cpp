@@ -151,6 +151,8 @@ void TypesManager::generateVEntries(Compiler *compiler) {
 }
 
 void TypesManager::generateVEntry(Compiler *compiler, TypeDefinition *receiver, FunctionEntry *function) {
+    auto vtc = receiver->getVTC();
+
     Value addr;
     if (auto native = dynamic_cast<NativeFunctionEntry *>(function)) {
         addr = p2v((void *) native->fun);
@@ -167,6 +169,6 @@ void TypesManager::generateVEntry(Compiler *compiler, TypeDefinition *receiver, 
                 .vaddr = vaddr,
                 .addr = addr,
         };
-        vec_push(&receiver->vtable->addrs, entry);
+        vec_push(&vtc->vtable->addrs, entry);
     }
 }

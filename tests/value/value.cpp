@@ -9,5 +9,5 @@ extern "C" {
 }
 
 TEST(Value, Size) {
-    EXPECT_EQ(sizeof(Value), 24);
+    EXPECT_EQ(sizeof(Value), 16);
 }
