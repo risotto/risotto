@@ -270,16 +270,23 @@ static InterpretResult run() {
                 int argc = READ_BYTE(); // args count
                 int retc = READ_BYTE(); // return values count
 
-                bool refs[argc];
-                for (int i = 0; i < argc; ++i) {
-                    refs[i] = (bool) READ_BYTE();
-                }
-
                 Value f = accessRef(pop());
+
+                Value args[argc];
+                for (int i = 0; i < argc; ++i) {
+                    bool ref = (bool) READ_BYTE();
+                    Value *a = vm.sp - i - 1;
+
+                    if (ref == true) {
+                        args[i] = vp2v(a);
+                    } else {
+                        args[i] = copy(*a);
+                    }
+                }
 
                 switch (TGET(f)) {
                     case T_INT: { // Function
-                        int addr = v2i(f);
+                        int addr = DGET(f, int);
 
                         FunctionCall fc = (FunctionCall) {
                                 .argc = argc,
@@ -291,34 +298,20 @@ static InterpretResult run() {
                         vec_push(&vm.fcs, fc);
                         cframe();
 
+                        pushArray(args, argc);
+
                         GOTO(addr);
-
-                        for (int i = 0; i < argc; ++i) {
-                            Value *a = vm.fp - 2 - i;
-
-                            if (refs[i] == true) {
-                                push(vp2v(a));
-                            } else {
-                                push(copy(*a));
-                            }
-                        }
 
                         break;
                     }
                     case T_P: { // Native function
-                        Value args[argc];
-                        for (int i = 0; i < argc; ++i) {
-                            args[i] = pop();
-                        }
+                        NativeFunction fun = DGET(f, p);
 
-                        NativeFunction fun = v2p(f);
+                        Value rvals[retc];
+                        fun(args, argc, rvals);
 
-                        Value returnValues[retc];
-                        fun(args, argc, returnValues);
-
-                        for (int i = 0; i < retc; ++i) {
-                            push(returnValues[i]);
-                        }
+                        vm.sp -= argc;
+                        pushArray(rvals, retc);
 
                         break;
                     }
@@ -338,21 +331,18 @@ static InterpretResult run() {
             }
             case OP_RETURN: {
                 FunctionCall fc = vec_pop(&vm.fcs);
-                int rc = fc.retc;
+                int retc = fc.retc;
 
-                Value rvals[rc];
-                for (int i = rc - 1; i >= 0; --i) {
-                    rvals[i] = copy(pop());
+                Value rvals[retc];
+                for (int i = 1; i <= retc; i++) {
+                    rvals[retc - i] = copy(pop());
                 }
 
                 vm.ip = fc.ip;
-                vm.sp = fc.sp;
+                vm.sp = fc.sp - fc.argc;
                 vm.fp = fc.fp;
 
-                vm.sp -= fc.argc;
-
-                memcpy(vm.sp, rvals, sizeof(Value) * rc);
-                vm.sp += rc;
+                pushArray(rvals, retc);
 
                 break;
             }
@@ -572,24 +562,14 @@ InterpretResult interpret(Chunk *chunk, long addr) {
 void loadInstance(int index) {
     Object *array = v2o(pop());
 
-    unsigned int offset;
+    unsigned int offset = index;
     if (index < 0) {
-        offset = index + array->size;
-    } else {
-        offset = index;
+        offset += array->size;
     }
 
     Value *p = array->values + offset;
 
     push(vp2v(p));
-}
-
-void push(Value value) {
-    if (vm.sp > vm.maxstack) {
-        ERROR("Stack overflow")
-    }
-
-    *vm.sp++ = value;
 }
 
 void cframe() {
@@ -602,8 +582,21 @@ void dframe() {
     vm.fp = v2p(pop());
 }
 
-Value pop() {
-    return *popp();
+void pushArray(Value array[], unsigned int length) {
+    if (vm.sp + length > vm.maxstack) {
+        ERROR("Stack overflow")
+    }
+
+    memcpy(vm.sp, array, sizeof(Value) * length);
+    vm.sp += length;
+}
+
+void push(Value value) {
+    if (vm.sp > vm.maxstack) {
+        ERROR("Stack overflow")
+    }
+
+    *vm.sp++ = value;
 }
 
 Value *popp() {
@@ -612,4 +605,8 @@ Value *popp() {
     }
 
     return --vm.sp;
+}
+
+Value pop() {
+    return *popp();
 }

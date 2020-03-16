@@ -34,7 +34,6 @@ typedef struct {
     int maxObjects;
     int (*printf) (const char *, ...);
     ValueArray *args;
-    const PrimitiveTypes *primitiveTypes;
 } VM;
 
 extern VM vm;
@@ -51,6 +50,7 @@ void freeVM();
 InterpretResult interpret(Chunk* chunk, long addr);
 void loadInstance(int index);
 void push(Value value);
+void pushArray(Value array[], unsigned int length);
 Value pop();
 Value *popp();
 
