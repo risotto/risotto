@@ -10,7 +10,9 @@
 #include "../lib/vec/src/vec.h"
 
 #ifdef DEBUG_TRACE_EXECUTION
+
 #include "debug.h"
+
 #endif
 
 #ifdef BENCHMARK_TIMINGS
@@ -151,8 +153,16 @@ case TARGET(code): { \
     VM_BINARY_EQ(OP_##t##LT, f, <) \
     VM_BINARY_EQ(OP_##t##GT, f, >)
 
-static void prenext() {
+
 #ifdef DEBUG_TRACE_EXECUTION
+
+static void trace() {
+    bool traceExec = hasFlag(TraceExecution);
+
+    if (!traceExec) {
+        return;
+    }
+
     printf("             ");
     for (Value *slot = vm.stack; slot < vm.sp; slot++) {
         if (vm.fp == slot) {
@@ -171,25 +181,109 @@ static void prenext() {
     printf("\n");
 
     disassembleInstruction(vm.chunk, (int) (vm.ip - vm.chunk->code));
-#endif
 }
 
-#define TARGET(op) \
-op: \
-OP_LABEL(op)
+#endif
 
-#define OP_LABEL(op) label_vm_##op
+#ifdef BENCHMARK_TIMINGS
+typedef struct {
+    unsigned long long timings[LastOpCode + 1];
+    unsigned long long timingsc[LastOpCode + 1];
+    unsigned long long opsc;
 
-//#define NEXT() prenext(); break
-#define NEXT() goto *addrs[READ_BYTE()];
+    struct timespec tstart;
+    struct timespec tend;
+} BenchmarkData;
 
-#define OP_LABEL_ADDR(op) &&OP_LABEL(op),
+static void benchmarkPrint(BenchmarkData *b) {
+    bool benchmarkExec = hasFlag(BenchmarkExecution);
 
-static __attribute__((__noinline__, __noclone__)) InterpretResult run() {
+    if (!benchmarkExec) {
+        return;
+    }
+
+    printf("\n======================= TIMINGS =======================\n");
+    unsigned long long tt = 0;
+    for (int k = 0; k <= LastOpCode; ++k) {
+        tt += b->timings[k];
+    }
+
+    for (int k = 0; k <= LastOpCode; ++k) {
+        unsigned long long t = b->timings[k];
+        unsigned long c = b->timingsc[k];
+
+        if (c > 0) {
+            printf(
+                    "%-3u - %-14s C: %-13lu AT: %-5llu (%-5.2Lf%%) TT: %-13llu \n",
+                    k,
+                    getName(k),
+                    c,
+                    t / c,
+                    ((long double) t / tt) * 100,
+                    t
+            );
+        }
+    }
+    printf("\n");
+    printf("Total ops: %llu\n", b->opsc);
+    printf("C: Count - AT: Average Time - TT: Total Time\n");
+    printf("=======================================================\n");
+}
+
+static void benchmarkRuntime(BenchmarkData *b, OP_T opcode) {
+    bool benchmarkExec = hasFlag(BenchmarkExecution);
+
+    if (!benchmarkExec) {
+        return;
+    }
+
+    if (b->opsc > 0) {
+        clock_gettime(CLOCK_MONOTONIC, &b->tend);
+
+        b->timings[opcode] += nanosec(b->tend) - nanosec(b->tstart);
+        b->timingsc[opcode]++;
+    }
+
+    clock_gettime(CLOCK_MONOTONIC, &b->tstart);
+    b->opsc++;
+}
+
+#endif
+
+#ifdef USE_COMPUTED_GOTO
+    #define OP_LABEL(op) label_vm_##op
+    #define OP_LABEL_ADDR(op) &&OP_LABEL(op),
+    #define TARGET(op) op: OP_LABEL(op)
+    #define NEXT_GOTO() goto *addrs[READ_BYTE()]
+
+    #ifdef RISOTTO_DEBUG_LIB
+        #define NEXT() goto next_opcode
+    #else
+        #define NEXT() NEXT_GOTO()
+    #endif
+#else
+    #define TARGET(op) op
+    #ifdef RISOTTO_DEBUG_LIB
+        #define NEXT() goto next_opcode
+    #else
+        #define NEXT() break
+    #endif
+#endif
+
+static InterpretResult run() {
+#ifdef USE_COMPUTED_GOTO
     static const void *addrs[] = {OPCODES(OP_LABEL_ADDR)};
+#endif
 
+#ifdef BENCHMARK_TIMINGS
+    BenchmarkData benchmarkData = {};
+#endif
+
+    OP_T instruction;
+
+    main_loop:
     for (;;) {
-        OP_T instruction = READ_BYTE();
+        instruction = READ_BYTE();
 
         switch (instruction) {
             case TARGET(OP_CONST):
@@ -219,7 +313,7 @@ static __attribute__((__noinline__, __noclone__)) InterpretResult run() {
             case TARGET(OP_JUMPF):
             {
                 OP_T addr = READ_BYTE();
-                int b = v2b(pop());
+                bool b = v2b(pop());
 
                 if (b == false) {
                     GOTO(addr);
@@ -254,7 +348,7 @@ static __attribute__((__noinline__, __noclone__)) InterpretResult run() {
             }
             case TARGET(OP_CALL):
             {
-                { // Forces static variables to go out of scope
+                { // Forces VLA in different scope than goto
                     int argc = READ_BYTE(); // args count
                     int retc = READ_BYTE(); // return values count
 
@@ -304,9 +398,7 @@ static __attribute__((__noinline__, __noclone__)) InterpretResult run() {
                             Value returnValues[retc];
                             fun(args, argc, returnValues);
 
-                            for (int i = 0; i < retc; ++i) {
-                                push(returnValues[i]);
-                            }
+                            pushm(returnValues, retc);
 
                             break;
                         }
@@ -329,7 +421,7 @@ static __attribute__((__noinline__, __noclone__)) InterpretResult run() {
             }
             case TARGET(OP_RETURN):
             {
-                {
+                { // Forces VLA in different scope than goto
                     FunctionCall fc = vec_pop(&vm.fcs);
                     int rc = fc.retc;
 
@@ -524,6 +616,10 @@ static __attribute__((__noinline__, __noclone__)) InterpretResult run() {
             }
             case TARGET(OP_END):
             {
+#ifdef BENCHMARK_TIMINGS
+                benchmarkPrint(&benchmarkData);
+#endif
+
                 return INTERPRET_OK;
             }
             default:
@@ -531,6 +627,19 @@ static __attribute__((__noinline__, __noclone__)) InterpretResult run() {
                 return INTERPRET_RUNTIME_ERROR;
         }
     }
+
+#ifdef RISOTTO_DEBUG_LIB
+    next_opcode:
+    {
+#ifdef DEBUG_TRACE_EXECUTION
+        trace();
+#endif
+#ifdef BENCHMARK_TIMINGS
+        benchmarkRuntime(&benchmarkData, instruction);
+#endif
+        goto main_loop;
+    };
+#endif
 }
 
 InterpretResult interpret(Chunk *chunk, long addr) {

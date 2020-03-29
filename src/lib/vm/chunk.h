@@ -57,15 +57,15 @@
     X(OP_B_SHIFTR) \
     X(OP_B_NOT) \
     X(OP_I2D) \
-    X(OP_D2I) \
+    X(OP_D2I)
 
 #define OPCODE_ENUM(X) X,
 
 typedef enum {
     OPCODES(OPCODE_ENUM)
-
-    Last = OP_D2I,
 } OpCode;
+
+#define LastOpCode OP_D2I
 
 typedef struct {
     int count;
