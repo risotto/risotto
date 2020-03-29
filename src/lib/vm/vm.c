@@ -123,15 +123,15 @@ void gc() {
 }
 
 #define VM_BINARY(code, f, rf, op) \
-case code: { \
+case TARGET(code): { \
     Value l = pop(); \
     Value r = pop(); \
     push(rf##2v(v2##f(l) op v2##f(r))); \
-    break; \
+    NEXT(); \
 }
 
 #define VM_BINARY_EQ(code, f, op) \
-case code: { \
+case TARGET(code): { \
     OP_T eq = READ_BYTE(); \
     Value l = pop(); \
     Value r = pop(); \
@@ -140,7 +140,7 @@ case code: { \
     } else { \
         push(b2v(v2##f(l) op v2##f(r))); \
     }\
-    break; \
+    NEXT(); \
 }
 
 #define VM_MATH_OPS(t, f) \
@@ -151,101 +151,87 @@ case code: { \
     VM_BINARY_EQ(OP_##t##LT, f, <) \
     VM_BINARY_EQ(OP_##t##GT, f, >)
 
-static InterpretResult run() {
-#ifdef BENCHMARK_TIMINGS
-    bool benchmarkExec = hasFlag(BenchmarkExecution);
-
-    unsigned long long timings[Last + 1];
-    unsigned long long timingsc[Last + 1];
-    unsigned long long opsc = 0;
-
-    for (int m = 0; m <= Last; ++m) {
-        timings[m] = 0;
-        timingsc[m] = 0;
-    }
-
-    struct timespec tstart;
-    struct timespec tend;
-#endif
-
+static void prenext() {
 #ifdef DEBUG_TRACE_EXECUTION
-    bool traceExec = hasFlag(TraceExecution);
+    printf("             ");
+    for (Value *slot = vm.stack; slot < vm.sp; slot++) {
+        if (vm.fp == slot) {
+            printf("#");
+        }
+
+        printf("[ ");
+        printValue(*slot);
+        printf(" ]");
+    }
+    long _ip = vm.ip - vm.chunk->code;
+    long _sp = vm.sp - vm.stack;
+    long _fp = vm.fp - vm.stack;
+
+    printf(" IP: %lu SP: %lu FP: %lu", _ip, _sp, _fp);
+    printf("\n");
+
+    disassembleInstruction(vm.chunk, (int) (vm.ip - vm.chunk->code));
 #endif
+}
+
+#define TARGET(op) \
+op: \
+OP_LABEL(op)
+
+#define OP_LABEL(op) label_vm_##op
+
+//#define NEXT() prenext(); break
+#define NEXT() goto *addrs[READ_BYTE()];
+
+#define OP_LABEL_ADDR(op) &&OP_LABEL(op),
+
+static __attribute__((__noinline__, __noclone__)) InterpretResult run() {
+    static const void *addrs[] = {OPCODES(OP_LABEL_ADDR)};
 
     for (;;) {
-#ifdef DEBUG_TRACE_EXECUTION
-        if (traceExec) {
-            printf("             ");
-            for (Value *slot = vm.stack; slot < vm.sp; slot++) {
-                if (vm.fp == slot) {
-                    printf("#");
-                }
-
-                printf("[ ");
-                printValue(*slot);
-                printf(" ]");
-            }
-            long _ip = vm.ip - vm.chunk->code;
-            long _sp = vm.sp - vm.stack;
-            long _fp = vm.fp - vm.stack;
-
-            printf(" IP: %lu SP: %lu FP: %lu", _ip, _sp, _fp);
-            printf("\n");
-
-            disassembleInstruction(vm.chunk, (int) (vm.ip - vm.chunk->code));
-        }
-#endif
-
         OP_T instruction = READ_BYTE();
 
-#ifdef BENCHMARK_TIMINGS
-        if (benchmarkExec) {
-            clock_gettime(CLOCK_MONOTONIC, &tstart);
-            opsc++;
-        }
-#endif
-
         switch (instruction) {
-            case OP_CONST: {
+            case TARGET(OP_CONST):
+            {
                 Value constant = READ_CONSTANT();
                 push(constant);
-                break;
+                NEXT();
             }
-            case OP_JUMP: {
+            case TARGET(OP_JUMP):
+            {
                 OP_T addr = READ_BYTE();
 
                 GOTO(addr);
 
-                break;
+                NEXT();
             }
-            case OP_JUMPT: {
+            case TARGET(OP_JUMPT):
+            {
                 OP_T addr = READ_BYTE();
                 bool b = v2b(pop());
 
                 if (b == true) {
                     GOTO(addr);
                 }
-                break;
+                NEXT();
             }
-            case OP_JUMPF: {
+            case TARGET(OP_JUMPF):
+            {
                 OP_T addr = READ_BYTE();
                 int b = v2b(pop());
 
                 if (b == false) {
                     GOTO(addr);
                 }
-                break;
+                NEXT();
             }
-            case OP_RESOLVE_ADDR: {
+            case TARGET(OP_RESOLVE_ADDR):
+            {
                 OP_T vaddr = READ_BYTE();
 
                 Value v = accessRef(pop());
 
-#ifdef DEBUG_TRACE_EXECUTION
-                if (traceExec) {
-                    printVtable(v);
-                }
-#endif
                 if (v.tc->vtable == NULL) {
                     ERROR("vtable is null")
                 }
@@ -264,115 +250,124 @@ static InterpretResult run() {
                 if (!found) {
                     ERROR("Unable to find addr")
                 }
-                break;
+                NEXT();
             }
-            case OP_CALL: {
-                int argc = READ_BYTE(); // args count
-                int retc = READ_BYTE(); // return values count
+            case TARGET(OP_CALL):
+            {
+                { // Forces static variables to go out of scope
+                    int argc = READ_BYTE(); // args count
+                    int retc = READ_BYTE(); // return values count
 
-                bool refs[argc];
-                for (int i = 0; i < argc; ++i) {
-                    refs[i] = (bool) READ_BYTE();
-                }
+                    bool refs[argc];
+                    for (int i = 0; i < argc; ++i) {
+                        refs[i] = (bool) READ_BYTE();
+                    }
 
-                Value f = accessRef(pop());
+                    Value f = accessRef(pop());
 
-                switch (TGET(f)) {
-                    case T_INT: { // Function
-                        int addr = v2i(f);
+                    switch (TGET(f)) {
+                        case T_INT: { // Function
+                            int addr = v2i(f);
 
-                        FunctionCall fc = (FunctionCall) {
-                                .argc = argc,
-                                .retc = retc,
-                                .ip = vm.ip,
-                                .fp = vm.fp,
-                                .sp = vm.sp,
-                        };
-                        vec_push(&vm.fcs, fc);
-                        cframe();
+                            FunctionCall fc = (FunctionCall) {
+                                    .argc = argc,
+                                    .retc = retc,
+                                    .ip = vm.ip,
+                                    .fp = vm.fp,
+                                    .sp = vm.sp,
+                            };
+                            vec_push(&vm.fcs, fc);
+                            cframe();
 
-                        GOTO(addr);
+                            GOTO(addr);
 
-                        for (int i = 0; i < argc; ++i) {
-                            Value *a = vm.fp - 2 - i;
+                            for (int i = 0; i < argc; ++i) {
+                                Value *a = vm.fp - 2 - i;
 
-                            if (refs[i] == true) {
-                                push(vp2v(a));
-                            } else {
-                                push(copy(*a));
+                                if (refs[i] == true) {
+                                    push(vp2v(a));
+                                } else {
+                                    push(copy(*a));
+                                }
                             }
-                        }
 
-                        break;
+                            break;
+                        }
+                        case T_P: { // Native function
+                            Value args[argc];
+                            for (int i = 0; i < argc; ++i) {
+                                args[i] = pop();
+                            }
+
+                            NativeFunction fun = v2p(f);
+
+                            Value returnValues[retc];
+                            fun(args, argc, returnValues);
+
+                            for (int i = 0; i < retc; ++i) {
+                                push(returnValues[i]);
+                            }
+
+                            break;
+                        }
+                        default:
+                        ERROR("Unhandled function type")
                     }
-                    case T_P: { // Native function
-                        Value args[argc];
-                        for (int i = 0; i < argc; ++i) {
-                            args[i] = pop();
-                        }
-
-                        NativeFunction fun = v2p(f);
-
-                        Value returnValues[retc];
-                        fun(args, argc, returnValues);
-
-                        for (int i = 0; i < retc; ++i) {
-                            push(returnValues[i]);
-                        }
-
-                        break;
-                    }
-                    default:
-                    ERROR("Unhandled function type")
                 }
 
-                break;
+                NEXT();
             }
-            case OP_FRAME: {
+            case TARGET(OP_FRAME):
+            {
                 cframe();
-                break;
+                NEXT();
             }
-            case OP_FRAME_END: {
+            case TARGET(OP_FRAME_END):
+            {
                 dframe();
-                break;
+                NEXT();
             }
-            case OP_RETURN: {
-                FunctionCall fc = vec_pop(&vm.fcs);
-                int rc = fc.retc;
+            case TARGET(OP_RETURN):
+            {
+                {
+                    FunctionCall fc = vec_pop(&vm.fcs);
+                    int rc = fc.retc;
 
-                Value rvals[rc];
-                for (int i = rc - 1; i >= 0; --i) {
-                    rvals[i] = copy(pop());
+                    Value rvals[rc];
+                    for (int i = rc - 1; i >= 0; --i) {
+                        rvals[i] = copy(pop());
+                    }
+
+                    vm.ip = fc.ip;
+                    vm.sp = fc.sp;
+                    vm.fp = fc.fp;
+
+                    vm.sp -= fc.argc;
+
+                    pushm(rvals, rc);
                 }
-
-                vm.ip = fc.ip;
-                vm.sp = fc.sp;
-                vm.fp = fc.fp;
-
-                vm.sp -= fc.argc;
-
-                memcpy(vm.sp, rvals, sizeof(Value) * rc);
-                vm.sp += rc;
-
-                break;
+                NEXT();
             }
-            case OP_LOAD: {
+            case TARGET(OP_LOAD):
+            {
                 OP_T addr = READ_BYTE();
 
                 Value *vp = vm.fp + addr;
 
                 push(vp2v(vp));
-                break;
+                NEXT();
             }
-            case OP_LOAD_STACK: {
+            case TARGET(OP_LOAD_STACK):
+            {
                 OP_T addr = READ_BYTE();
 
                 Value *v = vm.sp - 1 - addr;
 
                 push(vp2v(v));
-                break;
+                NEXT();
             }
-            case OP_LOAD_LOCAL: {
+            case TARGET(OP_LOAD_LOCAL):
+            {
                 OP_T dist = READ_BYTE();
                 OP_T addr = READ_BYTE();
 
@@ -388,14 +383,16 @@ static InterpretResult run() {
                 assert(vp >= vm.stack);
 
                 push(vp2v(vp));
-                break;
+                NEXT();
             }
-            case OP_LOAD_INSTANCE: {
+            case TARGET(OP_LOAD_INSTANCE):
+            {
                 OP_T addr = READ_BYTE();
                 loadInstance(addr);
-                break;
+                NEXT();
             }
-            case OP_NEW: {
+            case TARGET(OP_NEW):
+            {
                 ValueTypeContainer *tc = v2p(READ_CONSTANT());
                 OP_T size = READ_BYTE();
 
@@ -412,34 +409,39 @@ static InterpretResult run() {
                 Value ov = o2v(instance, tc);
 
                 push(ov);
-                break;
+                NEXT();
             }
-            case OP_SET: {
+            case TARGET(OP_SET):
+            {
                 Value o = pop();
                 Value *t = vm.sp - 1;
 
                 set(o, t);
 
-                break;
+                NEXT();
             }
-            case OP_POP: {
+            case TARGET(OP_POP):
+            {
                 int n = READ_BYTE();
 
                 for (int i = 0; i < n; ++i) {
                     popp();
                 }
 
-                break;
+                NEXT();
             }
-            case OP_COPY: {
+            case TARGET(OP_COPY):
+            {
                 push(copy(pop()));
-                break;
+                NEXT();
             }
-            case OP_NIL: {
+            case TARGET(OP_NIL):
+            {
                 push(n2v());
-                break;
+                NEXT();
             }
-            case OP_ARRAY: {
+            case TARGET(OP_ARRAY):
+            {
                 ValueTypeContainer *tc = v2p(READ_CONSTANT());
                 int elemsc = READ_BYTE();
 
@@ -452,41 +454,47 @@ static InterpretResult run() {
                 }
 
                 push(a2v(array, tc));
-                break;
+                NEXT();
             }
-            case OP_TRUE: {
+            case TARGET(OP_TRUE):
+            {
                 push(b2v(true));
-                break;
+                NEXT();
             }
-            case OP_FALSE: {
+            case TARGET(OP_FALSE):
+            {
                 push(b2v(false));
-                break;
+                NEXT();
             }
-            case OP_EQ_NIL: {
+            case TARGET(OP_EQ_NIL):
+            {
                 Value v = accessRef(pop());
 
                 push(b2v(typecheck(v, T_NIL)));
-                break;
+                NEXT();
             }
-            case OP_NEQ_NIL: {
+            case TARGET(OP_NEQ_NIL):
+            {
                 Value v = accessRef(pop());
 
                 push(b2v(!typecheck(v, T_NIL)));
-                break;
+                NEXT();
             }
-            case OP_EQ: {
+            case TARGET(OP_EQ):
+            {
                 Value l = accessRef(pop());
                 Value r = accessRef(pop());
 
                 push(b2v(veq(l, r)));
-                break;
+                NEXT();
             }
-            case OP_NEQ: {
+            case TARGET(OP_NEQ):
+            {
                 Value l = accessRef(pop());
                 Value r = accessRef(pop());
 
                 push(b2v(!veq(l, r)));
-                break;
+                NEXT();
             }
             VM_MATH_OPS(I, i)
             VM_BINARY(OP_IMOD, i, i, %)
@@ -496,68 +504,32 @@ static InterpretResult run() {
             VM_BINARY(OP_B_XOR, i, i, ^)
             VM_BINARY(OP_B_SHIFTL, i, i, <<)
             VM_BINARY(OP_B_SHIFTR, i, i, >>)
-            case OP_B_NOT: {
+            case TARGET(OP_B_NOT):
+            {
                 Value l = pop();
                 push(i2v(~v2i(l)));
-                break;
+                NEXT();
             }
-            case OP_I2D: {
+            case TARGET(OP_I2D):
+            {
                 Value l = pop();
                 push(d2v(v2i(l)));
-                break;
+                NEXT();
             }
-            case OP_D2I: {
+            case TARGET(OP_D2I):
+            {
                 Value l = pop();
                 push(i2v(v2d(l)));
-                break;
+                NEXT();
             }
-            case OP_END: {
-#ifdef BENCHMARK_TIMINGS
-                if (benchmarkExec) {
-                    printf("\n======================= TIMINGS =======================\n");
-                    unsigned long long tt = 0;
-                    for (int k = 0; k <= Last; ++k) {
-                        tt += timings[k];
-                    }
-
-                    for (int k = 0; k <= Last; ++k) {
-                        unsigned long long t = timings[k];
-                        unsigned long c = timingsc[k];
-
-                        if (c > 0) {
-                            printf(
-                                    "%-3u - %-14s C: %-13lu AT: %-5llu (%-5.2Lf%%) TT: %-13llu \n",
-                                    k,
-                                    getName(k),
-                                    c,
-                                    t / c,
-                                    ((long double) t / tt) * 100,
-                                    t
-                            );
-                        }
-                    }
-                    printf("\n");
-                    printf("Total ops: %llu\n", opsc);
-                    printf("C: Count - AT: Average Time - TT: Total Time\n");
-                    printf("=======================================================\n");
-                }
-#endif
+            case TARGET(OP_END):
+            {
                 return INTERPRET_OK;
             }
             default:
                 printf("Unknown op code: %d \n", instruction);
                 return INTERPRET_RUNTIME_ERROR;
         }
-
-#ifdef BENCHMARK_TIMINGS
-        if (benchmarkExec) {
-            clock_gettime(CLOCK_MONOTONIC, &tend);
-
-            timings[instruction] += nanosec(tend) - nanosec(tstart);
-            timingsc[instruction]++;
-        }
-#endif
-
     }
 }
 
@@ -590,6 +562,15 @@ void push(Value value) {
     }
 
     *vm.sp++ = value;
+}
+
+void pushm(Value *values, unsigned int length) {
+    if (vm.sp + length > vm.maxstack) {
+        ERROR("Stack overflow")
+    }
+
+    memcpy(vm.sp, values, sizeof(Value) * length);
+    vm.sp += length;
 }
 
 void cframe() {

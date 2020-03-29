@@ -51,6 +51,7 @@ void freeVM();
 InterpretResult interpret(Chunk* chunk, long addr);
 void loadInstance(int index);
 void push(Value value);
+void pushm(Value *values, unsigned int length);
 Value pop();
 Value *popp();
 
