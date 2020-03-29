@@ -7,22 +7,12 @@
 #include <stdio.h>
 #include <assert.h>
 #include "value.h"
-#include "../lib/vec/src/vec.h"
 
 #ifdef DEBUG_TRACE_EXECUTION
-
-#include "debug.h"
-
+#include "trace.h"
 #endif
-
 #ifdef BENCHMARK_TIMINGS
-
-#include <time.h>
-
-unsigned long long nanosec(struct timespec t) {
-    return (t.tv_sec * 1000000000) + t.tv_nsec;
-}
-
+#include "benchmark.h"
 #endif
 
 #define READ_BYTE() (*vm.ip++)
@@ -153,103 +143,6 @@ case TARGET(code): { \
     VM_BINARY_EQ(OP_##t##LT, f, <) \
     VM_BINARY_EQ(OP_##t##GT, f, >)
 
-
-#ifdef DEBUG_TRACE_EXECUTION
-
-static void trace() {
-    bool traceExec = hasFlag(TraceExecution);
-
-    if (!traceExec) {
-        return;
-    }
-
-    printf("             ");
-    for (Value *slot = vm.stack; slot < vm.sp; slot++) {
-        if (vm.fp == slot) {
-            printf("#");
-        }
-
-        printf("[ ");
-        printValue(*slot);
-        printf(" ]");
-    }
-    long _ip = vm.ip - vm.chunk->code;
-    long _sp = vm.sp - vm.stack;
-    long _fp = vm.fp - vm.stack;
-
-    printf(" IP: %lu SP: %lu FP: %lu", _ip, _sp, _fp);
-    printf("\n");
-
-    disassembleInstruction(vm.chunk, (int) (vm.ip - vm.chunk->code));
-}
-
-#endif
-
-#ifdef BENCHMARK_TIMINGS
-typedef struct {
-    unsigned long long timings[LastOpCode + 1];
-    unsigned long long timingsc[LastOpCode + 1];
-    unsigned long long opsc;
-
-    struct timespec tstart;
-    struct timespec tend;
-} BenchmarkData;
-
-static void benchmarkPrint(BenchmarkData *b) {
-    bool benchmarkExec = hasFlag(BenchmarkExecution);
-
-    if (!benchmarkExec) {
-        return;
-    }
-
-    printf("\n======================= TIMINGS =======================\n");
-    unsigned long long tt = 0;
-    for (int k = 0; k <= LastOpCode; ++k) {
-        tt += b->timings[k];
-    }
-
-    for (int k = 0; k <= LastOpCode; ++k) {
-        unsigned long long t = b->timings[k];
-        unsigned long c = b->timingsc[k];
-
-        if (c > 0) {
-            printf(
-                    "%-3u - %-14s C: %-13lu AT: %-5llu (%-5.2Lf%%) TT: %-13llu \n",
-                    k,
-                    getName(k),
-                    c,
-                    t / c,
-                    ((long double) t / tt) * 100,
-                    t
-            );
-        }
-    }
-    printf("\n");
-    printf("Total ops: %llu\n", b->opsc);
-    printf("C: Count - AT: Average Time - TT: Total Time\n");
-    printf("=======================================================\n");
-}
-
-static void benchmarkRuntime(BenchmarkData *b, OP_T opcode) {
-    bool benchmarkExec = hasFlag(BenchmarkExecution);
-
-    if (!benchmarkExec) {
-        return;
-    }
-
-    if (b->opsc > 0) {
-        clock_gettime(CLOCK_MONOTONIC, &b->tend);
-
-        b->timings[opcode] += nanosec(b->tend) - nanosec(b->tstart);
-        b->timingsc[opcode]++;
-    }
-
-    clock_gettime(CLOCK_MONOTONIC, &b->tstart);
-    b->opsc++;
-}
-
-#endif
-
 #ifdef USE_COMPUTED_GOTO
     #define OP_LABEL(op) label_vm_##op
     #define OP_LABEL_ADDR(op) &&OP_LABEL(op),
@@ -257,13 +150,16 @@ static void benchmarkRuntime(BenchmarkData *b, OP_T opcode) {
     #define NEXT_GOTO() goto *addrs[READ_BYTE()]
 
     #ifdef RISOTTO_DEBUG_LIB
+        #define NEXT_INTERNAL() NEXT_GOTO()
         #define NEXT() goto next_opcode
     #else
         #define NEXT() NEXT_GOTO()
     #endif
 #else
     #define TARGET(op) op
+
     #ifdef RISOTTO_DEBUG_LIB
+        #define NEXT_INTERNAL() goto main_loop
         #define NEXT() goto next_opcode
     #else
         #define NEXT() break
@@ -279,11 +175,9 @@ static InterpretResult run() {
     BenchmarkData benchmarkData = {};
 #endif
 
-    OP_T instruction;
-
     main_loop:
     for (;;) {
-        instruction = READ_BYTE();
+        OP_T instruction = READ_BYTE();
 
         switch (instruction) {
             case TARGET(OP_CONST):
@@ -628,17 +522,18 @@ static InterpretResult run() {
         }
     }
 
+    // Debug next opcode, allows for interception
 #ifdef RISOTTO_DEBUG_LIB
     next_opcode:
     {
 #ifdef DEBUG_TRACE_EXECUTION
-        trace();
+        printTrace();
 #endif
 #ifdef BENCHMARK_TIMINGS
-        benchmarkRuntime(&benchmarkData, instruction);
+        benchmarkRuntime(&benchmarkData);
 #endif
-        goto main_loop;
-    };
+        NEXT_INTERNAL();
+    }
 #endif
 }
 
