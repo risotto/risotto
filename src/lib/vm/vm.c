@@ -450,7 +450,7 @@ static __attribute__((__noinline__, __noclone__)) InterpretResult run() {
                 registerObject((Object *) array);
 
                 for (int i = 0; i < elemsc; ++i) {
-                    writeValueArray(array, pop());
+                    writeValueArray(array, copy(pop()));
                 }
 
                 push(a2v(array, tc));
@@ -468,30 +468,30 @@ static __attribute__((__noinline__, __noclone__)) InterpretResult run() {
             }
             case TARGET(OP_EQ_NIL):
             {
-                Value v = accessRef(pop());
+                Value v = pop();
 
                 push(b2v(typecheck(v, T_NIL)));
                 NEXT();
             }
             case TARGET(OP_NEQ_NIL):
             {
-                Value v = accessRef(pop());
+                Value v = pop();
 
                 push(b2v(!typecheck(v, T_NIL)));
                 NEXT();
             }
             case TARGET(OP_EQ):
             {
-                Value l = accessRef(pop());
-                Value r = accessRef(pop());
+                Value l = pop();
+                Value r = pop();
 
                 push(b2v(veq(l, r)));
                 NEXT();
             }
             case TARGET(OP_NEQ):
             {
-                Value l = accessRef(pop());
-                Value r = accessRef(pop());
+                Value l = pop();
+                Value r = pop();
 
                 push(b2v(!veq(l, r)));
                 NEXT();
