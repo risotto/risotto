@@ -1,6 +1,6 @@
-#ifndef RISOTTOV2_TRACE_H
-#define RISOTTOV2_TRACE_H
+#ifndef RISOTTOV2_DEBUG_H
+#define RISOTTOV2_DEBUG_H
 
 void printTrace();
 
-#endif //RISOTTOV2_TRACE_H
+#endif //RISOTTOV2_DEBUG_H

@@ -10,8 +10,8 @@
 #define str_t const char *
 
 NATIVE_FUNCTION(vm_stats) {
-    printf("Objects count: %i\n", getVM()->numObjects);
-    printf("Max Objects: %i\n", getVM()->maxObjects);
+    vm.printf("Objects count: %i\n", getVM()->numObjects);
+    vm.printf("Max Objects: %i\n", getVM()->maxObjects);
 }
 
 NATIVE_FUNCTION(run_gc) {

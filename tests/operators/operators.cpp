@@ -10,7 +10,7 @@
 #define LOGICAL_OPERATOR_INPUT(op) "println(true " #op " false) println(false " #op " true) println(true " #op " true) println(false " #op " false)"
 
 TEST(Operators, Precedence) {
-    INIT_TEST;
+    INIT_TEST();
 
     risotto.run("println(2 + 3 % 4 * 5) println(2 + ((3 % 4) * 5)) println(2 + (3 * 5)) println(2 + 15)");
 
@@ -18,7 +18,7 @@ TEST(Operators, Precedence) {
 }
 
 TEST(Operators, UnaryPrefixMinus) {
-    INIT_TEST;
+    INIT_TEST();
 
     risotto.run("println(-2) println(-(-2)) println(- -2) println(-2.0) println(-(-2.0)) println(- -2.0)");
 
@@ -26,7 +26,7 @@ TEST(Operators, UnaryPrefixMinus) {
 }
 
 TEST(Operators, UnaryPrefixMinusMinus) {
-    INIT_TEST;
+    INIT_TEST();
 
     risotto.run("a := 3 println(--a) println(a) b := 3.0 println(--b) println(b)");
 
@@ -34,7 +34,7 @@ TEST(Operators, UnaryPrefixMinusMinus) {
 }
 
 TEST(Operators, DISABLED_UnaryPostfixMinusMinus) {
-    INIT_TEST;
+    INIT_TEST();
 
     risotto.run("var a = 3; print a--; print a; var b = 3.0; print b--; print b;");
 
@@ -42,7 +42,7 @@ TEST(Operators, DISABLED_UnaryPostfixMinusMinus) {
 }
 
 TEST(Operators, UnaryPrefixBang) {
-    INIT_TEST;
+    INIT_TEST();
 
     risotto.run("println(!true) println(!false) println(!!true) println(!!false)");
 
@@ -50,7 +50,7 @@ TEST(Operators, UnaryPrefixBang) {
 }
 
 TEST(Operators, UnaryPrefixPlusPlus) {
-    INIT_TEST;
+    INIT_TEST();
 
     risotto.run("a := 3 println(++a) println(a) b := 3.0 println(++b) println(b)");
 
@@ -58,7 +58,7 @@ TEST(Operators, UnaryPrefixPlusPlus) {
 }
 
 TEST(Operators, DISABLED_UnaryPostfixPlusPlus) {
-    INIT_TEST;
+    INIT_TEST();
 
     risotto.run("var a = 3; print a++; print a; var b = 3.0; print b++; print b;");
 
@@ -66,7 +66,7 @@ TEST(Operators, DISABLED_UnaryPostfixPlusPlus) {
 }
 
 TEST(Operators, BinaryPlus) {
-    INIT_TEST;
+    INIT_TEST();
 
     risotto.run(OPERATOR_INPUT(+));
 
@@ -74,7 +74,7 @@ TEST(Operators, BinaryPlus) {
 }
 
 TEST(Operators, BinaryPlusString) {
-    INIT_TEST;
+    INIT_TEST();
 
     risotto.runFile(INPUT("plus_string"));
 
@@ -82,7 +82,7 @@ TEST(Operators, BinaryPlusString) {
 }
 
 TEST(Operators, BinaryMinus) {
-    INIT_TEST;
+    INIT_TEST();
 
     risotto.run(OPERATOR_INPUT(-));
 
@@ -90,7 +90,7 @@ TEST(Operators, BinaryMinus) {
 }
 
 TEST(Operators, BinaryDivide) {
-    INIT_TEST;
+    INIT_TEST();
 
     risotto.run(OPERATOR_INPUT(/));
 
@@ -98,7 +98,7 @@ TEST(Operators, BinaryDivide) {
 }
 
 TEST(Operators, BinaryMultiply) {
-    INIT_TEST;
+    INIT_TEST();
 
     risotto.run(OPERATOR_INPUT(*));
 
@@ -106,7 +106,7 @@ TEST(Operators, BinaryMultiply) {
 }
 
 TEST(Operators, BinaryModulo) {
-    INIT_TEST;
+    INIT_TEST();
 
     risotto.run("println(10 % 2) println(11 % 2)");
 
@@ -114,7 +114,7 @@ TEST(Operators, BinaryModulo) {
 }
 
 TEST(Operators, BinaryLower) {
-    INIT_TEST;
+    INIT_TEST();
 
     risotto.run(OPERATOR_INPUT(<));
 
@@ -122,7 +122,7 @@ TEST(Operators, BinaryLower) {
 }
 
 TEST(Operators, BinaryLowerEqual) {
-    INIT_TEST;
+    INIT_TEST();
 
     risotto.run(OPERATOR_INPUT(<=));
 
@@ -130,7 +130,7 @@ TEST(Operators, BinaryLowerEqual) {
 }
 
 TEST(Operators, BinaryGreater) {
-    INIT_TEST;
+    INIT_TEST();
 
     risotto.run(OPERATOR_INPUT(>));
 
@@ -138,7 +138,7 @@ TEST(Operators, BinaryGreater) {
 }
 
 TEST(Operators, BinaryGreaterEqual) {
-    INIT_TEST;
+    INIT_TEST();
 
     risotto.run(OPERATOR_INPUT(>=));
 
@@ -146,7 +146,7 @@ TEST(Operators, BinaryGreaterEqual) {
 }
 
 TEST(Operators, BinaryEqualEqual) {
-    INIT_TEST;
+    INIT_TEST();
 
     risotto.run(OPERATOR_INPUT(==));
 
@@ -154,7 +154,7 @@ TEST(Operators, BinaryEqualEqual) {
 }
 
 TEST(Operators, BinaryBangEqual) {
-    INIT_TEST;
+    INIT_TEST();
 
     risotto.run(OPERATOR_INPUT(!=));
 
@@ -162,7 +162,7 @@ TEST(Operators, BinaryBangEqual) {
 }
 
 TEST(Operators, PlusEqual) {
-    INIT_TEST;
+    INIT_TEST();
 
     risotto.run(SHORTHAND_OPERATOR_INPUT(+=));
 
@@ -170,7 +170,7 @@ TEST(Operators, PlusEqual) {
 }
 
 TEST(Operators, MinusEqual) {
-    INIT_TEST;
+    INIT_TEST();
 
     risotto.run(SHORTHAND_OPERATOR_INPUT(-=));
 
@@ -178,7 +178,7 @@ TEST(Operators, MinusEqual) {
 }
 
 TEST(Operators, StarEqual) {
-    INIT_TEST;
+    INIT_TEST();
 
     risotto.run(SHORTHAND_OPERATOR_INPUT(*=));
 
@@ -186,7 +186,7 @@ TEST(Operators, StarEqual) {
 }
 
 TEST(Operators, SlashEqual) {
-    INIT_TEST;
+    INIT_TEST();
 
     risotto.run(SHORTHAND_OPERATOR_INPUT(/=));
 
@@ -194,7 +194,7 @@ TEST(Operators, SlashEqual) {
 }
 
 TEST(Operators, LogicalOr) {
-    INIT_TEST;
+    INIT_TEST();
 
     risotto.run(LOGICAL_OPERATOR_INPUT(||));
 
@@ -203,7 +203,7 @@ TEST(Operators, LogicalOr) {
 
 
 TEST(Operators, LogicalAnd) {
-    INIT_TEST;
+    INIT_TEST();
 
     risotto.run(LOGICAL_OPERATOR_INPUT(&&));
 
@@ -211,7 +211,7 @@ TEST(Operators, LogicalAnd) {
 }
 
 TEST(Operators, BangBool) {
-    INIT_TEST;
+    INIT_TEST();
 
     risotto.run("println(!true)");
 
@@ -219,7 +219,7 @@ TEST(Operators, BangBool) {
 }
 
 TEST(Operators, LogicalTestOrder) {
-    INIT_TEST;
+    INIT_TEST();
 
     risotto.runFile(INPUT("logical_test_order"));
 
@@ -227,7 +227,7 @@ TEST(Operators, LogicalTestOrder) {
 }
 
 TEST(Operators, Overloading) {
-    INIT_TEST;
+    INIT_TEST();
 
     risotto.runFile(INPUT("overloading"));
 
@@ -235,7 +235,7 @@ TEST(Operators, Overloading) {
 }
 
 TEST(Operators, Shorthands) {
-    INIT_TEST;
+    INIT_TEST();
 
     risotto.runFile(INPUT("shorthands"));
 

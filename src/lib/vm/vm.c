@@ -517,7 +517,7 @@ static InterpretResult run() {
                 return INTERPRET_OK;
             }
             default:
-                printf("Unknown op code: %d \n", instruction);
+                vm.printf("Unknown op code: %d \n", instruction);
                 return INTERPRET_RUNTIME_ERROR;
         }
     }

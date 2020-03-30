@@ -2,7 +2,7 @@
 #include "./common.h"
 
 TEST(Benchmark, Bounce) {
-    INIT_TEST;
+    INIT_TEST();
 
     risotto.runFile(INPUT("../benchmarks/bounce"));
 
@@ -10,7 +10,7 @@ TEST(Benchmark, Bounce) {
 }
 
 TEST(Benchmark, List) {
-    INIT_TEST;
+    INIT_TEST();
 
     risotto.runFile(INPUT("../benchmarks/list"));
 
@@ -18,7 +18,7 @@ TEST(Benchmark, List) {
 }
 
 TEST(Benchmark, Mandelbrot) {
-    INIT_TEST;
+    INIT_TEST();
 
     risotto.runFile(INPUT("../benchmarks/mandelbrot"), {"1"});
 
@@ -26,7 +26,7 @@ TEST(Benchmark, Mandelbrot) {
 }
 
 TEST(Benchmark, Permute) {
-    INIT_TEST;
+    INIT_TEST();
 
     risotto.runFile(INPUT("../benchmarks/permute"));
 
@@ -34,7 +34,7 @@ TEST(Benchmark, Permute) {
 }
 
 TEST(Benchmark, Sieve) {
-    INIT_TEST;
+    INIT_TEST();
 
     risotto.runFile(INPUT("../benchmarks/sieve"));
 
@@ -42,7 +42,7 @@ TEST(Benchmark, Sieve) {
 }
 
 TEST(Benchmark, Storage) {
-    INIT_TEST;
+    INIT_TEST();
 
     risotto.runFile(INPUT("../benchmarks/storage"));
 
@@ -50,7 +50,7 @@ TEST(Benchmark, Storage) {
 }
 
 TEST(Benchmark, Fib) {
-    INIT_TEST;
+    INIT_TEST();
 
     risotto.runFile(INPUT("../benchmarks/fib"));
 

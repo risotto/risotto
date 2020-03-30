@@ -7,10 +7,11 @@
 
 #include <sstream>
 #include "lib/Risotto.h"
+#include <gtest/gtest.h>
 
-#define INIT_RISOTTO auto risotto = Risotto()
+#define INIT_RISOTTO(flags) auto risotto = Risotto(flags)
 
-#define INIT_TEST INIT_RISOTTO; testing::internal::CaptureStdout()
+#define INIT_TEST(flags) INIT_RISOTTO(flags); testing::internal::CaptureStdout()
 #define FILE(name) (dir(__FILE__) + "/" + (name))
 #define INPUT(name) FILE(name ".rst")
 #define OUTPUT(name) get_file_contents(FILE(name ".out"))

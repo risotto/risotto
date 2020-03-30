@@ -27,8 +27,9 @@ void TokensPrinter::print(std::vector<Token *> tokens) {
     std::cout << std::left << std::setw(13);
     std::cout << "Type";
 
-    std::cout << "| " << "Lexeme" << "\n";
-    std::cout << "===================================\n";
+    std::cout << "| " << "Lexeme" << std::endl;
+    auto separator = "===================================";
+    std::cout << separator << std::endl;
 
     int previousLine = -1;
     int previousColumn = -1;
@@ -66,8 +67,14 @@ void TokensPrinter::print(std::vector<Token *> tokens) {
         std::cout << std::left << std::setw(18);
         std::cout << wise_enum::to_string(token->type);
 
-        std::cout << "| " << token->lexeme << "\n";
+        std::cout << "|";
+        if (!token->lexeme.empty() && token->lexeme != "\n") {
+            std::cout << " " << token->lexeme;
+        }
+        std::cout << std::endl;
 
         i++;
     }
+
+    std::cout << separator << std::endl;
 }

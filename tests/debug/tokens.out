@@ -1,0 +1,32 @@
+I    L   C : Type         | Lexeme
+===================================
+0    1   1 : IDENTIFIER        | a
+1    |   2 : COLON_EQUAL       | :=
+2    |   5 : INT               | 2
+3    3   1 : FOR               | for
+4    |   5 : IDENTIFIER        | i
+5    |   6 : COLON_EQUAL       | :=
+6    |   9 : INT               | 0
+7    |  10 : SEMICOLON         | ;
+8    |  12 : IDENTIFIER        | i
+9    |  14 : LESS              | <
+10   |  16 : IDENTIFIER        | a
+11   |  17 : SEMICOLON         | ;
+12   |  19 : IDENTIFIER        | i
+13   |  20 : PLUS_EQUAL        | +=
+14   |  23 : INT               | 1
+15   |  25 : LEFT_CURLY        | {
+16   4   5 : IF                | if
+17   |   8 : IDENTIFIER        | i
+18   |   9 : EQUAL_EQUAL       | ==
+19   |  12 : INT               | 1
+20   |  14 : LEFT_CURLY        | {
+21   5   9 : IDENTIFIER        | println
+22   |  16 : LEFT_PAREN        | (
+23   |  17 : STRING            | "It's 1"
+24   |  25 : RIGHT_PAREN       | )
+25   6   5 : RIGHT_CURLY       | }
+26   7   1 : RIGHT_CURLY       | }
+27   8   0 : TOKEN_EOF         |
+===================================
+It's 1

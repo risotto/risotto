@@ -7,7 +7,7 @@
 #include "../common.h"
 
 TEST(Structs, Structs) {
-    INIT_TEST;
+    INIT_TEST();
 
     risotto.runFile(INPUT("structs"));
 

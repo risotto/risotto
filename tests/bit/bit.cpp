@@ -8,7 +8,7 @@
 #define BIT_EXPR(op) "println(60 " #op " 13)"
 
 TEST(Bit, AND) {
-    INIT_TEST;
+    INIT_TEST();
 
     risotto.run(BIT_EXPR(&));
 
@@ -16,7 +16,7 @@ TEST(Bit, AND) {
 }
 
 TEST(Bit, OR) {
-    INIT_TEST;
+    INIT_TEST();
 
     risotto.run(BIT_EXPR(|));
 
@@ -24,7 +24,7 @@ TEST(Bit, OR) {
 }
 
 TEST(Bit, XOR) {
-    INIT_TEST;
+    INIT_TEST();
 
     risotto.run(BIT_EXPR(^));
 
@@ -32,7 +32,7 @@ TEST(Bit, XOR) {
 }
 
 TEST(Bit, Complement) {
-    INIT_TEST;
+    INIT_TEST();
 
     risotto.run("println(~60)");
 
@@ -40,7 +40,7 @@ TEST(Bit, Complement) {
 }
 
 TEST(Bit, LeftShift) {
-    INIT_TEST;
+    INIT_TEST();
 
     risotto.run("println(60 << 2)");
 
@@ -48,7 +48,7 @@ TEST(Bit, LeftShift) {
 }
 
 TEST(Bit, RightShift) {
-    INIT_TEST;
+    INIT_TEST();
 
     risotto.run("println(60 >> 2)");
 

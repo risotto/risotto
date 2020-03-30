@@ -49,7 +49,7 @@ set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 # Add googletest directly to our build. This adds
 # the following targets: gtest, gtest_main, gmock
 # and gmock_main
-add_subdirectory("lib/googletest/googletest")
+add_subdirectory("lib/googletest")
 
 set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "" FORCE)
 set(BENCHMARK_ENABLE_GTEST_TESTS OFF CACHE BOOL "" FORCE)
@@ -121,5 +121,5 @@ endif ()
 file(GLOB_RECURSE TESTS_SRC RELATIVE ${CMAKE_SOURCE_DIR} "tests/*.c" "tests/*.cpp" "tests/*.h")
 
 add_executable(tests ${TESTS_SRC})
-target_link_libraries(tests risotto_lib)
+target_link_libraries(tests risotto_lib_debug)
 target_link_libraries(tests gtest_main)

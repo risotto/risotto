@@ -75,13 +75,17 @@ InterpretResult Risotto::doRun(const std::string &str, const std::vector<std::st
 
     unsigned int vmFlags = VMFlags::VMNone;
 
+#ifdef DEBUG_TRACE_EXECUTION
     if (hasFlag(RisottoFlags::PrintTraceExecution)) {
         vmFlags |= VMFlags::TraceExecution;
     }
+#endif
 
+#ifdef BENCHMARK_TIMINGS
     if (hasFlag(RisottoFlags::PrintBenchmarkExecution)) {
         vmFlags |= VMFlags::BenchmarkExecution;
     }
+#endif
 
     auto argsa = (ValueArray *) malloc(sizeof(ValueArray));
     initValueArray(argsa);
