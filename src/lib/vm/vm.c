@@ -10,7 +10,9 @@
 
 #ifdef DEBUG_TRACE_EXECUTION
 #include "trace.h"
+#include "debug.h"
 #endif
+
 #ifdef BENCHMARK_TIMINGS
 #include "benchmark.h"
 #endif
@@ -224,6 +226,11 @@ static InterpretResult run() {
                     ERROR("vtable is null")
                 }
 
+#ifdef DEBUG_TRACE_EXECUTION
+                if (hasFlag(TraceExecution)) {
+                    printVtable(v);
+                }
+#endif
                 bool found = false;
                 int i;
                 vtable_entry *entry;

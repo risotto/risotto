@@ -233,7 +233,7 @@ int disassembleInstruction(Chunk *chunk, int offset) {
 
 void printVtable(Value v) {
     if (VTGET(v) == NULL) {
-        printf("<null>\n");
+        printf("<vtable null>\n");
         return;
     }
 
