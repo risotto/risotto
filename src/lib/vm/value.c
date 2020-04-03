@@ -266,6 +266,5 @@ void set(Value origin, Value *target) {
     target = accessRefp(target);
     origin = accessRef(origin);
 
-    target->data = origin.data;
-    target->tc = origin.tc;
+    *target = origin;
 }

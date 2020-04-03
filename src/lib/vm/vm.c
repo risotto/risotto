@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include "value.h"
+#include "utils.h"
 
 #ifdef DEBUG_TRACE_EXECUTION
 
@@ -254,13 +255,12 @@ static InterpretResult run() {
             case TARGET(OP_CALL):
             {
                 { // Forces VLA in different scope than goto
-                    int argc = READ_BYTE(); // args count
-                    int retc = READ_BYTE(); // return values count
+                    OP_T argc = READ_BYTE(); // args count
+                    OP_T retc = READ_BYTE(); // return values count
+                    OP_T refsn = READ_BYTE(); // refs mask
 
-                    bool refs[argc];
-                    for (int i = 0; i < argc; ++i) {
-                        refs[i] = (bool) READ_BYTE();
-                    }
+                    bool refs[sizeof(OP_T) * 8];
+                    unpack64b(refs, refsn);
 
                     Value f = accessRef(pop());
 
@@ -328,18 +328,16 @@ static InterpretResult run() {
             {
                 { // Forces VLA in different scope than goto
                     FunctionCall fc = vec_pop(&vm.fcs);
-                    int rc = fc.retc;
+                    OP_T rc = fc.retc;
 
                     Value rvals[rc];
-                    for (int i = rc - 1; i >= 0; --i) {
-                        rvals[i] = copy(pop());
+                    for (int i = rc - 1, j = 1; i >= 0; --i, ++j) {
+                        rvals[i] = copy(*(vm.sp - j));
                     }
 
                     vm.ip = fc.ip;
-                    vm.sp = fc.sp;
+                    vm.sp = fc.sp - fc.argc;
                     vm.fp = fc.fp;
-
-                    vm.sp -= fc.argc;
 
                     pushm(rvals, rc);
                 }

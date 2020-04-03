@@ -94,11 +94,13 @@ static int biIntInstruction(const char *name, const char *l1, const char *l2, Ch
 }
 
 static int callInstruction(const char *name, Chunk *chunk, int offset) {
-    int argsc = chunk->code[offset + 1];
-    int retc = chunk->code[offset + 2];
-    printf("%-11s AC:%-3d RC:%d\n", name, argsc, retc);
+    OP_T argsc = chunk->code[offset + 1];
+    OP_T retc = chunk->code[offset + 2];
+//    OP_T refsn = chunk->code[offset + 3];
 
-    return offset + 3 + argsc;
+    printf("%-11s AC:%-3llu RC:%llu\n", name, argsc, retc);
+
+    return offset + 4;
 }
 
 static int newInstruction(const char *name, Chunk *chunk, int offset) {
