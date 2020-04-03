@@ -25,7 +25,7 @@ NATIVE_FUNCTION(args) {
 }
 
 NATIVE_FUNCTION(panic) {
-    ERROR(v2s(args[0]))
+    ERROR(v2s(args[0]));
 }
 
 #define NATIVE_BINARY_FUNCTION_NAME(leftType, opName, rightType) binary_##leftType##_##opName##_##rightType

@@ -53,7 +53,6 @@ void loadInstance(int index);
 void push(Value value);
 void pushm(Value *values, unsigned int length);
 Value pop();
-Value *popp();
 
 void registerObject(Object *object);
 void markAll();

@@ -9,12 +9,16 @@
 #include "value.h"
 
 #ifdef DEBUG_TRACE_EXECUTION
+
 #include "trace.h"
 #include "debug.h"
+
 #endif
 
 #ifdef BENCHMARK_TIMINGS
+
 #include "benchmark.h"
+
 #endif
 
 #define READ_BYTE() (*vm.ip++)
@@ -223,7 +227,7 @@ static InterpretResult run() {
                 Value v = accessRef(pop());
 
                 if (v.tc->vtable == NULL) {
-                    ERROR("vtable is null")
+                    ERROR("vtable is null");
                 }
 
 #ifdef DEBUG_TRACE_EXECUTION
@@ -243,7 +247,7 @@ static InterpretResult run() {
                     }
 
                 if (!found) {
-                    ERROR("Unable to find addr")
+                    ERROR("Unable to find addr");
                 }
                 NEXT();
             }
@@ -304,7 +308,7 @@ static InterpretResult run() {
                             break;
                         }
                         default:
-                        ERROR("Unhandled function type")
+                        ERROR("Unhandled function type");
                     }
                 }
 
@@ -415,11 +419,7 @@ static InterpretResult run() {
             }
             case TARGET(OP_POP):
             {
-                int n = READ_BYTE();
-
-                for (int i = 0; i < n; ++i) {
-                    popp();
-                }
+                vm.sp -= READ_BYTE();
 
                 NEXT();
             }
@@ -569,7 +569,7 @@ void loadInstance(int index) {
 
 void push(Value value) {
     if (vm.sp > vm.maxstack) {
-        ERROR("Stack overflow")
+        ERROR("Stack overflow");
     }
 
     *vm.sp++ = value;
@@ -577,7 +577,7 @@ void push(Value value) {
 
 void pushm(Value *values, unsigned int length) {
     if (vm.sp + length > vm.maxstack) {
-        ERROR("Stack overflow")
+        ERROR("Stack overflow");
     }
 
     memcpy(vm.sp, values, sizeof(Value) * length);
@@ -595,13 +595,9 @@ void dframe() {
 }
 
 Value pop() {
-    return *popp();
-}
-
-Value *popp() {
     if (vm.sp == vm.stack) {
-        ERROR("Stack underflow")
+        ERROR("Stack underflow");
     }
 
-    return --vm.sp;
+    return *--vm.sp;
 }
