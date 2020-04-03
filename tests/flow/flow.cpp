@@ -2,12 +2,10 @@
 // Created by raphael on 21/06/18.
 //
 
-
-#include <gtest/gtest.h>
 #include "../common.h"
 
 TEST(Flow, IfStmt) {
-    INIT_TEST;
+    INIT_TEST();
 
     risotto.runFile(INPUT("if"));
 
@@ -15,7 +13,7 @@ TEST(Flow, IfStmt) {
 }
 
 TEST(Flow, WhileStmt) {
-    INIT_TEST;
+    INIT_TEST();
 
     risotto.runFile(INPUT("while"));
 

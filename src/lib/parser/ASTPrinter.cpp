@@ -9,6 +9,7 @@
 #include <lib/parser/nodes/Stmt/FunctionStmt.h>
 #include <lib/parser/nodes/Expr/LiteralExpr.h>
 #include <lib/parser/nodes/Expr/BinaryExpr.h>
+#include <lib/parser/nodes/Stmt/ExpressionStmt.h>
 
 namespace ASTPrinter {
     std::vector<std::string> split(std::string s, char delimiter) {
@@ -22,9 +23,6 @@ namespace ASTPrinter {
 
         return lines;
     }
-
-#include <utility>
-#include <lib/parser/nodes/Stmt/ExpressionStmt.h>
 
     std::string repeat(const std::string &input, size_t num) {
         std::ostringstream os;
@@ -42,7 +40,7 @@ namespace ASTPrinter {
                 ss << std::endl;
             }
 
-            ss << repeat("· ", n) << line;
+            ss << repeat("- ", n) << line;
         }
 
         if (str.at(str.length() - 1) == '\n') {
@@ -54,8 +52,7 @@ namespace ASTPrinter {
 
     template<typename T>
     std::string print(T t) {
-        return "???\n";
-        throw std::logic_error("Unhandled stmt");
+        throw std::logic_error("Unhandled node");
     }
 
 #define _DC(T, V) \
@@ -239,7 +236,7 @@ if (auto V = dynamic_cast<T *>(stmt)) { \
         std::stringstream ss;
 
         ss << "ExpressionStmt" << std::endl;
-        ss << indent(print(stmt->expr), 1) << std::endl;
+        ss << indent(print(stmt->expr), 1);
 
         return ss.str();
     }

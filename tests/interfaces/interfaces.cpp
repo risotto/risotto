@@ -7,7 +7,7 @@
 #include "../common.h"
 
 TEST(Interfaces, Interfaces) {
-    INIT_TEST;
+    INIT_TEST();
 
     risotto.runFile(INPUT("interfaces"));
 

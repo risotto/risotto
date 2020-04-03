@@ -7,7 +7,7 @@
 #include "../common.h"
 
 TEST(GC, Global) {
-    INIT_TEST;
+    INIT_TEST();
 
     risotto.runFile(INPUT("gc"));
 

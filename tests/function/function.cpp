@@ -7,7 +7,7 @@
 #include <lib/compiler/CompilerError.h>
 
 TEST(Functions, Fib) {
-    INIT_TEST;
+    INIT_TEST();
 
     risotto.runFile(INPUT("fib"));
 
@@ -15,7 +15,7 @@ TEST(Functions, Fib) {
 }
 
 TEST(Functions, OutOfOrder) {
-    INIT_TEST;
+    INIT_TEST();
 
     risotto.runFile(INPUT("ooo"));
 
@@ -23,7 +23,7 @@ TEST(Functions, OutOfOrder) {
 }
 
 TEST(Functions, Arguments) {
-    INIT_TEST;
+    INIT_TEST();
 
     risotto.runFile(INPUT("arguments"));
 
@@ -31,7 +31,7 @@ TEST(Functions, Arguments) {
 }
 
 TEST(Functions, Bound) {
-    INIT_TEST;
+    INIT_TEST();
 
     risotto.runFile(INPUT("bound"));
 
@@ -39,7 +39,7 @@ TEST(Functions, Bound) {
 }
 
 TEST(Functions, Lambda) {
-    INIT_TEST;
+    INIT_TEST();
 
     risotto.runFile(INPUT("lambda"));
 
@@ -47,7 +47,7 @@ TEST(Functions, Lambda) {
 }
 
 TEST(Functions, MultipleReturns) {
-    INIT_TEST;
+    INIT_TEST();
 
     risotto.runFile(INPUT("multiple_returns"));
 
@@ -55,7 +55,7 @@ TEST(Functions, MultipleReturns) {
 }
 
 TEST(Functions, NonExistingFunction) {
-    INIT_RISOTTO;
+    INIT_RISOTTO();
 
     try {
         risotto.run("I_do_not_exist(1, 1.1, 1.2)");
@@ -68,7 +68,7 @@ TEST(Functions, NonExistingFunction) {
 }
 
 TEST(Functions, NonExistingBoundFunction) {
-    INIT_RISOTTO;
+    INIT_RISOTTO();
 
     try {
         risotto.run("1.xxx(1.2)");
@@ -81,7 +81,7 @@ TEST(Functions, NonExistingBoundFunction) {
 }
 
 TEST(Functions, NonExistingBinaryOperator) {
-    INIT_RISOTTO;
+    INIT_RISOTTO();
 
     try {
         risotto.run("1 * \"hello\"");
@@ -94,7 +94,7 @@ TEST(Functions, NonExistingBinaryOperator) {
 }
 
 TEST(Functions, NonExistingUnaryOperator) {
-    INIT_RISOTTO;
+    INIT_RISOTTO();
 
     try {
         risotto.run("-\"hello\"");

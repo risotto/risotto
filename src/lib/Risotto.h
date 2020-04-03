@@ -20,8 +20,12 @@ enum RisottoFlags {
     PrintTokens               = 1 << 1,
     PrintAST                  = 1 << 2,
     PrintDisassembled         = 1 << 3,
+#ifdef DEBUG_TRACE_EXECUTION
     PrintTraceExecution       = 1 << 4,
+#endif
+#ifdef BENCHMARK_TIMINGS
     PrintBenchmarkExecution   = 1 << 5,
+#endif
 };
 
 class Risotto {

@@ -9,8 +9,10 @@
 
 void printValue(Value value) {
     switch (TGET(value)) {
-        case T_NIL:
         case T_P:
+            printf("<P>");
+            return;
+        case T_NIL:
         case T_UINT:
         case T_INT:
         case T_DOUBLE:
@@ -79,24 +81,26 @@ static int constantInstruction(const char *name, Chunk *chunk, int offset) {
 
 static int addrInstruction(const char *name, Chunk *chunk, int offset) {
     int addr = chunk->code[offset + 1];
-    printf("%-16s => %4d \n", name, addr);
+    printf("%-16s => %4d\n", name, addr);
     return offset + 2;
 }
 
 static int biIntInstruction(const char *name, const char *l1, const char *l2, Chunk *chunk, int offset) {
     int dist = chunk->code[offset + 1];
     int addr = chunk->code[offset + 2];
-    printf("%-11s %s:%-3d %s:%-3d \n", name, l1, dist, l2, addr);
+    printf("%-11s %s:%-3d %s:%d\n", name, l1, dist, l2, addr);
 
     return offset + 3;
 }
 
 static int callInstruction(const char *name, Chunk *chunk, int offset) {
-    int argsc = chunk->code[offset + 1];
-    int retc = chunk->code[offset + 2];
-    printf("%-11s AC:%-3d RC:%-3d\n", name, argsc, retc);
+    OP_T argsc = chunk->code[offset + 1];
+    OP_T retc = chunk->code[offset + 2];
+//    OP_T refsn = chunk->code[offset + 3];
 
-    return offset + 3 + argsc;
+    printf("%-11s AC:%-3llu RC:%llu\n", name, argsc, retc);
+
+    return offset + 4;
 }
 
 static int newInstruction(const char *name, Chunk *chunk, int offset) {
@@ -121,7 +125,7 @@ static int arrayInstruction(const char *name, Chunk *chunk, int offset) {
 
 static int intInstruction(const char *name, Chunk *chunk, int offset) {
     int i = chunk->code[offset + 1];
-    printf("%-16s %4d \n", name, i);
+    printf("%-16s %4d\n", name, i);
 
     return offset + 2;
 }
@@ -231,7 +235,7 @@ int disassembleInstruction(Chunk *chunk, int offset) {
 
 void printVtable(Value v) {
     if (VTGET(v) == NULL) {
-        printf("<null>\n");
+        printf("<vtable null>\n");
         return;
     }
 

@@ -7,7 +7,7 @@
 #include "../common.h"
 
 TEST(Arrays, Common) {
-    INIT_TEST;
+    INIT_TEST();
 
     risotto.runFile(INPUT("common"));
 

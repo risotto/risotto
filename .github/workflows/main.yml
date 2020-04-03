@@ -27,6 +27,7 @@ jobs:
         CODECOV_TOKEN: ${{secrets.CODECOV_TOKEN}}
 
   benchmark:
+    if: github.ref == 'refs/heads/master'
     name: Run benchmarks
     runs-on: ubuntu-latest
     steps:
@@ -40,7 +41,7 @@ jobs:
     - name: Build
       run: cmake --build build --target ben
     - name: Run
-      run: ./build/ben --benchmark_format=json | tee ./benchmark_result.json
+      run: ./build/ben --benchmark_format=json --benchmark_min_time=30 | tee ./benchmark_result.json
     - name: Store benchmark result
       uses: rhysd/github-action-benchmark@v1
       with:

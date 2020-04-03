@@ -4,14 +4,14 @@
 
 extern "C" {
 #include "lib/vm/value.h"
+#include <lib/vm/utils.h>
 }
 
 #include "CallExpr.h"
+#include <utility>
 #include "IdentifierExpr.h"
 #include "lib/parser/nodes/TypeDescriptor.h"
 #include "lib/compiler/ReturnTypes.h"
-
-#include <utility>
 #include <lib/compiler/Compiler.h>
 #include <lib/compiler/CompilerError.h>
 #include <lib/compiler/utils/Utils.h>
@@ -29,13 +29,18 @@ std::vector<ByteResolver *> BaseCallExpr::compile(Compiler *compiler) {
         auto argc = getArgumentsTypes(compiler).size();
         auto retc = getFunctionReturnTypes(compiler).size();
 
+        static_assert(sizeof(OP_T) == 8);
+        bool refs[64] = { 0 };
+        for (auto i = 0u; i < argc; ++i) {
+            refs[i] = isArgumentReference(compiler, i);
+        }
+
+        auto refsn = pack64b(refs);
+
         bytes.push_back(new ByteResolver(OpCode::OP_CALL, rParen->position));
         bytes.push_back(new ByteResolver(argc));
         bytes.push_back(new ByteResolver(retc));
-
-        for (auto i = 0u; i < argc; ++i) {
-            bytes.push_back(new ByteResolver(isArgumentReference(compiler, i)));
-        }
+        bytes.push_back(new ByteResolver(refsn));
     }
 
     return bytes;

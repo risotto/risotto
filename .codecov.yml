@@ -1,8 +1,8 @@
 ignore:
   - "tests"
+  - "benchmarks"
   - "lib"
-  - "src/lib/vm/debug"
-  - "src/lib/Risotto.cpp"
+  - "src/cmd"
+  # To be removed
   - "src/lib/parser/ASTPrinter"
   - "src/lib/tokenizer/TokensPrinter"
-  - "src/cmd"

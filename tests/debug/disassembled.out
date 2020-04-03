@@ -1,0 +1,33 @@
+== chunk ==
+0000     1:5 OP_CONST            0 '2'
+0002       | OP_COPY
+0003       | OP_FRAME
+0004     3:9 OP_CONST            1 '0'
+0006       | OP_COPY
+0007    3:16 OP_LOAD_LOCAL D:1   A:0
+0010    3:12 OP_LOAD_LOCAL D:0   A:0
+0013       | OP_ILT              0
+0015       | OP_JUMPF         =>   53
+0017       | OP_FRAME
+0018    4:12 OP_CONST            2 '1'
+0020     4:8 OP_LOAD_LOCAL D:1   A:0
+0023       | OP_EQ
+0024       | OP_JUMPF         =>   38
+0026       | OP_FRAME
+0027    5:17 OP_CONST            3 '`It's 1`'
+0029       | OP_CONST            5 '<P>'
+0031    5:25 OP_CALL     AC:1   RC:0
+0035       | OP_FRAME_END
+0036       | OP_JUMP          =>   38
+0038    3:19 OP_LOAD_LOCAL D:1   A:0
+0041    3:23 OP_CONST            4 '1'
+0043    3:19 OP_LOAD_LOCAL D:1   A:0
+0046       | OP_IADD
+0047    3:20 OP_SET
+0048       | OP_POP              1
+0050       | OP_FRAME_END
+0051       | OP_JUMP          =>    7
+0053       | OP_FRAME_END
+0054       | OP_END
+== end chunk ==
+It's 1

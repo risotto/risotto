@@ -1,0 +1,58 @@
+VarDeclStmt
+- +Identifiers:
+- - - a: <inferred>
+- +Value:
+- - LiteralExpr
+- - - +Value: 2
+BlockStmt
+- VarDeclStmt
+- - +Identifiers:
+- - - - i: <inferred>
+- - +Value:
+- - - LiteralExpr
+- - - - +Value: 0
+- WhileStmt
+- - +Condition:
+- - - BinaryExpr
+- - - - +Left:
+- - - - - IdentifierExpr
+- - - - - - +Name: i
+- - - - +Op: <
+- - - - +Right:
+- - - - - IdentifierExpr
+- - - - - - +Name: a
+- - +Body:
+- - - BlockStmt
+- - - - IfStmt
+- - - - - +If:
+- - - - - - BinaryExpr
+- - - - - - - +Left:
+- - - - - - - - IdentifierExpr
+- - - - - - - - - +Name: i
+- - - - - - - +Op: ==
+- - - - - - - +Right:
+- - - - - - - - LiteralExpr
+- - - - - - - - - +Value: 1
+- - - - - +Then:
+- - - - - - BlockStmt
+- - - - - - - ExpressionStmt
+- - - - - - - - IdentifierCallExpr
+- - - - - - - - - +Identifier: println
+- - - - - - - - - +Args:
+- - - - - - - - - - LiteralExpr
+- - - - - - - - - - - +Value: "It's 1"
+- - - - ExpressionStmt
+- - - - - SetExpr
+- - - - - - +Left:
+- - - - - - - IdentifierExpr
+- - - - - - - - +Name: i
+- - - - - - +Right:
+- - - - - - - BinaryExpr
+- - - - - - - - +Left:
+- - - - - - - - - IdentifierExpr
+- - - - - - - - - - +Name: i
+- - - - - - - - +Op: +
+- - - - - - - - +Right:
+- - - - - - - - - LiteralExpr
+- - - - - - - - - - +Value: 1
+It's 1
