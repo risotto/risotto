@@ -3,3 +3,6 @@ ignore:
   - "benchmarks"
   - "lib"
   - "src/cmd"
+  # To be removed
+  - "src/lib/parser/ASTPrinter"
+  - "src/lib/tokenizer/TokensPrinter"
