@@ -8,11 +8,9 @@
 #include "valuetype.h"
 #include "vtable.h"
 
-#define MALLOC_VTABLE malloc(sizeof(struct vtable))
-
 struct ValueTypeContainer {
-    ValueType type;
-    struct vtable *vtable;
+    const ValueType type;
+    struct vtable * const vtable;
 };
 
 #define PRIMITIVES_STRUCT(T) \
@@ -27,10 +25,8 @@ struct ValueTypeContainer {
         T _p; \
     }
 
-typedef PRIMITIVES_STRUCT(ValueTypeContainer) PrimitiveTypes;
+typedef PRIMITIVES_STRUCT(const ValueTypeContainer) PrimitiveTypes;
 
-extern PrimitiveTypes primitives;
-
-void initPrimitives();
+extern const PrimitiveTypes primitives;
 
 #endif //RISOTTOV2_TYPES_H

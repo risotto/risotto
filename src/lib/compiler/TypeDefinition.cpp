@@ -88,9 +88,7 @@ bool FunctionTypeDefinition::isSame(TypeDefinition *other) {
 }
 
 const ValueTypeContainer *FunctionTypeDefinition::resolveVTC() {
-    auto tc = new ValueTypeContainer;
-    tc->type = T_P; // TODO: Change to T_FUNCTION
-    tc->vtable = new vtable;
+    auto tc = new ValueTypeContainer{.type = T_P, .vtable = new vtable};
 
     vec_init(tc->vtable);
 
@@ -113,9 +111,7 @@ bool ArrayTypeDefinition::isSame(TypeDefinition *other) {
 }
 
 const ValueTypeContainer *ArrayTypeDefinition::resolveVTC() {
-    auto tc = new ValueTypeContainer;
-    tc->type = T_ARRAY;
-    tc->vtable = new vtable;
+    auto tc = new ValueTypeContainer{.type = T_ARRAY, .vtable = new vtable};
 
     vec_init(tc->vtable);
 
@@ -158,9 +154,7 @@ int StructTypeDefinition::getFieldIndex(VariableEntry *entry) {
 }
 
 const ValueTypeContainer *StructTypeDefinition::resolveVTC() {
-    auto tc = new ValueTypeContainer;
-    tc->type = T_OBJECT;
-    tc->vtable = new vtable;
+    auto tc = new ValueTypeContainer{.type = T_OBJECT, .vtable = new vtable};
 
     vec_init(tc->vtable);
 

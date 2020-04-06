@@ -45,8 +45,6 @@ InterpretResult Risotto::run(const std::string &str, const std::vector<std::stri
 }
 
 InterpretResult Risotto::doRun(const std::string &str, const std::vector<std::string> &args) {
-    initPrimitives();
-
     auto tokens = timing<std::vector<Token *>>("Tokenizer", [str]() {
         auto tokenizer = new Tokenizer(str);
         return tokenizer->tokenize();

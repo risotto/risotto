@@ -34,7 +34,7 @@ void freeValueArray(ValueArray *array) {
 }
 
 Value n2v() {
-    return NEW_VALUE(&primitives._nil, p, 0);
+    return NEW_VALUE(&primitives._nil, p, NULL);
 }
 
 Value i2v(int v) {
