@@ -32,9 +32,17 @@ public:
 
     virtual ReturnTypes getFunctionReturnTypes(Compiler *compiler) = 0;
 
-    virtual bool loadCallAddr(Compiler *compiler, std::vector<ByteResolver *> &bytes) = 0;
+    virtual void loadCallAddr(Compiler *compiler, std::vector<ByteResolver *> &bytes) = 0;
 
     virtual void loadArgs(Compiler *compiler, std::vector<ByteResolver *> &bytes);
+
+    uint64_t packRefs(Compiler *compiler);
+
+    void loadOpCall(Compiler *compiler, std::vector<ByteResolver *> &bytes);
+
+    void loadOpCallBytecode(Compiler *compiler, std::vector<ByteResolver *> &bytes, CodeFunctionEntry *entry);
+
+    void loadOpCallNative(Compiler *compiler, std::vector<ByteResolver *> &bytes, NativeFunctionEntry *entry);
 
     void symbolize(Compiler *compiler) override;
 };

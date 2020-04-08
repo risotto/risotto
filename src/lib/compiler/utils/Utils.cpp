@@ -28,13 +28,13 @@ Utils::findCandidatesFunctions(const std::vector<FunctionEntry *> &functions, co
     return candidates;
 }
 
-bool Utils::loadFunctionEntryAddr(Compiler *compiler, FunctionEntry *entry, std::vector<ByteResolver *> &bytes) {
+void Utils::loadFunctionEntryAddr(Compiler *compiler, FunctionEntry *entry, std::vector<ByteResolver *> &bytes) {
     if (auto bytesEntry = dynamic_cast<BytesFunctionEntry *>(entry)) {
         auto genBytes = bytesEntry->get();
 
         bytes.insert(bytes.end(), genBytes.begin(), genBytes.end());
 
-        return true;
+        return;
     }
 
     if (auto interfaceEntry = dynamic_cast<DeclarationFunctionEntry *>(entry)) {
@@ -46,7 +46,7 @@ bool Utils::loadFunctionEntryAddr(Compiler *compiler, FunctionEntry *entry, std:
         auto vaddr = interfaceEntry->addr;
         bytes.push_back(new ByteResolver(vaddr));
 
-        return false;
+        return;
     }
 
     if (auto nativeEntry = dynamic_cast<NativeFunctionEntry *>(entry)) {
@@ -57,7 +57,7 @@ bool Utils::loadFunctionEntryAddr(Compiler *compiler, FunctionEntry *entry, std:
             return c->registerConst(v);
         }));
 
-        return false;
+        return;
     }
 
     if (auto codeEntry = dynamic_cast<CodeFunctionEntry *>(entry)) {
@@ -68,7 +68,7 @@ bool Utils::loadFunctionEntryAddr(Compiler *compiler, FunctionEntry *entry, std:
             return c->registerConst(v);
         }));
 
-        return false;
+        return;
     }
 
     throw std::logic_error("Unhandled function entry");

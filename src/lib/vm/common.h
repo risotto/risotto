@@ -10,6 +10,7 @@
 #include <stdint.h>
 
 #define OP_T uint64_t
+#define BOOL_ARRAY_PACK_LENGTH 64
 
 #define ERROR_MESSAGE(...) fprintf(stderr, __VA_ARGS__); fprintf(stderr, "\n");
 #define ERROR(...) ERROR_MESSAGE(__VA_ARGS__); exit(EXIT_FAILURE)

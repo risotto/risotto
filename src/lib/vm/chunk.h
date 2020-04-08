@@ -20,6 +20,8 @@
     X(OP_JUMPT) \
     X(OP_JUMPF) \
     X(OP_CALL) \
+    X(OP_CALL_BYTECODE) \
+    X(OP_CALL_NATIVE) \
     X(OP_END) \
     X(OP_LOAD) \
     X(OP_LOAD_LOCAL) \

@@ -18,30 +18,23 @@ extern "C" {
 
 BaseCallExpr::BaseCallExpr(Token *rParen, std::vector<Expr *> args) : rParen(rParen), args(std::move(args)) {}
 
+uint64_t BaseCallExpr::packRefs(Compiler *compiler) {
+    auto argc = getArgumentsTypes(compiler).size();
+
+    static_assert(sizeof(OP_T) == 8);
+    bool refs[BOOL_ARRAY_PACK_LENGTH] = {false};
+    for (auto i = 0u; i < argc; ++i) {
+        refs[i] = isArgumentReference(compiler, i);
+    }
+
+    return pack64b(refs);
+}
+
 std::vector<ByteResolver *> BaseCallExpr::compile(Compiler *compiler) {
     auto bytes = std::vector<ByteResolver *>();
 
     loadArgs(compiler, bytes);
-
-    auto inlined = loadCallAddr(compiler, bytes);
-
-    if (!inlined) {
-        auto argc = getArgumentsTypes(compiler).size();
-        auto retc = getFunctionReturnTypes(compiler).size();
-
-        static_assert(sizeof(OP_T) == 8);
-        bool refs[64] = { 0 };
-        for (auto i = 0u; i < argc; ++i) {
-            refs[i] = isArgumentReference(compiler, i);
-        }
-
-        auto refsn = pack64b(refs);
-
-        bytes.push_back(new ByteResolver(OpCode::OP_CALL, rParen->position));
-        bytes.push_back(new ByteResolver(argc));
-        bytes.push_back(new ByteResolver(retc));
-        bytes.push_back(new ByteResolver(refsn));
-    }
+    loadCallAddr(compiler, bytes);
 
     return bytes;
 }
@@ -89,4 +82,41 @@ void BaseCallExpr::symbolize(Compiler *compiler) {
     for (auto arg: args) {
         arg->symbolize(compiler);
     }
+}
+
+void BaseCallExpr::loadOpCall(Compiler *compiler, std::vector<ByteResolver *> &bytes) {
+    auto argc = getArgumentsTypes(compiler).size();
+    auto retc = getFunctionReturnTypes(compiler).size();
+    auto refsn = packRefs(compiler);
+
+    bytes.push_back(new ByteResolver(OpCode::OP_CALL, rParen->position));
+    bytes.push_back(new ByteResolver(argc));
+    bytes.push_back(new ByteResolver(retc));
+    bytes.push_back(new ByteResolver(refsn));
+}
+
+void
+BaseCallExpr::loadOpCallBytecode(Compiler *compiler, std::vector<ByteResolver *> &bytes, CodeFunctionEntry *entry) {
+    auto argc = getArgumentsTypes(compiler).size();
+    auto retc = getFunctionReturnTypes(compiler).size();
+    auto refsn = packRefs(compiler);
+
+    bytes.push_back(new ByteResolver(OpCode::OP_CALL_BYTECODE, rParen->position));
+    bytes.push_back(new ByteResolver([entry](Compiler *compiler) {
+        return compiler->getAddr(entry->firstByte);
+    }));
+    bytes.push_back(new ByteResolver(argc));
+    bytes.push_back(new ByteResolver(retc));
+    bytes.push_back(new ByteResolver(refsn));
+}
+
+void
+BaseCallExpr::loadOpCallNative(Compiler *compiler, std::vector<ByteResolver *> &bytes, NativeFunctionEntry *entry) {
+    auto argc = getArgumentsTypes(compiler).size();
+    auto retc = getFunctionReturnTypes(compiler).size();
+
+    bytes.push_back(new ByteResolver(OpCode::OP_CALL_NATIVE, rParen->position));
+    bytes.push_back(new ByteResolver(argc));
+    bytes.push_back(new ByteResolver(retc));
+    bytes.push_back(new ByteResolver((OP_T) entry->fun));
 }

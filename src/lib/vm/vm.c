@@ -162,6 +162,42 @@ case TARGET(code): { \
     #endif
 #endif
 
+void bytecode_function(int addr, int argc, bool refs[], int retc) {
+    FunctionCall fc = (FunctionCall) {
+            .argc = argc,
+            .retc = retc,
+            .ip = vm.ip,
+            .fp = vm.fp,
+            .sp = vm.sp,
+    };
+    vec_push(&vm.fcs, fc);
+    cframe();
+
+    GOTO(addr);
+
+    Value *args = vm.fp - 1 - argc;
+
+    for (int64_t i = 0; i < argc; ++i) {
+        if (refs[i] == true) {
+            push(vp2v(&args[i]));
+        } else {
+            push(copy(args[i]));
+        }
+    }
+}
+
+void native_function(NativeFunction fun, int argc, int retc) {
+    Value args[argc];
+    for (int64_t i = argc - 1; i >= 0; --i) {
+        args[i] = pop();
+    }
+
+    Value rvals[retc];
+    fun(args, argc, rvals);
+
+    pushm(rvals, retc);
+}
+
 static InterpretResult run() {
 #ifdef USE_COMPUTED_GOTO
     static const void *addrs[] = {OPCODES(OP_LABEL_ADDR)};
@@ -241,6 +277,29 @@ static InterpretResult run() {
                 }
                 NEXT();
             }
+            case TARGET(OP_CALL_BYTECODE): {
+                {
+                    const OP_T addr = READ_BYTE(); // address
+                    const OP_T argc = READ_BYTE(); // args count
+                    const OP_T retc = READ_BYTE(); // return values count
+                    const OP_T refsn = READ_BYTE(); // refs mask
+
+                    bool refs[BOOL_ARRAY_PACK_LENGTH];
+                    unpack64b(refs, refsn);
+
+                    bytecode_function(addr, argc, refs, retc);
+                }
+                NEXT();
+            }
+            case TARGET(OP_CALL_NATIVE): {
+                const OP_T argc = READ_BYTE(); // args count
+                const OP_T retc = READ_BYTE(); // return values count
+                NativeFunction fun = (NativeFunction) READ_BYTE(); // address
+
+                native_function(fun, argc, retc);
+
+                NEXT();
+            }
             case TARGET(OP_CALL):
             {
                 { // Forces VLA in different scope than goto
@@ -248,7 +307,7 @@ static InterpretResult run() {
                     const OP_T retc = READ_BYTE(); // return values count
                     const OP_T refsn = READ_BYTE(); // refs mask
 
-                    bool refs[sizeof(OP_T) * 8];
+                    bool refs[BOOL_ARRAY_PACK_LENGTH];
                     unpack64b(refs, refsn);
 
                     Value f = accessRef(pop());
@@ -257,44 +316,14 @@ static InterpretResult run() {
                         case T_INT: { // Function
                             int addr = v2i(f);
 
-                            FunctionCall fc = (FunctionCall) {
-                                    .argc = argc,
-                                    .retc = retc,
-                                    .ip = vm.ip,
-                                    .fp = vm.fp,
-                                    .sp = vm.sp,
-                            };
-                            vec_push(&vm.fcs, fc);
-                            cframe();
-
-                            GOTO(addr);
-
-                            Value *args = vm.fp - 2;
-
-                            for (int i = argc - 1; i >= 0; --i) {
-                                Value *a = args - i;
-
-                                if (refs[i] == true) {
-                                    push(vp2v(a));
-                                } else {
-                                    push(copy(*a));
-                                }
-                            }
+                            bytecode_function(addr, argc, refs, retc);
 
                             break;
                         }
                         case T_P: { // Native function
-                            Value args[argc];
-                            for (int i = argc - 1; i >= 0; --i) {
-                                args[i] = pop();
-                            }
-
                             NativeFunction fun = v2p(f);
 
-                            Value rvals[retc];
-                            fun(args, argc, rvals);
-
-                            pushm(rvals, retc);
+                            native_function(fun, argc, retc);
 
                             break;
                         }
@@ -322,7 +351,7 @@ static InterpretResult run() {
                     OP_T rc = fc.retc;
 
                     Value rvals[rc];
-                    for (int i = rc - 1, j = 1; i >= 0; --i, ++j) {
+                    for (int64_t i = rc - 1, j = 1; i >= 0; --i, ++j) {
                         rvals[i] = copy(*(vm.sp - j));
                     }
 

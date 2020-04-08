@@ -27,7 +27,7 @@ public:
 
     bool isArgumentReference(Compiler *compiler, unsigned int i) override;
 
-    bool loadCallAddr(Compiler *compiler, std::vector<ByteResolver *> &bytes) override;
+    void loadCallAddr(Compiler *compiler, std::vector<ByteResolver *> &bytes) override;
 
     ReturnTypes getFunctionReturnTypes(Compiler *compiler) override;
 

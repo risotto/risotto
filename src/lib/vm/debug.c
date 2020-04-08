@@ -103,6 +103,27 @@ static int callInstruction(const char *name, Chunk *chunk, int offset) {
     return offset + 4;
 }
 
+static int callBytecodeInstruction(const char *name, Chunk *chunk, int offset) {
+    OP_T addr = chunk->code[offset + 1];
+    OP_T argc = chunk->code[offset + 2];
+    OP_T retc = chunk->code[offset + 3];
+//    OP_T refsn = chunk->code[offset + 4];
+
+    printf("%-11s A:%-3llu AC:%-3llu RC:%llu\n", name, addr, argc, retc);
+
+    return offset + 5;
+}
+
+static int callNativeInstruction(const char *name, Chunk *chunk, int offset) {
+    OP_T argc = chunk->code[offset + 1];
+    OP_T retc = chunk->code[offset + 2];
+    void * addr = (void *) chunk->code[offset + 3];
+
+    printf("%-11s A:%p AC:%-3llu RC:%llu\n", name, addr, argc, retc);
+
+    return offset + 4;
+}
+
 static int newInstruction(const char *name, Chunk *chunk, int offset) {
     int tcAddr = chunk->code[offset + 1];
     int c = chunk->code[offset + 2];
@@ -207,6 +228,10 @@ int disassembleInstruction(Chunk *chunk, int offset) {
             return arrayInstruction(getName(instruction), chunk, offset);
         case OP_CALL:
             return callInstruction(getName(instruction), chunk, offset);
+        case OP_CALL_BYTECODE:
+            return callBytecodeInstruction(getName(instruction), chunk, offset);
+        case OP_CALL_NATIVE:
+            return callNativeInstruction(getName(instruction), chunk, offset);
         case OP_POP:
             return intInstruction(getName(instruction), chunk, offset);
         case OP_COPY:
@@ -224,7 +249,7 @@ int disassembleInstruction(Chunk *chunk, int offset) {
         case OP_NEW:
             return newInstruction(getName(instruction), chunk, offset);
         default:
-            printf("Unknown opcode %d\n", instruction);
+            printf("Unknown opcode %llu\n", instruction);
             return offset + 1;
     }
 }

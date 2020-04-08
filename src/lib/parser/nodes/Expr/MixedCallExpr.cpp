@@ -25,13 +25,32 @@ bool MixedCallExpr::isArgumentReference(Compiler *compiler, unsigned int i) {
     });
 }
 
-bool MixedCallExpr::loadCallAddr(Compiler *compiler, std::vector<ByteResolver *> &bytes) {
-    return act<bool>(compiler, [this, compiler, &bytes](FunctionTypeDescriptor *functionRef) {
+void MixedCallExpr::loadCallAddr(Compiler *compiler, std::vector<ByteResolver *> &bytes) {
+    act<void>(compiler, [this, compiler, &bytes](FunctionTypeDescriptor *functionRef) {
         loadVariableEntryAddr(compiler, bytes);
 
-        return false;
-    }, [compiler, &bytes](FunctionEntry *functionEntry) {
-        return Utils::loadFunctionEntryAddr(compiler, functionEntry, bytes);
+        loadOpCall(compiler, bytes);
+    }, [this, compiler, &bytes](FunctionEntry *entry) {
+        if (auto nativeEntry = dynamic_cast<NativeFunctionEntry *>(entry)) {
+            loadOpCallNative(compiler, bytes, nativeEntry);
+            return;
+        }
+
+        if (auto codeEntry = dynamic_cast<CodeFunctionEntry *>(entry)) {
+            loadOpCallBytecode(compiler, bytes, codeEntry);
+            return;
+        }
+
+        if (auto bytesEntry = dynamic_cast<BytesFunctionEntry *>(entry)) {
+            auto genBytes = bytesEntry->get();
+
+            bytes.insert(bytes.end(), genBytes.begin(), genBytes.end());
+
+            return;
+        }
+
+        Utils::loadFunctionEntryAddr(compiler, entry, bytes);
+        loadOpCall(compiler, bytes);
     });
 }
 
