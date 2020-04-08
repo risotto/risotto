@@ -5,6 +5,7 @@
 #include <iostream>
 #include <fstream>
 #include "common.h"
+#include <stdarg.h>
 
 std::string dir(const std::string &file_path) {
     std::string dir_path = file_path.substr(0, file_path.rfind('/'));
