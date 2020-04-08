@@ -34,8 +34,6 @@ std::vector<TypeDescriptor *> NewCallExpr::getArgumentsTypes(Compiler *compiler)
 }
 
 void NewCallExpr::loadArgs(Compiler *compiler, std::vector<ByteResolver *> &bytes) {
-    BaseCallExpr::loadArgs(compiler, bytes);
-
     auto structTypeDef = getStructTypeDef(compiler);
 
     auto v = p2v((void *) structTypeDef->getVTC());
@@ -44,6 +42,8 @@ void NewCallExpr::loadArgs(Compiler *compiler, std::vector<ByteResolver *> &byte
     bytes.push_back(new ByteResolver(OP_NEW, identifier->position));
     bytes.push_back(new ByteResolver(tcAddr));
     bytes.push_back(new ByteResolver(structTypeDef->fields.size()));
+
+    BaseCallExpr::loadArgs(compiler, bytes);
 }
 
 FunctionNotFoundError NewCallExpr::getFunctionNotFoundError(Compiler *compiler) {

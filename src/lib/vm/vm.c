@@ -123,8 +123,8 @@ void gc() {
 
 #define VM_BINARY(code, f, rf, op) \
 case TARGET(code): { \
-    Value l = pop(); \
     Value r = pop(); \
+    Value l = pop(); \
     push(rf##2v(v2##f(l) op v2##f(r))); \
     NEXT(); \
 }
@@ -132,8 +132,8 @@ case TARGET(code): { \
 #define VM_BINARY_EQ(code, f, op) \
 case TARGET(code): { \
     OP_T eq = READ_BYTE(); \
-    Value l = pop(); \
     Value r = pop(); \
+    Value l = pop(); \
     if (eq) { \
         push(b2v(v2##f(l) op##= v2##f(r))); \
     } else { \
@@ -232,9 +232,9 @@ static InterpretResult run() {
                 }
 
 #ifdef DEBUG_TRACE_EXECUTION
-                if (hasFlag(TraceExecution)) {
-                    printVtable(v);
-                }
+                    if (hasFlag(TraceExecution)) {
+                        printVtable(v);
+                    }
 #endif
                 bool found = false;
                 int i;
@@ -255,9 +255,9 @@ static InterpretResult run() {
             case TARGET(OP_CALL):
             {
                 { // Forces VLA in different scope than goto
-                    OP_T argc = READ_BYTE(); // args count
-                    OP_T retc = READ_BYTE(); // return values count
-                    OP_T refsn = READ_BYTE(); // refs mask
+                    const OP_T argc = READ_BYTE(); // args count
+                    const OP_T retc = READ_BYTE(); // return values count
+                    const OP_T refsn = READ_BYTE(); // refs mask
 
                     bool refs[sizeof(OP_T) * 8];
                     unpack64b(refs, refsn);
@@ -280,8 +280,10 @@ static InterpretResult run() {
 
                             GOTO(addr);
 
-                            for (int i = 0; i < argc; ++i) {
-                                Value *a = vm.fp - 2 - i;
+                            Value *args = vm.fp - 2;
+
+                            for (int i = argc - 1; i >= 0; --i) {
+                                Value *a = args - i;
 
                                 if (refs[i] == true) {
                                     push(vp2v(a));
@@ -294,16 +296,16 @@ static InterpretResult run() {
                         }
                         case T_P: { // Native function
                             Value args[argc];
-                            for (int i = 0; i < argc; ++i) {
+                            for (int i = argc - 1; i >= 0; --i) {
                                 args[i] = pop();
                             }
 
                             NativeFunction fun = v2p(f);
 
-                            Value returnValues[retc];
-                            fun(args, argc, returnValues);
+                            Value rvals[retc];
+                            fun(args, argc, rvals);
 
-                            pushm(returnValues, retc);
+                            pushm(rvals, retc);
 
                             break;
                         }
@@ -473,16 +475,16 @@ static InterpretResult run() {
             }
             case TARGET(OP_EQ):
             {
-                Value l = pop();
                 Value r = pop();
+                Value l = pop();
 
                 push(b2v(veq(l, r)));
                 NEXT();
             }
             case TARGET(OP_NEQ):
             {
-                Value l = pop();
                 Value r = pop();
+                Value l = pop();
 
                 push(b2v(!veq(l, r)));
                 NEXT();
@@ -593,9 +595,11 @@ void dframe() {
 }
 
 Value pop() {
-    if (vm.sp == vm.stack) {
+#ifdef RISOTTO_DEBUG_LIB
+    if (vm.sp <= vm.stack) {
         ERROR("Stack underflow");
     }
+#endif
 
     return *--vm.sp;
 }

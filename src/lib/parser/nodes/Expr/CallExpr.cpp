@@ -49,8 +49,7 @@ std::vector<ByteResolver *> BaseCallExpr::compile(Compiler *compiler) {
 void BaseCallExpr::loadArgs(Compiler *compiler, std::vector<ByteResolver *> &bytes) {
     auto arguments = getArguments(compiler);
 
-    for (auto it = arguments.rbegin(); it != arguments.rend(); ++it) {
-        auto arg = (*it);
+    for (auto arg : arguments) {
         auto argBytes = arg->compile(compiler);
         bytes.insert(bytes.end(), argBytes.begin(), argBytes.end());
     }

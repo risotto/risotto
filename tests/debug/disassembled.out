@@ -4,13 +4,13 @@
 0003       | OP_FRAME
 0004     3:9 OP_CONST            1 '0'
 0006       | OP_COPY
-0007    3:16 OP_LOAD_LOCAL D:1   A:0
-0010    3:12 OP_LOAD_LOCAL D:0   A:0
+0007    3:12 OP_LOAD_LOCAL D:0   A:0
+0010    3:16 OP_LOAD_LOCAL D:1   A:0
 0013       | OP_ILT              0
 0015       | OP_JUMPF         =>   53
 0017       | OP_FRAME
-0018    4:12 OP_CONST            2 '1'
-0020     4:8 OP_LOAD_LOCAL D:1   A:0
+0018     4:8 OP_LOAD_LOCAL D:1   A:0
+0021    4:12 OP_CONST            2 '1'
 0023       | OP_EQ
 0024       | OP_JUMPF         =>   38
 0026       | OP_FRAME
@@ -20,8 +20,8 @@
 0035       | OP_FRAME_END
 0036       | OP_JUMP          =>   38
 0038    3:19 OP_LOAD_LOCAL D:1   A:0
-0041    3:23 OP_CONST            4 '1'
-0043    3:19 OP_LOAD_LOCAL D:1   A:0
+0041    3:19 OP_LOAD_LOCAL D:1   A:0
+0044    3:23 OP_CONST            4 '1'
 0046       | OP_IADD
 0047    3:20 OP_SET
 0048       | OP_POP              1

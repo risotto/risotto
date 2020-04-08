@@ -40,30 +40,38 @@ bool Utils::loadFunctionEntryAddr(Compiler *compiler, FunctionEntry *entry, std:
     if (auto interfaceEntry = dynamic_cast<DeclarationFunctionEntry *>(entry)) {
         // Load object
         bytes.push_back(new ByteResolver(OP_LOAD_STACK, TODO_POSITION));
-        bytes.push_back(new ByteResolver(0));
+        bytes.push_back(new ByteResolver(interfaceEntry->descriptor->params.size() - 1));
 
         bytes.push_back(new ByteResolver(OP_RESOLVE_ADDR));
         auto vaddr = interfaceEntry->addr;
         bytes.push_back(new ByteResolver(vaddr));
-    } else if (auto nativeEntry = dynamic_cast<NativeFunctionEntry *>(entry)) {
+
+        return false;
+    }
+
+    if (auto nativeEntry = dynamic_cast<NativeFunctionEntry *>(entry)) {
         bytes.push_back(new ByteResolver(OP_CONST, TODO_POSITION));
         bytes.push_back(new ByteResolver([nativeEntry](Compiler *c) {
             auto v = p2v((void *) nativeEntry->fun);
 
             return c->registerConst(v);
         }));
-    } else if (auto codeEntry = dynamic_cast<CodeFunctionEntry *>(entry)) {
+
+        return false;
+    }
+
+    if (auto codeEntry = dynamic_cast<CodeFunctionEntry *>(entry)) {
         bytes.push_back(new ByteResolver(OP_CONST, TODO_POSITION));
         bytes.push_back(new ByteResolver([codeEntry](Compiler *c) {
             auto v = i2v(c->getAddr(codeEntry->firstByte));
 
             return c->registerConst(v);
         }));
-    } else {
-        throw std::logic_error("Unhandled function entry");
+
+        return false;
     }
 
-    return false;
+    throw std::logic_error("Unhandled function entry");
 }
 
 FunctionEntry *Utils::findMatchingFunctions(
