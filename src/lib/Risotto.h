@@ -32,7 +32,7 @@ class Risotto {
 public:
     const unsigned int flags;
 
-    int (*printfp)(const char *, ...);
+    RisottoPrintf printfp;
 
     Risotto();
 

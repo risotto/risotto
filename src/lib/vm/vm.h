@@ -18,6 +18,8 @@ typedef enum {
     BenchmarkExecution = 1 << 1,
 } VMFlags;
 
+typedef int (*RisottoPrintf)(const char *, ...);
+
 typedef struct {
     unsigned int flags;
     Chunk* chunk;
@@ -32,7 +34,7 @@ typedef struct {
     int numObjects;
     /* The number of values required to trigger a GC. */
     int maxObjects;
-    int (*printf) (const char *, ...);
+    RisottoPrintf printf;
     ValueArray *args;
     const PrimitiveTypes *primitiveTypes;
 } VM;
@@ -45,7 +47,7 @@ typedef enum {
     INTERPRET_RUNTIME_ERROR
 } InterpretResult;
 
-void initVM(unsigned int flags, int (*printf) (const char *, ...), ValueArray *args);
+void initVM(unsigned int flags, RisottoPrintf printf, ValueArray *args);
 VM *getVM();
 void freeVM();
 InterpretResult interpret(Chunk* chunk, long addr);

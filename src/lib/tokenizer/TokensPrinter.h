@@ -11,7 +11,7 @@
 
 class TokensPrinter {
 public:
-    static void print(std::vector<Token *> tokens);
+    static std::string print(std::vector<Token *> tokens);
 };
 
 

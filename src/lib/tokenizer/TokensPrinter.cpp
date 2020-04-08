@@ -7,29 +7,31 @@
 #include <iomanip>
 #include "TokensPrinter.h"
 
-void TokensPrinter::print(std::vector<Token *> tokens) {
+std::string TokensPrinter::print(std::vector<Token *> tokens) {
+    std::stringstream ss;
+
     auto n = 3;
 
     // Header
-    std::cout << std::left << std::setw(n);
-    std::cout << "I";
+    ss << std::left << std::setw(n);
+    ss << "I";
 
-    std::cout << std::right << std::setw(n);
-    std::cout << "L";
+    ss << std::right << std::setw(n);
+    ss << "L";
 
-    std::cout << " ";
+    ss << " ";
 
-    std::cout << std::right << std::setw(n);
-    std::cout << "C";
+    ss << std::right << std::setw(n);
+    ss << "C";
 
-    std::cout << " : ";
+    ss << " : ";
 
-    std::cout << std::left << std::setw(13);
-    std::cout << "Type";
+    ss << std::left << std::setw(18);
+    ss << "Type";
 
-    std::cout << "| " << "Lexeme" << std::endl;
+    ss << "| " << "Lexeme" << std::endl;
     auto separator = "===================================";
-    std::cout << separator << std::endl;
+    ss << separator << std::endl;
 
     int previousLine = -1;
     int previousColumn = -1;
@@ -37,44 +39,46 @@ void TokensPrinter::print(std::vector<Token *> tokens) {
     // Content
     auto i = 0;
     for (auto token : tokens) {
-        std::cout << std::left << std::setw(n);
+        ss << std::left << std::setw(n);
 
-        std::cout << i;
+        ss << i;
 
-        std::cout << std::right << std::setw(n);
+        ss << std::right << std::setw(n);
 
         if (previousLine != token->position.line) {
-            std::cout << token->position.line;
+            ss << token->position.line;
             previousLine = token->position.line;
             previousColumn = -1;
         } else {
-            std::cout << "|";
+            ss << "|";
         }
 
-        std::cout << " ";
+        ss << " ";
 
-        std::cout << std::right << std::setw(n);
+        ss << std::right << std::setw(n);
 
         if (previousColumn != token->position.column) {
-            std::cout << token->position.column;
+            ss << token->position.column;
             previousColumn = token->position.column;
         } else {
-            std::cout << "|";
+            ss << "|";
         }
 
-        std::cout << " : ";
+        ss << " : ";
 
-        std::cout << std::left << std::setw(18);
-        std::cout << wise_enum::to_string(token->type);
+        ss << std::left << std::setw(18);
+        ss << wise_enum::to_string(token->type);
 
-        std::cout << "|";
+        ss << "|";
         if (!token->lexeme.empty() && token->lexeme != "\n") {
-            std::cout << " " << token->lexeme;
+            ss << " " << token->lexeme;
         }
-        std::cout << std::endl;
+        ss << std::endl;
 
         i++;
     }
 
-    std::cout << separator << std::endl;
+    ss << separator << std::endl;
+
+    return ss.str();
 }

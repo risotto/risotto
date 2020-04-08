@@ -51,7 +51,7 @@ InterpretResult Risotto::doRun(const std::string &str, const std::vector<std::st
     });
 
     if (hasFlag(RisottoFlags::PrintTokens)) {
-        TokensPrinter::print(tokens);
+        this->printfp("%s", TokensPrinter::print(tokens).c_str());
     }
 
     auto stmts = timing<std::vector<Stmt *>>("Parser", [tokens]() {
@@ -60,7 +60,7 @@ InterpretResult Risotto::doRun(const std::string &str, const std::vector<std::st
     });
 
     if (hasFlag(RisottoFlags::PrintAST)) {
-        std::cout << ASTPrinter::print(stmts);
+        this->printfp("%s", ASTPrinter::print(stmts).c_str());
     }
 
     auto chunk = timing<Chunk>("Compiler", [stmts]() {

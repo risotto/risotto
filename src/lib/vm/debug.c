@@ -6,11 +6,12 @@
 
 #include "types.h"
 #include "debug.h"
+#include "vm.h"
 
 void printValue(Value value) {
     switch (TGET(value)) {
         case T_P:
-            printf("<P>");
+            vm.printf("<P>");
             return;
         case T_NIL:
         case T_UINT:
@@ -18,77 +19,77 @@ void printValue(Value value) {
         case T_DOUBLE:
         case T_ARRAY:
         case T_BOOL:
-            printf("%s", v2s(value));
+            vm.printf("%s", v2s(value));
             return;
         case T_STR:
-            printf("`%s`", v2s(value));
+            vm.printf("`%s`", v2s(value));
             return;
         case T_OBJECT: {
             Object *object = v2o(value);
-            printf("O: %p {", object->values);
+            vm.printf("O: %p {", object->values);
             for (int i = 0; i < object->size; ++i) {
                 Value v = object->values[i];
                 if (typecheck(v, T_OBJECT) && v2o(v) == object) {
-                    printf("<self>");
+                    vm.printf("<self>");
                 } else {
                     printValue(v);
                 }
 
                 if (i != object->size - 1) {
-                    printf(", ");
+                    vm.printf(", ");
                 }
             }
-            printf("}");
+            vm.printf("}");
             return;
         }
         case T_VALUE_P: {
-            printf("+");
+            vm.printf("+");
             Value *vp = (Value *) DGET(value, p);
             printValue(*vp);
             return;
         }
     }
 
-    printf("# Unknown type: %p #", &value);
+    vm.printf("# Unknown type: %p #", &value);
 }
 
 void disassembleChunk(Chunk *chunk, const char *name) {
-    printf("== %s ==\n", name);
+    vm.printf("== %s ==\n", name);
 
     for (int i = 0; i < chunk->count;) {
         i = disassembleInstruction(chunk, i);
     }
 
-    printf("== end %s ==\n", name);
+    vm.printf("== end %s ==\n", name);
 }
 
 static int simpleInstruction(const char *name, int offset) {
-    printf("%s\n", name);
+    vm.printf("%s\n", name);
     return offset + 1;
 }
 
 static int constantInstruction(const char *name, Chunk *chunk, int offset) {
     OP_T constant = chunk->code[offset + 1];
-    printf("%-16s %4d '", name, constant);
+    vm.printf("%-16s %4d '", name, constant);
     if (constant <= chunk->constants.object.size) {
         printValue(chunk->constants.object.values[constant]);
     } else {
-        printf("# Constant '%d' not found #", constant);
+        vm.printf("# Constant '%d' not found #", constant);
     }
-    printf("'\n");
+    vm.printf("'\n");
     return offset + 2;
 }
 
 static int addrInstruction(const char *name, Chunk *chunk, int offset) {
     int addr = chunk->code[offset + 1];
-    printf("%-16s => %4d\n", name, addr);
+    vm.printf("%-16s => %4d\n", name, addr);
     return offset + 2;
 }
 
 static int biIntInstruction(const char *name, const char *l1, const char *l2, Chunk *chunk, int offset) {
     int dist = chunk->code[offset + 1];
     int addr = chunk->code[offset + 2];
-    printf("%-11s %s:%-3d %s:%d\n", name, l1, dist, l2, addr);
+    vm.printf("%-11s %s:%-3d %s:%d\n", name, l1, dist, l2, addr);
 
     return offset + 3;
 }
@@ -98,7 +99,7 @@ static int callInstruction(const char *name, Chunk *chunk, int offset) {
     OP_T retc = chunk->code[offset + 2];
 //    OP_T refsn = chunk->code[offset + 3];
 
-    printf("%-11s AC:%-3llu RC:%llu\n", name, argsc, retc);
+    vm.printf("%-11s AC:%-3llu RC:%llu\n", name, argsc, retc);
 
     return offset + 4;
 }
@@ -106,9 +107,9 @@ static int callInstruction(const char *name, Chunk *chunk, int offset) {
 static int newInstruction(const char *name, Chunk *chunk, int offset) {
     int tcAddr = chunk->code[offset + 1];
     int c = chunk->code[offset + 2];
-    printf("%-11s VTC: ", name);
+    vm.printf("%-11s VTC: ", name);
     printValue(chunk->constants.object.values[tcAddr]);
-    printf(" C:%-3d\n", c);
+    vm.printf(" C:%-3d\n", c);
 
     return offset + 3 + c;
 }
@@ -116,16 +117,16 @@ static int newInstruction(const char *name, Chunk *chunk, int offset) {
 static int arrayInstruction(const char *name, Chunk *chunk, int offset) {
     int vtableAddr = chunk->code[offset + 1];
     int c = chunk->code[offset + 2];
-    printf("%-11s C: %-3d VA: ", name, c);
+    vm.printf("%-11s C: %-3d VA: ", name, c);
     printValue(chunk->constants.object.values[vtableAddr]);
-    printf("\n");
+    vm.printf("\n");
 
     return offset + 3 + c;
 }
 
 static int intInstruction(const char *name, Chunk *chunk, int offset) {
     int i = chunk->code[offset + 1];
-    printf("%-16s %4d\n", name, i);
+    vm.printf("%-16s %4d\n", name, i);
 
     return offset + 2;
 }
@@ -141,7 +142,7 @@ char *getName(OP_T instruction) {
 }
 
 int disassembleInstruction(Chunk *chunk, int offset) {
-    printf("%04d ", offset);
+    vm.printf("%04d ", offset);
 
     Position position = chunk->positions[offset];
     Position prevPosition = {};
@@ -151,9 +152,9 @@ int disassembleInstruction(Chunk *chunk, int offset) {
     }
 
     if (position_equal(position, (Position) {}) || position_equal(position, prevPosition)) {
-        printf("      | ");
+        vm.printf("      | ");
     } else {
-        printf("%7s ", position_string(position));
+        vm.printf("%7s ", position_string(position));
     }
 
     OP_T instruction = chunk->code[offset];
@@ -224,27 +225,27 @@ int disassembleInstruction(Chunk *chunk, int offset) {
         case OP_NEW:
             return newInstruction(getName(instruction), chunk, offset);
         default:
-            printf("Unknown opcode %d\n", instruction);
+            vm.printf("Unknown opcode %d\n", instruction);
             return offset + 1;
     }
 }
 
 void printVtable(Value v) {
     if (VTGET(v) == NULL) {
-        printf("<vtable null>\n");
+        vm.printf("<vtable null>\n");
         return;
     }
 
-    printf("==== vtable %p ====\n", VTGET(v));
-    printf("%-4s %-4s %s\n", "i", "va", "a");
+    vm.printf("==== vtable %p ====\n", VTGET(v));
+    vm.printf("%-4s %-4s %s\n", "i", "va", "a");
 
     int i;
     vtable_entry *entry;
     vec_foreach_ptr(&VTGET(v)->addrs, entry, i) {
-            printf("%-4d %-4d ", i, entry->vaddr);
+            vm.printf("%-4d %-4d ", i, entry->vaddr);
             printValue(entry->addr);
-            printf("\n");
+            vm.printf("\n");
         }
 
-    printf("================\n");
+    vm.printf("================\n");
 }

@@ -33,7 +33,7 @@ static void resetStack() {
     vm.fp = vm.sp;
 }
 
-void initVM(unsigned int flags, int (*printf)(const char *, ...), ValueArray *args) {
+void initVM(unsigned int flags, RisottoPrintf printf, ValueArray *args) {
     resetStack();
     vm.maxstack = vm.stack + STACK_MAX;
     vm.flags = flags;

@@ -1,4 +1,4 @@
-I    L   C : Type         | Lexeme
+I    L   C : Type              | Lexeme
 ===================================
 0    1   1 : IDENTIFIER        | a
 1    |   2 : COLON_EQUAL       | :=
