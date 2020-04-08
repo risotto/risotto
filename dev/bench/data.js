@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1586308380590,
+  "lastUpdate": 1586311354599,
   "repoUrl": "https://github.com/risotto/risotto",
   "entries": {
     "Benchmark": [
@@ -2172,6 +2172,72 @@ window.BENCHMARK_DATA = {
             "value": 283980394.5570472,
             "unit": "ns/iter",
             "extra": "iterations: 149\ncpu: 283921212.852349 ns\nthreads: 1"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "contact@raphaelvigee.com",
+            "name": "rvigee",
+            "username": "raphaelvigee"
+          },
+          "committer": {
+            "email": "contact@raphaelvigee.com",
+            "name": "rvigee",
+            "username": "raphaelvigee"
+          },
+          "distinct": true,
+          "id": "4e97cc34e031ae46eeb01d72fc3d6c2da8133149",
+          "message": "Separate GT/GTE and LT/LTE",
+          "timestamp": "2020-04-08T02:55:19+01:00",
+          "tree_id": "b94791597e48c8aa4272d15aedf7df65bf3f4a68",
+          "url": "https://github.com/risotto/risotto/commit/4e97cc34e031ae46eeb01d72fc3d6c2da8133149"
+        },
+        "date": 1586311354175,
+        "tool": "googlecpp",
+        "benches": [
+          {
+            "name": "BM_bounce",
+            "value": 3996279.804854557,
+            "unit": "ns/iter",
+            "extra": "iterations: 10382\ncpu: 3995208.031785783 ns\nthreads: 1"
+          },
+          {
+            "name": "BM_list",
+            "value": 3486511.8505361374,
+            "unit": "ns/iter",
+            "extra": "iterations: 12217\ncpu: 3485840.1526561356 ns\nthreads: 1"
+          },
+          {
+            "name": "BM_mandelbrot",
+            "value": 3139058801.928574,
+            "unit": "ns/iter",
+            "extra": "iterations: 14\ncpu: 3138576907.4999995 ns\nthreads: 1"
+          },
+          {
+            "name": "BM_permute",
+            "value": 7006364.313608491,
+            "unit": "ns/iter",
+            "extra": "iterations: 6033\ncpu: 7005322.457981103 ns\nthreads: 1"
+          },
+          {
+            "name": "BM_sieve",
+            "value": 3409870.034618541,
+            "unit": "ns/iter",
+            "extra": "iterations: 12190\ncpu: 3409316.339622643 ns\nthreads: 1"
+          },
+          {
+            "name": "BM_storage",
+            "value": 7441492.720473828,
+            "unit": "ns/iter",
+            "extra": "iterations: 5656\ncpu: 7440432.105198021 ns\nthreads: 1"
+          },
+          {
+            "name": "BM_fib",
+            "value": 311724033.610687,
+            "unit": "ns/iter",
+            "extra": "iterations: 131\ncpu: 311677867.1374045 ns\nthreads: 1"
           }
         ]
       }
