@@ -132,16 +132,16 @@ NATIVE_UNARY_PREFIX_OPERATOR_DECLARATION(target, --, return, decrement) \
         return std::vector<ByteResolver *>({new ByteResolver(OP_##prefix##DIV, TODO_POSITION)}); \
     }) \
     BYTES_OPERATOR_DECLARATION(t, <, t, bool, []() { \
-        return std::vector<ByteResolver *>({new ByteResolver(OP_##prefix##LT, TODO_POSITION), new ByteResolver(false)}); \
+        return std::vector<ByteResolver *>({new ByteResolver(OP_##prefix##LT, TODO_POSITION)}); \
     }) \
     BYTES_OPERATOR_DECLARATION(t, >, t, bool, []() { \
-        return std::vector<ByteResolver *>({new ByteResolver(OP_##prefix##GT, TODO_POSITION), new ByteResolver(false)}); \
+        return std::vector<ByteResolver *>({new ByteResolver(OP_##prefix##GT, TODO_POSITION)}); \
     }) \
     BYTES_OPERATOR_DECLARATION(t, <=, t, bool, []() { \
-        return std::vector<ByteResolver *>({new ByteResolver(OP_##prefix##LT, TODO_POSITION), new ByteResolver(true)}); \
+        return std::vector<ByteResolver *>({new ByteResolver(OP_##prefix##LTE, TODO_POSITION)}); \
     }) \
     BYTES_OPERATOR_DECLARATION(t, >=, t, bool, []() { \
-        return std::vector<ByteResolver *>({new ByteResolver(OP_##prefix##GT, TODO_POSITION), new ByteResolver(true)}); \
+        return std::vector<ByteResolver *>({new ByteResolver(OP_##prefix##GTE, TODO_POSITION)}); \
     })
 
 Compiler::Compiler(std::vector<Stmt *> stmts, const PrimitiveTypes *pt) : stmts(std::move(stmts)), pt(pt) {

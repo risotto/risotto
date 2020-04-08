@@ -11,91 +11,91 @@
              [ 2 ][ <P> ]#[ 0 ][ +0 ] IP: 10 SP: 4 FP: 2
 0010    3:16 OP_LOAD_LOCAL D:1   A:0
              [ 2 ][ <P> ]#[ 0 ][ +0 ][ +2 ] IP: 13 SP: 5 FP: 2
-0013       | OP_ILT              0
-             [ 2 ][ <P> ]#[ 0 ][ true ] IP: 15 SP: 4 FP: 2
-0015       | OP_JUMPF         =>   53
-             [ 2 ][ <P> ]#[ 0 ] IP: 17 SP: 3 FP: 2
-0017       | OP_FRAME
-             [ 2 ][ <P> ][ 0 ][ <P> ] IP: 18 SP: 4 FP: 4
-0018     4:8 OP_LOAD_LOCAL D:1   A:0
-             [ 2 ][ <P> ][ 0 ][ <P> ]#[ +0 ] IP: 21 SP: 5 FP: 4
-0021    4:12 OP_CONST            2 '1'
-             [ 2 ][ <P> ][ 0 ][ <P> ]#[ +0 ][ 1 ] IP: 23 SP: 6 FP: 4
-0023       | OP_EQ
-             [ 2 ][ <P> ][ 0 ][ <P> ]#[ false ] IP: 24 SP: 5 FP: 4
-0024       | OP_JUMPF         =>   38
-             [ 2 ][ <P> ][ 0 ][ <P> ] IP: 38 SP: 4 FP: 4
-0038    3:19 OP_LOAD_LOCAL D:1   A:0
-             [ 2 ][ <P> ][ 0 ][ <P> ]#[ +0 ] IP: 41 SP: 5 FP: 4
-0041    3:19 OP_LOAD_LOCAL D:1   A:0
-             [ 2 ][ <P> ][ 0 ][ <P> ]#[ +0 ][ +0 ] IP: 44 SP: 6 FP: 4
-0044    3:23 OP_CONST            4 '1'
-             [ 2 ][ <P> ][ 0 ][ <P> ]#[ +0 ][ +0 ][ 1 ] IP: 46 SP: 7 FP: 4
-0046       | OP_IADD
-             [ 2 ][ <P> ][ 0 ][ <P> ]#[ +0 ][ 1 ] IP: 47 SP: 6 FP: 4
-0047    3:20 OP_SET
-             [ 2 ][ <P> ][ 1 ][ <P> ]#[ +1 ] IP: 48 SP: 5 FP: 4
-0048       | OP_POP              1
-             [ 2 ][ <P> ][ 1 ][ <P> ] IP: 50 SP: 4 FP: 4
-0050       | OP_FRAME_END
-             [ 2 ][ <P> ]#[ 1 ] IP: 51 SP: 3 FP: 2
-0051       | OP_JUMP          =>    7
+0013       | OP_ILT
+             [ 2 ][ <P> ]#[ 0 ][ true ] IP: 14 SP: 4 FP: 2
+0014       | OP_JUMPF         =>   52
+             [ 2 ][ <P> ]#[ 0 ] IP: 16 SP: 3 FP: 2
+0016       | OP_FRAME
+             [ 2 ][ <P> ][ 0 ][ <P> ] IP: 17 SP: 4 FP: 4
+0017     4:8 OP_LOAD_LOCAL D:1   A:0
+             [ 2 ][ <P> ][ 0 ][ <P> ]#[ +0 ] IP: 20 SP: 5 FP: 4
+0020    4:12 OP_CONST            2 '1'
+             [ 2 ][ <P> ][ 0 ][ <P> ]#[ +0 ][ 1 ] IP: 22 SP: 6 FP: 4
+0022       | OP_EQ
+             [ 2 ][ <P> ][ 0 ][ <P> ]#[ false ] IP: 23 SP: 5 FP: 4
+0023       | OP_JUMPF         =>   37
+             [ 2 ][ <P> ][ 0 ][ <P> ] IP: 37 SP: 4 FP: 4
+0037    3:19 OP_LOAD_LOCAL D:1   A:0
+             [ 2 ][ <P> ][ 0 ][ <P> ]#[ +0 ] IP: 40 SP: 5 FP: 4
+0040    3:19 OP_LOAD_LOCAL D:1   A:0
+             [ 2 ][ <P> ][ 0 ][ <P> ]#[ +0 ][ +0 ] IP: 43 SP: 6 FP: 4
+0043    3:23 OP_CONST            4 '1'
+             [ 2 ][ <P> ][ 0 ][ <P> ]#[ +0 ][ +0 ][ 1 ] IP: 45 SP: 7 FP: 4
+0045       | OP_IADD
+             [ 2 ][ <P> ][ 0 ][ <P> ]#[ +0 ][ 1 ] IP: 46 SP: 6 FP: 4
+0046    3:20 OP_SET
+             [ 2 ][ <P> ][ 1 ][ <P> ]#[ +1 ] IP: 47 SP: 5 FP: 4
+0047       | OP_POP              1
+             [ 2 ][ <P> ][ 1 ][ <P> ] IP: 49 SP: 4 FP: 4
+0049       | OP_FRAME_END
+             [ 2 ][ <P> ]#[ 1 ] IP: 50 SP: 3 FP: 2
+0050       | OP_JUMP          =>    7
              [ 2 ][ <P> ]#[ 1 ] IP: 7 SP: 3 FP: 2
 0007    3:12 OP_LOAD_LOCAL D:0   A:0
              [ 2 ][ <P> ]#[ 1 ][ +1 ] IP: 10 SP: 4 FP: 2
 0010    3:16 OP_LOAD_LOCAL D:1   A:0
              [ 2 ][ <P> ]#[ 1 ][ +1 ][ +2 ] IP: 13 SP: 5 FP: 2
-0013       | OP_ILT              0
-             [ 2 ][ <P> ]#[ 1 ][ true ] IP: 15 SP: 4 FP: 2
-0015       | OP_JUMPF         =>   53
-             [ 2 ][ <P> ]#[ 1 ] IP: 17 SP: 3 FP: 2
-0017       | OP_FRAME
-             [ 2 ][ <P> ][ 1 ][ <P> ] IP: 18 SP: 4 FP: 4
-0018     4:8 OP_LOAD_LOCAL D:1   A:0
-             [ 2 ][ <P> ][ 1 ][ <P> ]#[ +1 ] IP: 21 SP: 5 FP: 4
-0021    4:12 OP_CONST            2 '1'
-             [ 2 ][ <P> ][ 1 ][ <P> ]#[ +1 ][ 1 ] IP: 23 SP: 6 FP: 4
-0023       | OP_EQ
-             [ 2 ][ <P> ][ 1 ][ <P> ]#[ true ] IP: 24 SP: 5 FP: 4
-0024       | OP_JUMPF         =>   38
-             [ 2 ][ <P> ][ 1 ][ <P> ] IP: 26 SP: 4 FP: 4
-0026       | OP_FRAME
-             [ 2 ][ <P> ][ 1 ][ <P> ][ <P> ] IP: 27 SP: 5 FP: 5
-0027    5:17 OP_CONST            3 '`It's 1`'
-             [ 2 ][ <P> ][ 1 ][ <P> ][ <P> ]#[ `It's 1` ] IP: 29 SP: 6 FP: 5
-0029       | OP_CONST            5 '<P>'
-             [ 2 ][ <P> ][ 1 ][ <P> ][ <P> ]#[ `It's 1` ][ <P> ] IP: 31 SP: 7 FP: 5
-0031    5:25 OP_CALL     AC:1   RC:0
+0013       | OP_ILT
+             [ 2 ][ <P> ]#[ 1 ][ true ] IP: 14 SP: 4 FP: 2
+0014       | OP_JUMPF         =>   52
+             [ 2 ][ <P> ]#[ 1 ] IP: 16 SP: 3 FP: 2
+0016       | OP_FRAME
+             [ 2 ][ <P> ][ 1 ][ <P> ] IP: 17 SP: 4 FP: 4
+0017     4:8 OP_LOAD_LOCAL D:1   A:0
+             [ 2 ][ <P> ][ 1 ][ <P> ]#[ +1 ] IP: 20 SP: 5 FP: 4
+0020    4:12 OP_CONST            2 '1'
+             [ 2 ][ <P> ][ 1 ][ <P> ]#[ +1 ][ 1 ] IP: 22 SP: 6 FP: 4
+0022       | OP_EQ
+             [ 2 ][ <P> ][ 1 ][ <P> ]#[ true ] IP: 23 SP: 5 FP: 4
+0023       | OP_JUMPF         =>   37
+             [ 2 ][ <P> ][ 1 ][ <P> ] IP: 25 SP: 4 FP: 4
+0025       | OP_FRAME
+             [ 2 ][ <P> ][ 1 ][ <P> ][ <P> ] IP: 26 SP: 5 FP: 5
+0026    5:17 OP_CONST            3 '`It's 1`'
+             [ 2 ][ <P> ][ 1 ][ <P> ][ <P> ]#[ `It's 1` ] IP: 28 SP: 6 FP: 5
+0028       | OP_CONST            5 '<P>'
+             [ 2 ][ <P> ][ 1 ][ <P> ][ <P> ]#[ `It's 1` ][ <P> ] IP: 30 SP: 7 FP: 5
+0030    5:25 OP_CALL     AC:1   RC:0
 It's 1
-             [ 2 ][ <P> ][ 1 ][ <P> ][ <P> ] IP: 35 SP: 5 FP: 5
-0035       | OP_FRAME_END
-             [ 2 ][ <P> ][ 1 ][ <P> ] IP: 36 SP: 4 FP: 4
-0036       | OP_JUMP          =>   38
-             [ 2 ][ <P> ][ 1 ][ <P> ] IP: 38 SP: 4 FP: 4
-0038    3:19 OP_LOAD_LOCAL D:1   A:0
-             [ 2 ][ <P> ][ 1 ][ <P> ]#[ +1 ] IP: 41 SP: 5 FP: 4
-0041    3:19 OP_LOAD_LOCAL D:1   A:0
-             [ 2 ][ <P> ][ 1 ][ <P> ]#[ +1 ][ +1 ] IP: 44 SP: 6 FP: 4
-0044    3:23 OP_CONST            4 '1'
-             [ 2 ][ <P> ][ 1 ][ <P> ]#[ +1 ][ +1 ][ 1 ] IP: 46 SP: 7 FP: 4
-0046       | OP_IADD
-             [ 2 ][ <P> ][ 1 ][ <P> ]#[ +1 ][ 2 ] IP: 47 SP: 6 FP: 4
-0047    3:20 OP_SET
-             [ 2 ][ <P> ][ 2 ][ <P> ]#[ +2 ] IP: 48 SP: 5 FP: 4
-0048       | OP_POP              1
-             [ 2 ][ <P> ][ 2 ][ <P> ] IP: 50 SP: 4 FP: 4
-0050       | OP_FRAME_END
-             [ 2 ][ <P> ]#[ 2 ] IP: 51 SP: 3 FP: 2
-0051       | OP_JUMP          =>    7
+             [ 2 ][ <P> ][ 1 ][ <P> ][ <P> ] IP: 34 SP: 5 FP: 5
+0034       | OP_FRAME_END
+             [ 2 ][ <P> ][ 1 ][ <P> ] IP: 35 SP: 4 FP: 4
+0035       | OP_JUMP          =>   37
+             [ 2 ][ <P> ][ 1 ][ <P> ] IP: 37 SP: 4 FP: 4
+0037    3:19 OP_LOAD_LOCAL D:1   A:0
+             [ 2 ][ <P> ][ 1 ][ <P> ]#[ +1 ] IP: 40 SP: 5 FP: 4
+0040    3:19 OP_LOAD_LOCAL D:1   A:0
+             [ 2 ][ <P> ][ 1 ][ <P> ]#[ +1 ][ +1 ] IP: 43 SP: 6 FP: 4
+0043    3:23 OP_CONST            4 '1'
+             [ 2 ][ <P> ][ 1 ][ <P> ]#[ +1 ][ +1 ][ 1 ] IP: 45 SP: 7 FP: 4
+0045       | OP_IADD
+             [ 2 ][ <P> ][ 1 ][ <P> ]#[ +1 ][ 2 ] IP: 46 SP: 6 FP: 4
+0046    3:20 OP_SET
+             [ 2 ][ <P> ][ 2 ][ <P> ]#[ +2 ] IP: 47 SP: 5 FP: 4
+0047       | OP_POP              1
+             [ 2 ][ <P> ][ 2 ][ <P> ] IP: 49 SP: 4 FP: 4
+0049       | OP_FRAME_END
+             [ 2 ][ <P> ]#[ 2 ] IP: 50 SP: 3 FP: 2
+0050       | OP_JUMP          =>    7
              [ 2 ][ <P> ]#[ 2 ] IP: 7 SP: 3 FP: 2
 0007    3:12 OP_LOAD_LOCAL D:0   A:0
              [ 2 ][ <P> ]#[ 2 ][ +2 ] IP: 10 SP: 4 FP: 2
 0010    3:16 OP_LOAD_LOCAL D:1   A:0
              [ 2 ][ <P> ]#[ 2 ][ +2 ][ +2 ] IP: 13 SP: 5 FP: 2
-0013       | OP_ILT              0
-             [ 2 ][ <P> ]#[ 2 ][ false ] IP: 15 SP: 4 FP: 2
-0015       | OP_JUMPF         =>   53
-             [ 2 ][ <P> ]#[ 2 ] IP: 53 SP: 3 FP: 2
-0053       | OP_FRAME_END
-             #[ 2 ] IP: 54 SP: 1 FP: 0
-0054       | OP_END
+0013       | OP_ILT
+             [ 2 ][ <P> ]#[ 2 ][ false ] IP: 14 SP: 4 FP: 2
+0014       | OP_JUMPF         =>   52
+             [ 2 ][ <P> ]#[ 2 ] IP: 52 SP: 3 FP: 2
+0052       | OP_FRAME_END
+             #[ 2 ] IP: 53 SP: 1 FP: 0
+0053       | OP_END

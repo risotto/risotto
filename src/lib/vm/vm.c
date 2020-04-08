@@ -129,26 +129,15 @@ case TARGET(code): { \
     NEXT(); \
 }
 
-#define VM_BINARY_EQ(code, f, op) \
-case TARGET(code): { \
-    OP_T eq = READ_BYTE(); \
-    Value r = pop(); \
-    Value l = pop(); \
-    if (eq) { \
-        push(b2v(v2##f(l) op##= v2##f(r))); \
-    } else { \
-        push(b2v(v2##f(l) op v2##f(r))); \
-    }\
-    NEXT(); \
-}
-
 #define VM_MATH_OPS(t, f) \
     VM_BINARY(OP_##t##ADD, f, f, +) \
     VM_BINARY(OP_##t##SUB, f, f, -) \
     VM_BINARY(OP_##t##MUL, f, f, *) \
     VM_BINARY(OP_##t##DIV, f, f, /) \
-    VM_BINARY_EQ(OP_##t##LT, f, <) \
-    VM_BINARY_EQ(OP_##t##GT, f, >)
+    VM_BINARY(OP_##t##LT, f, b, <) \
+    VM_BINARY(OP_##t##LTE, f, b, <=) \
+    VM_BINARY(OP_##t##GT, f, b, >) \
+    VM_BINARY(OP_##t##GTE, f, b, >=)
 
 #ifdef USE_COMPUTED_GOTO
     #define OP_LABEL(op) label_vm_##op

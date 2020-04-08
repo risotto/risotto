@@ -163,26 +163,22 @@ int disassembleInstruction(Chunk *chunk, int offset) {
         case OP_IMUL:
         case OP_IDIV:
         case OP_IMOD:
-            return simpleInstruction(getName(instruction), offset);
         case OP_ILT:
+        case OP_ILTE:
         case OP_IGT:
-            return intInstruction(getName(instruction), chunk, offset);
+        case OP_IGTE:
         case OP_DADD:
         case OP_DSUB:
         case OP_DMUL:
         case OP_DDIV:
-            return simpleInstruction(getName(instruction), offset);
         case OP_DLT:
+        case OP_DLTE:
         case OP_DGT:
-            return intInstruction(getName(instruction), chunk, offset);
+        case OP_DGTE:
         case OP_EQ:
-            return simpleInstruction(getName(instruction), offset);
         case OP_NEQ:
-            return simpleInstruction(getName(instruction), offset);
         case OP_SET:
-            return simpleInstruction(getName(instruction), offset);
         case OP_FRAME:
-            return simpleInstruction(getName(instruction), offset);
         case OP_FRAME_END:
             return simpleInstruction(getName(instruction), offset);
         case OP_CONST:

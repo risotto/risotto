@@ -42,14 +42,18 @@
     X(OP_IMUL) \
     X(OP_IDIV) \
     X(OP_ILT) \
+    X(OP_ILTE) \
     X(OP_IGT) \
+    X(OP_IGTE) \
     X(OP_IMOD) \
     X(OP_DADD) \
     X(OP_DSUB) \
     X(OP_DMUL) \
     X(OP_DDIV) \
     X(OP_DLT) \
+    X(OP_DLTE) \
     X(OP_DGT) \
+    X(OP_DGTE) \
     X(OP_B_AND) \
     X(OP_B_OR) \
     X(OP_B_XOR) \
