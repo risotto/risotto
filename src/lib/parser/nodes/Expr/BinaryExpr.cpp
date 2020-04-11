@@ -9,7 +9,7 @@
 #include "BinaryExpr.h"
 #include "lib/compiler/Compiler.h"
 
-BinaryExpr::BinaryExpr(Expr *left, Token *op, Expr *right) : GetCallExpr(left, op, op, op, {right}) {
+BinaryExpr::BinaryExpr(Expr *left, PToken op, Expr *right) : GetCallExpr(left, op, op, op, {right}) {
 }
 
 Expr *BinaryExpr::left() {
@@ -20,7 +20,7 @@ Expr *BinaryExpr::right() {
     return args[0];
 }
 
-Token *BinaryExpr::op() {
+PToken BinaryExpr::op() {
     return rParen;
 }
 

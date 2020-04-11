@@ -8,7 +8,7 @@
 #include <lib/compiler/utils/Utils.h>
 #include "IdentifierExpr.h"
 
-IdentifierExpr::IdentifierExpr(Token *name) : name(name) {
+IdentifierExpr::IdentifierExpr(PToken name) : name(name) {
 
 }
 

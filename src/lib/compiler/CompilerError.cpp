@@ -53,7 +53,7 @@ format(const std::string &tpl, const std::vector<TypeDescriptor *> *argsTypes) {
 FunctionNotFoundError::FunctionNotFoundError(
         const std::string &tpl,
         const std::vector<TypeDescriptor *> &argsTypes,
-        Token *hook
+        const Token *hook
 ) : CompilerError(format(tpl, &argsTypes), hook->position) {
 
 }

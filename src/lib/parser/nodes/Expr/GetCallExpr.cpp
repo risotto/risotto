@@ -6,7 +6,7 @@
 #include "GetCallExpr.h"
 #include <lib/compiler/utils/Utils.h>
 
-GetCallExpr::GetCallExpr(Expr *callee, Token *op, Token *identifier, Token *rParen, const std::vector<Expr *> &args)
+GetCallExpr::GetCallExpr(Expr *callee, PToken op, PToken identifier, PToken rParen, const std::vector<Expr *> &args)
         : MixedCallExpr(rParen, args), callee(callee), op(op), identifier(identifier) {}
 
 std::vector<Expr *> GetCallExpr::getArguments(Compiler *compiler) {

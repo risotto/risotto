@@ -10,9 +10,9 @@
 
 class IdentifierCallExpr: public MixedCallExpr {
 public:
-    Token *identifier;
+    PToken identifier;
 
-    IdentifierCallExpr(Token *identifier, Token *rParen, const std::vector<Expr *> &args);
+    IdentifierCallExpr(PToken identifier, PToken rParen, const std::vector<Expr *> &args);
 
     FunctionNotFoundError getFunctionNotFoundError(Compiler *compiler) override;
 

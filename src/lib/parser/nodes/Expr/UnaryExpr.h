@@ -13,9 +13,9 @@
 class UnaryExpr: public GetCallExpr {
 public:
     Expr *right();
-    Token *op();
+    PToken op();
 
-    UnaryExpr(Token *op, Expr *right);
+    UnaryExpr(PToken op, Expr *right);
 
     FunctionEntry *getFunctionEntry(Compiler *compiler) override;
 

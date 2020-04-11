@@ -36,7 +36,7 @@ FunctionEntry *TypeDefinition::addPrefix(ParameterDefinition *self, FunctionEntr
     return prefixes.add(entry);
 }
 
-TypeDefinition::TypeDefinition() {}
+TypeDefinition::TypeDefinition() = default;
 
 TypeDefinition::TypeDefinition(const ValueTypeContainer *_vtc) : TypeDefinition() {
     assert(_vtc != nullptr);

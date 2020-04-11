@@ -45,18 +45,16 @@ InterpretResult Risotto::run(const std::string &str, const std::vector<std::stri
 }
 
 InterpretResult Risotto::doRun(const std::string &str, const std::vector<std::string> &args) {
-    auto tokens = timing<std::vector<Token *>>("Tokenizer", [str]() {
-        auto tokenizer = new Tokenizer(str);
-        return tokenizer->tokenize();
+    auto tokens = timing<std::vector<Token>>("Tokenizer", [str]() {
+        return Tokenizer::Tokenize(str);
     });
 
     if (hasFlag(RisottoFlags::PrintTokens)) {
         this->printfp("%s", TokensPrinter::print(tokens).c_str());
     }
 
-    auto stmts = timing<std::vector<Stmt *>>("Parser", [tokens]() {
-        auto parser = new Parser(tokens);
-        return parser->program();
+    auto stmts = timing<std::vector<Stmt *>>("Parser", [&tokens]() {
+        return Parser::Parse(&tokens);
     });
 
     if (hasFlag(RisottoFlags::PrintAST)) {
@@ -66,10 +64,6 @@ InterpretResult Risotto::doRun(const std::string &str, const std::vector<std::st
     auto chunk = timing<Chunk>("Compiler", [stmts]() {
         return Compiler(stmts, &primitives).compile();
     });
-
-    if (hasFlag(RisottoFlags::PrintDisassembled)) {
-        disassembleChunk(&chunk, "chunk");
-    }
 
     unsigned int vmFlags = VMFlags::VMNone;
 
@@ -85,15 +79,18 @@ InterpretResult Risotto::doRun(const std::string &str, const std::vector<std::st
     }
 #endif
 
-    auto argsa = (ValueArray *) malloc(sizeof(ValueArray));
-    initValueArray(argsa);
-    registerObject((Object *) argsa);
+    auto argsa = ValueArray{};
+    vec_init(&argsa.vec);
 
     for (const auto &arg: args) {
-        writeValueArray(argsa, s2v(arg.c_str()));
+        vec_push(&argsa.vec, s2v(arg.c_str()));
     }
 
-    initVM(vmFlags, this->printfp, argsa);
+    initVM(vmFlags, this->printfp, &argsa);
+
+    if (hasFlag(RisottoFlags::PrintDisassembled)) {
+        disassembleChunk(&chunk, "chunk");
+    }
 
     auto result = timing<InterpretResult>("VM", [&chunk]() {
         return interpret(&chunk, 0);
@@ -105,12 +102,12 @@ InterpretResult Risotto::doRun(const std::string &str, const std::vector<std::st
     return result;
 }
 
-bool Risotto::hasFlag(RisottoFlags flag) {
+bool Risotto::hasFlag(RisottoFlags flag) const {
     return (flags & flag) == flag;
 }
 
-template<class _Rep, class _Period>
-std::string nsToStr(std::chrono::duration<_Rep, _Period> duration) {
+template<class Rep, class Period>
+std::string nsToStr(std::chrono::duration<Rep, Period> duration) {
     auto hours = std::chrono::duration_cast<std::chrono::hours>(duration);
     duration -= hours;
     auto minutes = std::chrono::duration_cast<std::chrono::minutes>(duration);

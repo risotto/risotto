@@ -33,13 +33,21 @@
 #include "lib/parser/nodes/Stmt/FunctionStmt.h"
 #include "lib/parser/nodes/Stmt/BlockStmt.h"
 
-Shorthand::Shorthand(TokenType op, const std::string &str) : op(op), str(str) {}
+Shorthand::Shorthand(TokenType op, std::string str) : op(op), str(std::move(str)) {}
 
-Parser::Parser(std::vector<Token *> tokens) : tokens(std::move(tokens)) {
+std::vector<Stmt *> Parser::Parse(std::vector<Token> *tokens) {
+    auto tokensp = std::vector<const Token *>();
 
+    for (auto it = tokens->begin(); it != tokens->end(); ++it) {
+        tokensp.push_back(&(*it));
+    }
+
+    return Parser(tokensp).program();
 }
 
-Token *Parser::advance() {
+Parser::Parser(std::vector<PToken> tokens) : tokens(std::move(tokens)) {}
+
+PToken Parser::advance() {
     if (!isAtEnd()) current++;
     return previous();
 }
@@ -70,25 +78,25 @@ bool Parser::check(TokenType tokenType, int n) {
     return peek(n)->type == tokenType;
 }
 
-Token *Parser::peek() {
+PToken Parser::peek() {
     return peek(0);
 }
 
-Token *Parser::peek(unsigned int n) {
+PToken Parser::peek(unsigned int n) {
     return tokens.at(current + n);
 }
 
-Token *Parser::previous() {
+PToken Parser::previous() {
     return tokens.at(current - 1);
 }
 
-Token *Parser::consume(TokenType type, const std::string &message) {
+PToken Parser::consume(TokenType type, const std::string &message) {
     if (check(type)) return advance();
 
     throw error(peek(), message);
 }
 
-ParseError Parser::error(Token *token, const std::string &message) {
+ParseError Parser::error(PToken token, const std::string &message) {
     return ParseError(message, token);
 }
 
@@ -224,13 +232,13 @@ Stmt *Parser::type() {
 Stmt *Parser::varDecl() {
     auto c = current;
     if (check(TokenType::IDENTIFIER)) {
-        auto identifiers = enumeration<std::pair<Token *, TypeDescriptor *>>([this]() {
+        auto identifiers = enumeration<std::pair<PToken, TypeDescriptor *>>([this]() {
             auto identifier = consume(TokenType::IDENTIFIER, "Expect identifier.");
 
             auto type = typeDesc();
 
-            return std::make_pair<Token *, TypeDescriptor *>(
-                    reinterpret_cast<Token *&&>(identifier),
+            return std::make_pair<PToken, TypeDescriptor *>(
+                    reinterpret_cast<PToken&&>(identifier),
                     reinterpret_cast<TypeDescriptor *&&>(type)
             );
         }, TokenType::COMMA, TokenType::COLON_EQUAL);
@@ -260,7 +268,7 @@ Parser::functionSignature(TokenType type, bool canHaveReceiver, bool canBeNamed,
         consume(TokenType::RIGHT_PAREN, "Expect ')' after receiver declaration.");
     }
 
-    Token *name = nullptr;
+    PToken name = nullptr;
     if (canBeNamed) {
         switch (type) {
             case TokenType::FUNC:
@@ -459,7 +467,7 @@ Stmt *Parser::returnStatement() {
         }
     }
 
-    Token *keyword = previous();
+    auto keyword = previous();
 
     return new ReturnStmt(keyword, values);
 }
@@ -513,7 +521,7 @@ Expr *Parser::expression() {
 
         auto args = arguments(TokenType::RIGHT_PAREN);
 
-        Token *rParen = consume(TokenType::RIGHT_PAREN, "Expect ')' after parameters.");
+        auto rParen = consume(TokenType::RIGHT_PAREN, "Expect ')' after parameters.");
 
         return new NewCallExpr(identifier, rParen, args);
     }
@@ -524,26 +532,26 @@ Expr *Parser::expression() {
 const auto shorthands = std::map<TokenType, Shorthand>(
         {
                 // Maths
-                {TokenType::PLUS_EQUAL, Shorthand(TokenType::PLUS, "+")},
-                {TokenType::MINUS_EQUAL, Shorthand(TokenType::MINUS, "-")},
-                {TokenType::STAR_EQUAL, Shorthand(TokenType::STAR, "*")},
-                {TokenType::SLASH_EQUAL, Shorthand(TokenType::SLASH, "/")},
+                {TokenType::PLUS_EQUAL,        Shorthand(TokenType::PLUS, "+")},
+                {TokenType::MINUS_EQUAL,       Shorthand(TokenType::MINUS, "-")},
+                {TokenType::STAR_EQUAL,        Shorthand(TokenType::STAR, "*")},
+                {TokenType::SLASH_EQUAL,       Shorthand(TokenType::SLASH, "/")},
 
                 // Bitwise
-                {TokenType::AMPERSAND_EQUAL, Shorthand(TokenType::AMPERSAND, "&")},
-                {TokenType::PIPE_EQUAL, Shorthand(TokenType::PIPE, "|")},
-                {TokenType::CARET_EQUAL, Shorthand(TokenType::CARET, "^")},
-                {TokenType::LEFT_LEFT_EQUAL, Shorthand(TokenType::LEFT_LEFT, "<<")},
+                {TokenType::AMPERSAND_EQUAL,   Shorthand(TokenType::AMPERSAND, "&")},
+                {TokenType::PIPE_EQUAL,        Shorthand(TokenType::PIPE, "|")},
+                {TokenType::CARET_EQUAL,       Shorthand(TokenType::CARET, "^")},
+                {TokenType::LEFT_LEFT_EQUAL,   Shorthand(TokenType::LEFT_LEFT, "<<")},
                 {TokenType::RIGHT_RIGHT_EQUAL, Shorthand(TokenType::RIGHT_RIGHT, ">>")},
         }
 );
 
 Expr *Parser::assignment() {
-    Expr *expr = logicalOr();
+    auto expr = logicalOr();
 
     if (match(TokenType::EQUAL)) {
-        Token *op = previous();
-        Expr *value = expression();
+        auto op = previous();
+        auto value = expression();
 
         return new SetExpr(expr, op, value);
     }
@@ -579,11 +587,11 @@ Expr *Parser::assignment() {
 }
 
 Expr *Parser::logicalOr() {
-    Expr *expr = logicalAnd();
+    auto expr = logicalAnd();
 
     while (match(TokenType::OR)) {
-        Token *op = previous();
-        Expr *right = logicalAnd();
+        auto op = previous();
+        auto right = logicalAnd();
         expr = new LogicalExpr(expr, op, right);
     }
 
@@ -591,11 +599,11 @@ Expr *Parser::logicalOr() {
 }
 
 Expr *Parser::logicalAnd() {
-    Expr *expr = bit_or();
+    auto expr = bit_or();
 
     while (match(TokenType::AND)) {
-        Token *op = previous();
-        Expr *right = bit_or();
+        auto op = previous();
+        auto right = bit_or();
         expr = new LogicalExpr(expr, op, right);
     }
 
@@ -603,11 +611,11 @@ Expr *Parser::logicalAnd() {
 }
 
 Expr *Parser::bit_or() {
-    Expr *expr = bit_xor();
+    auto expr = bit_xor();
 
     while (match(TokenType::PIPE)) {
-        Token *op = previous();
-        Expr *right = bit_xor();
+        auto op = previous();
+        auto right = bit_xor();
         expr = new BinaryExpr(expr, op, right);
     }
 
@@ -615,11 +623,11 @@ Expr *Parser::bit_or() {
 }
 
 Expr *Parser::bit_xor() {
-    Expr *expr = bit_and();
+    auto expr = bit_and();
 
     while (match(TokenType::CARET)) {
-        Token *op = previous();
-        Expr *right = bit_and();
+        auto op = previous();
+        auto right = bit_and();
         expr = new BinaryExpr(expr, op, right);
     }
 
@@ -627,11 +635,11 @@ Expr *Parser::bit_xor() {
 }
 
 Expr *Parser::bit_and() {
-    Expr *expr = equality();
+    auto expr = equality();
 
     while (match(TokenType::AMPERSAND)) {
-        Token *op = previous();
-        Expr *right = equality();
+        auto op = previous();
+        auto right = equality();
         expr = new BinaryExpr(expr, op, right);
     }
 
@@ -639,11 +647,11 @@ Expr *Parser::bit_and() {
 }
 
 Expr *Parser::equality() {
-    Expr *expr = comparison();
+    auto expr = comparison();
 
     while (match(TokenType::EQUAL_EQUAL, TokenType::BANG_EQUAL)) {
-        Token *op = previous();
-        Expr *right = comparison();
+        auto op = previous();
+        auto right = comparison();
         expr = new BinaryExpr(expr, op, right);
     }
 
@@ -651,11 +659,11 @@ Expr *Parser::equality() {
 }
 
 Expr *Parser::comparison() {
-    Expr *expr = bitshifting();
+    auto expr = bitshifting();
 
     while (match(TokenType::GREATER, TokenType::GREATER_EQUAL, TokenType::LESS, TokenType::LESS_EQUAL)) {
-        Token *op = previous();
-        Expr *right = addition();
+        auto op = previous();
+        auto right = addition();
         expr = new BinaryExpr(expr, op, right);
     }
 
@@ -663,11 +671,11 @@ Expr *Parser::comparison() {
 }
 
 Expr *Parser::bitshifting() {
-    Expr *expr = addition();
+    auto expr = addition();
 
     while (match(TokenType::LEFT_LEFT, TokenType::RIGHT_RIGHT)) {
-        Token *op = previous();
-        Expr *right = bitshifting();
+        auto op = previous();
+        auto right = bitshifting();
         expr = new BinaryExpr(expr, op, right);
     }
 
@@ -675,11 +683,11 @@ Expr *Parser::bitshifting() {
 }
 
 Expr *Parser::addition() {
-    Expr *expr = multiplication();
+    auto expr = multiplication();
 
     while (match(TokenType::MINUS, TokenType::PLUS)) {
-        Token *op = previous();
-        Expr *right = multiplication();
+        auto op = previous();
+        auto right = multiplication();
         expr = new BinaryExpr(expr, op, right);
     }
 
@@ -687,11 +695,11 @@ Expr *Parser::addition() {
 }
 
 Expr *Parser::multiplication() {
-    Expr *expr = unary();
+    auto expr = unary();
 
     while (match(TokenType::SLASH, TokenType::STAR, TokenType::PERCENT)) {
-        Token *op = previous();
-        Expr *right = unary();
+        auto op = previous();
+        auto right = unary();
         expr = new BinaryExpr(expr, op, right);
     }
 
@@ -700,8 +708,8 @@ Expr *Parser::multiplication() {
 
 Expr *Parser::unary() {
     if (match(TokenType::BANG, TokenType::MINUS, TokenType::TILDE, TokenType::MINUS_MINUS, TokenType::PLUS_PLUS)) {
-        Token *op = previous();
-        Expr *right = unary();
+        auto op = previous();
+        auto *right = unary();
         return new UnaryExpr(op, right);
     }
 
@@ -715,7 +723,7 @@ Expr *Parser::call() {
         if (match(TokenType::LEFT_PAREN)) {
             auto args = arguments(TokenType::RIGHT_PAREN);
 
-            Token *rParen = consume(TokenType::RIGHT_PAREN, "Expect ')' after parameters.");
+            auto rParen = consume(TokenType::RIGHT_PAREN, "Expect ')' after parameters.");
 
             if (auto identifierExpr = dynamic_cast<IdentifierExpr *>(expr)) {
                 expr = new IdentifierCallExpr(identifierExpr->name, rParen, args);
@@ -731,7 +739,7 @@ Expr *Parser::call() {
         } else if (match(TokenType::LEFT_SQUARED)) {
             auto args = arguments(TokenType::RIGHT_SQUARED);
 
-            Token *rParen = consume(TokenType::RIGHT_SQUARED, "Expect ']' after parameters.");
+            auto rParen = consume(TokenType::RIGHT_SQUARED, "Expect ']' after parameters.");
 
             expr = new SubscriptExpr(expr, rParen, args);
         } else {
@@ -765,7 +773,7 @@ Expr *Parser::primary() {
 
 Expr *Parser::group() {
     auto lParen = previous();
-    Expr *expr = expression();
+    auto expr = expression();
 
     auto rParen = consume(TokenType::RIGHT_PAREN, "Expect ')' after expression.");
 

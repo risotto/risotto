@@ -11,11 +11,11 @@
 
 class VarDeclStmt: public Stmt {
 public:
-    std::vector<std::pair<Token *, TypeDescriptor *>> identifiers;
-    Token *op;
+    std::vector<std::pair<PToken , TypeDescriptor *>> identifiers;
+    PToken op;
     Expr *value;
 
-    VarDeclStmt(std::vector<std::pair<Token *, TypeDescriptor *>> identifiers, Token *op, Expr *value);
+    VarDeclStmt(std::vector<std::pair<PToken , TypeDescriptor *>>  identifiers, PToken op, Expr *value);
 
     std::vector<ByteResolver *> compile(Compiler *compiler) override;
 

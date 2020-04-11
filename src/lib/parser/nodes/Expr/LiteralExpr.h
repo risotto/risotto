@@ -12,9 +12,9 @@
 
 class LiteralExpr : public Expr {
 public:
-    Token *value;
+    PToken value;
 
-    explicit LiteralExpr(Token *value);
+    explicit LiteralExpr(PToken value);
 
     std::vector<ByteResolver *> compile(Compiler *compiler) override;
 

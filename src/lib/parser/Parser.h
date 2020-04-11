@@ -16,7 +16,7 @@
 #define FUNCTION_SIGNATURE_FACTORY_ARGS \
     TokenType type, \
     ParameterDefinition *receiver, \
-    Token *name, \
+    PToken name, \
     std::vector<TypeDescriptor *> returnTypes, \
     std::vector<ParameterDefinition *> parameters
 
@@ -24,10 +24,10 @@ template<typename T>
 using FunctionSignatureFactory = std::function<T(FUNCTION_SIGNATURE_FACTORY_ARGS)>;
 
 #define FUNCTION_FACTORY_ARGS \
-    Token *typeDecl, \
+    PToken typeDecl, \
     FUNCTION_SIGNATURE_FACTORY_ARGS, \
     std::vector<Stmt *> body, \
-    Token *closeBlock
+    PToken closeBlock
 
 template<typename T>
 using FunctionFactory = std::function<T(FUNCTION_FACTORY_ARGS)>;
@@ -37,25 +37,24 @@ public:
     TokenType op;
     std::string str;
 
-    Shorthand(TokenType op, const std::string &str);
+    Shorthand(TokenType op, std::string str);
 };
 
 class Parser {
+public:
+    static std::vector<Stmt *> Parse(std::vector<Token> *tokens);
+
 private:
-    std::vector<Token *> tokens;
+    std::vector<PToken> tokens;
     unsigned int current = 0;
 
-public:
-    explicit Parser(std::vector<Token *> tokens);
+    explicit Parser(std::vector<PToken> tokens);
 
-    std::vector<Stmt *> program();
+    PToken peek();
 
-private:
-    Token *peek();
+    PToken peek(unsigned int n);
 
-    Token *peek(unsigned int n);
-
-    Token *previous();
+    PToken previous();
 
     template<class... Types>
     bool match(Types... types);
@@ -65,6 +64,8 @@ private:
     bool check(TokenType tokenType);
 
     bool check(TokenType tokenType, int n);
+
+    std::vector<Stmt *> program();
 
     Stmt *declaration();
 
@@ -106,7 +107,7 @@ private:
 
     Expr *unary();
 
-    Token *advance();
+    PToken advance();
 
     Expr *call();
 
@@ -122,9 +123,9 @@ private:
     template<typename T>
     std::vector<T> enumeration(std::function<T()> of, TokenType end);
 
-    Token *consume(TokenType type, const std::string &message);
+    PToken consume(TokenType type, const std::string &message);
 
-    ParseError error(Token *token, const std::string &message);
+    ParseError error(PToken token, const std::string &message);
 
     std::vector<Stmt *> block();
 

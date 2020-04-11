@@ -7,16 +7,17 @@
 
 
 #include <lib/tokenizer/Token.h>
+#include "Node.h"
 
 class TypeDescriptor;
 
 class ParameterDefinition {
 public:
-    Token *name;
+    PToken name;
     TypeDescriptor *type;
     bool asReference;
 
-    ParameterDefinition(Token *name, TypeDescriptor *type, bool asReference);
+    ParameterDefinition(PToken name, TypeDescriptor *type, bool asReference);
     ParameterDefinition(const std::string& name, TypeDescriptor *type, bool asReference);
 };
 

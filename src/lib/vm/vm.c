@@ -23,7 +23,7 @@
 #endif
 
 #define READ_BYTE() (*vm.ip++)
-#define READ_CONSTANT() (vm.chunk->constants.object.values[READ_BYTE()])
+#define READ_CONSTANT() (vm.chunk->constants.data[READ_BYTE()])
 #define GOTO(a) vm.ip = vm.chunk->code + (a)
 
 VM vm;
@@ -56,9 +56,10 @@ VM *getVM() {
 void freeVM() {
     resetStack();
     gc();
+    vec_deinit(&vm.fcs);
 }
 
-void registerObject(Object *object) {
+void registerObject(GCObject *object) {
     if (vm.numObjects >= vm.maxObjects) gc();
 
     object->marked = 0;
@@ -74,36 +75,61 @@ void markAll() {
     }
 }
 
-void markValue(Value *v) {
-    Value vl = *accessRefp(v);
-    if (typecheck(vl, T_OBJECT) || typecheck(vl, T_ARRAY)) {
-        Object *object = v2o(vl);
-
-        mark(object);
-    }
-}
-
-void mark(Object *object) {
-    if (object->marked) return;
+bool markGCObject(GCObject *object) {
+    if (object->marked) return false;
 
     object->marked = 1;
 
-    for (int i = 0; i < object->size; ++i) {
-        markValue(&object->values[i]);
+    return true;
+}
+
+void markValue(Value *v) {
+    Value vl = *accessRefp(v);
+
+    switch (TGET(vl)) {
+        case T_OBJECT: {
+            Object *object = v2o(vl);
+            markObject(object);
+
+            break;
+        }
+        case T_ARRAY: {
+            ValueArray *array = v2a(vl);
+            markArray(array);
+
+            break;
+        }
+    }
+}
+
+void markObject(Object *object) {
+    if (markGCObject((GCObject *) object)) {
+        for (size_t i = 0; i < object->size; ++i) {
+            markValue(&object->values[i]);
+        }
+    }
+}
+
+void markArray(ValueArray *array) {
+    if (markGCObject((GCObject *) array)) {
+        int i;
+        Value *val;
+        vec_foreach_ptr(&array->vec, val, i) {
+                markValue(val);
+            }
     }
 }
 
 void sweep() {
-    Object **object = &vm.firstObject;
+    GCObject **object = &vm.firstObject;
     while (*object) {
         if (!(*object)->marked) {
             /* This object wasn't reached, so remove it from the list
                and free it. */
-            Object *unreached = *object;
+            GCObject *unreached = *object;
 
             *object = unreached->next;
             free(unreached);
-            free(unreached->values);
             vm.numObjects--;
         } else {
             /* This object was reached, so unmark it (for the next GC)
@@ -382,19 +408,16 @@ static InterpretResult run() {
                 ValueTypeContainer *tc = v2p(READ_CONSTANT());
                 OP_T size = READ_BYTE();
 
-                Object *instance = malloc(sizeof(*instance));
+                Object *instance = malloc(sizeof(*instance) + sizeof(Value[size]));
                 instance->size = size;
-                instance->values = malloc(size * sizeof(*instance->values));
 
-                for (int i = 0; i < size; ++i) {
+                registerObject((GCObject *) instance);
+
+                for (size_t i = 0; i < size; ++i) {
                     instance->values[i] = n2v();
                 }
 
-                registerObject(instance);
-
-                Value ov = o2v(instance, tc);
-
-                push(ov);
+                push(o2v(instance, tc));
                 NEXT();
             }
             case TARGET(OP_SET):
@@ -428,11 +451,11 @@ static InterpretResult run() {
                 int elemsc = READ_BYTE();
 
                 ValueArray *array = malloc(sizeof(*array));
-                initValueArray(array);
-                registerObject((Object *) array);
+                vec_init(array);
+                registerObject((GCObject *) array);
 
                 for (int i = 0; i < elemsc; ++i) {
-                    writeValueArray(array, copy(pop()));
+                    vec_push(&array->vec, copy(pop()));
                 }
 
                 push(a2v(array, tc));
@@ -542,16 +565,16 @@ InterpretResult interpret(Chunk *chunk, long addr) {
 }
 
 void loadInstance(int index) {
-    Object *array = v2o(pop());
+    Object *obj = v2o(pop());
 
     unsigned int offset;
     if (index < 0) {
-        offset = index + array->size;
+        offset = index + obj->size;
     } else {
         offset = index;
     }
 
-    Value *p = array->values + offset;
+    Value *p = obj->values + offset;
 
     push(vp2v(p));
 }

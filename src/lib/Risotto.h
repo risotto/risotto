@@ -46,11 +46,10 @@ public:
 
     InterpretResult run(const std::string &program, const std::vector<std::string>& args);
 
-    bool hasFlag(RisottoFlags flag);
+    [[nodiscard]] bool hasFlag(RisottoFlags flag) const;
 
     template<typename T>
     T timing(const std::string &name, std::function<T()> f);
-
 
 private:
     InterpretResult doRun(const std::string &str, const std::vector<std::string>& args);

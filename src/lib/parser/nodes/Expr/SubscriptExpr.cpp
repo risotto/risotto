@@ -4,7 +4,7 @@
 
 #include "SubscriptExpr.h"
 
-SubscriptExpr::SubscriptExpr(Expr *expr, Token *rParen, const std::vector<Expr *> &args) :
+SubscriptExpr::SubscriptExpr(Expr *expr, PToken rParen, const std::vector<Expr *> &args) :
         GetCallExpr(expr, rParen, rParen, rParen, args) {
 
 }

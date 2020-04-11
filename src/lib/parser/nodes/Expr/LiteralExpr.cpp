@@ -13,11 +13,11 @@ extern "C" {
 #include "lib/compiler/ReturnTypes.h"
 #include "../lib/wise_enum/wise_enum.h"
 
-LiteralExpr::LiteralExpr(Token *value) : value(value) {
+LiteralExpr::LiteralExpr(PToken value) : value(value) {
 
 }
 
-Value literalToValue(Token *value) {
+Value literalToValue(PToken value) {
     switch (value->type) {
         case TokenType::INT:
             return i2v(value->value._int);

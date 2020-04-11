@@ -15,25 +15,25 @@
 
 class FunctionStmt : public Stmt {
 public:
-    Token *type;
+    PToken type;
     ParameterDefinition *receiver;
-    Token *name;
+    PToken name;
     std::vector<TypeDescriptor *> returnTypes;
     std::vector<ParameterDefinition *> parameters;
     std::vector<Stmt *> body;
-    Token *closeBlock;
+    PToken closeBlock;
     Frame *bodyFrame = nullptr;
 
     bool autoRegister = true;
 
     FunctionStmt(
-            Token *type,
+            PToken type,
             ParameterDefinition *receiver,
-            Token *name,
+            PToken name,
             const std::vector<TypeDescriptor *>& returnTypes,
             const std::vector<ParameterDefinition *>& parameters,
             std::vector<Stmt *> body,
-            Token *closeBlock
+            PToken closeBlock
     );
 
     std::vector<ByteResolver *> compile(Compiler *compiler) override;

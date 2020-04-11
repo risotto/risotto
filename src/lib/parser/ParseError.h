@@ -8,13 +8,14 @@
 
 #include <exception>
 #include <lib/tokenizer/Token.h>
+#include <lib/parser/nodes/Node.h>
 
 class ParseError: public std::exception {
 public:
     std::string message;
-    Token *token;
+    PToken token;
 
-    ParseError(const std::string& message, Token *token);
+    ParseError(const std::string& message, PToken token);
 
     [[nodiscard]] const char *what() const noexcept override;
 };

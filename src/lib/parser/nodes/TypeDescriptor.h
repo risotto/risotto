@@ -34,12 +34,12 @@ public:
 
 class NilTypeDescriptor: public TypeDescriptor {
 public:
-    Token *token;
+    PToken token;
 
     static NilTypeDescriptor Def;
 
     NilTypeDescriptor();
-    explicit NilTypeDescriptor(Token *name);
+    explicit NilTypeDescriptor(PToken name);
 
     std::string toString() override;
 
@@ -69,10 +69,10 @@ class StructTypeDescriptor : public TypeDescriptor {
 public:
     class Field {
     public:
-        Token *name;
+        PToken name;
         TypeDescriptor *type;
 
-        Field(Token *name, TypeDescriptor *type);
+        Field(PToken name, TypeDescriptor *type);
     };
 
     std::vector<Field> fields;
@@ -90,12 +90,12 @@ public:
 
 class IdentifierTypeDescriptor : public TypeDescriptor {
 public:
-    Token *name;
+    PToken name;
     TypeDescriptor *typeDesc = nullptr;
 
-    explicit IdentifierTypeDescriptor(Token *name);
+    explicit IdentifierTypeDescriptor(PToken name);
 
-    IdentifierTypeDescriptor(Token *name, TypeDescriptor *typeDesc);
+    IdentifierTypeDescriptor(PToken name, TypeDescriptor *typeDesc);
 
     IdentifierTypeDescriptor(const std::string &name, TypeDefinition *typeDef);
 

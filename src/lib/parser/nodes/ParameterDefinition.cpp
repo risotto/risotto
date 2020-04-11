@@ -6,7 +6,7 @@
 
 #include <utility>
 
-ParameterDefinition::ParameterDefinition(Token *name, TypeDescriptor *type, bool asReference)
+ParameterDefinition::ParameterDefinition(PToken name, TypeDescriptor *type, bool asReference)
         : name(name), type(type), asReference(asReference) {
 
 }

@@ -18,7 +18,7 @@ StructTypeDefinition *getStructTypeDefinition(TypeDescriptor *typeRef) {
     return dynamic_cast<StructTypeDefinition *>(typeRef->getTypeDefinition());
 }
 
-GetExpr::GetExpr(Expr *callee, Token *identifier) : callee(callee), identifier(identifier) {
+GetExpr::GetExpr(Expr *callee, PToken identifier) : callee(callee), identifier(identifier) {
 
 }
 

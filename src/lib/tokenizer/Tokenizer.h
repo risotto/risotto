@@ -10,7 +10,12 @@
 #include "Token.h"
 
 class Tokenizer {
+public:
+    static std::vector<Token> Tokenize(std::string str);
+
 private:
+    explicit Tokenizer(std::string src);
+
     std::string src;
 
     int start = 0;
@@ -19,11 +24,12 @@ private:
     int line = 0;
     int column = 0;
 
-    std::vector<Token *> tokens;
+    std::vector<Token> tokens;
 
     static std::map<std::string, TokenType> keywords;
 
-private:
+    std::vector<Token> tokenize();
+
     char advance();
 
     void scan();
@@ -56,11 +62,6 @@ private:
     void identifier();
 
     bool isAlphaNumeric(char c);
-
-public:
-    explicit Tokenizer(std::string src);
-
-    std::vector<Token *> tokenize();
 };
 
 
