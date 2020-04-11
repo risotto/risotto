@@ -35,11 +35,11 @@
 
 Shorthand::Shorthand(TokenType op, std::string str) : op(op), str(std::move(str)) {}
 
-Parser::Parser(std::vector<const Token *> tokens) : tokens(std::move(tokens)) {
+Parser::Parser(std::vector<PToken > tokens) : tokens(std::move(tokens)) {
 
 }
 
-const Token *Parser::advance() {
+PToken Parser::advance() {
     if (!isAtEnd()) current++;
     return previous();
 }
@@ -70,25 +70,25 @@ bool Parser::check(TokenType tokenType, int n) {
     return peek(n)->type == tokenType;
 }
 
-const Token *Parser::peek() {
+PToken Parser::peek() {
     return peek(0);
 }
 
-const Token *Parser::peek(unsigned int n) {
+PToken Parser::peek(unsigned int n) {
     return tokens.at(current + n);
 }
 
-const Token *Parser::previous() {
+PToken Parser::previous() {
     return tokens.at(current - 1);
 }
 
-const Token *Parser::consume(TokenType type, const std::string &message) {
+PToken Parser::consume(TokenType type, const std::string &message) {
     if (check(type)) return advance();
 
     throw error(peek(), message);
 }
 
-ParseError Parser::error(const Token *token, const std::string &message) {
+ParseError Parser::error(PToken token, const std::string &message) {
     return ParseError(message, token);
 }
 
@@ -224,13 +224,13 @@ Stmt *Parser::type() {
 Stmt *Parser::varDecl() {
     auto c = current;
     if (check(TokenType::IDENTIFIER)) {
-        auto identifiers = enumeration<std::pair<const Token *, TypeDescriptor *>>([this]() {
+        auto identifiers = enumeration<std::pair<PToken , TypeDescriptor *>>([this]() {
             auto identifier = consume(TokenType::IDENTIFIER, "Expect identifier.");
 
             auto type = typeDesc();
 
-            return std::make_pair<const Token *, TypeDescriptor *>(
-                    reinterpret_cast<const Token *&&>(identifier),
+            return std::make_pair<PToken , TypeDescriptor *>(
+                    reinterpret_cast<PToken &&>(identifier),
                     reinterpret_cast<TypeDescriptor *&&>(type)
             );
         }, TokenType::COMMA, TokenType::COLON_EQUAL);
@@ -260,7 +260,7 @@ Parser::functionSignature(TokenType type, bool canHaveReceiver, bool canBeNamed,
         consume(TokenType::RIGHT_PAREN, "Expect ')' after receiver declaration.");
     }
 
-    const Token *name = nullptr;
+    PToken name = nullptr;
     if (canBeNamed) {
         switch (type) {
             case TokenType::FUNC:

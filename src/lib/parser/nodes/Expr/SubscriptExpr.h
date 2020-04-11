@@ -12,7 +12,7 @@
 
 class SubscriptExpr : public GetCallExpr {
 public:
-    SubscriptExpr(Expr *expr, const Token *rParen, const std::vector<Expr *>& args);
+    SubscriptExpr(Expr *expr, PToken rParen, const std::vector<Expr *>& args);
 
     bool isArgumentReference(Compiler *compiler, unsigned int i) override;
 

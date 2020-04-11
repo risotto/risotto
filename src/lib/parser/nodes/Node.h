@@ -9,6 +9,8 @@
 #include "lib/tokenizer/Token.h"
 #include "lib/compiler/ByteResolver.h"
 
+#define PToken const Token *
+
 class Compiler;
 
 class Node {

@@ -6,7 +6,7 @@
 
 #include <lib/compiler/Compiler.h>
 
-MixedCallExpr::MixedCallExpr(const Token *rParen, const std::vector<Expr *> &args)
+MixedCallExpr::MixedCallExpr(PToken rParen, const std::vector<Expr *> &args)
         : BaseCallExpr(rParen, args) {}
 
 ReturnTypes MixedCallExpr::computeReturnType(Compiler *compiler) {

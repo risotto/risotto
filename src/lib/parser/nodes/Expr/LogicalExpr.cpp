@@ -11,7 +11,7 @@ extern "C" {
 #include "LogicalExpr.h"
 #include "lib/compiler/ReturnTypes.h"
 
-LogicalExpr::LogicalExpr(Expr *left, const Token *op, Expr *right): left(left), op(op), right(right) {
+LogicalExpr::LogicalExpr(Expr *left, PToken op, Expr *right): left(left), op(op), right(right) {
 
 }
 

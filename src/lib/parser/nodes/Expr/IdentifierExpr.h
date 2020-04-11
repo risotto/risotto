@@ -10,9 +10,9 @@
 
 class IdentifierExpr: public Expr {
 public:
-    const Token *name;
+    PToken name;
 
-    explicit IdentifierExpr(const Token *name);
+    explicit IdentifierExpr(PToken name);
 
     std::vector<ByteResolver *> compile(Compiler *compiler) override;
 

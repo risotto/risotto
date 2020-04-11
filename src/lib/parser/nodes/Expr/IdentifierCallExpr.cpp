@@ -6,7 +6,7 @@
 #include "IdentifierCallExpr.h"
 #include "lib/compiler/Compiler.h"
 
-IdentifierCallExpr::IdentifierCallExpr(const Token *identifier, const Token *rParen, const std::vector<Expr *> &args)
+IdentifierCallExpr::IdentifierCallExpr(PToken identifier, PToken rParen, const std::vector<Expr *> &args)
         : MixedCallExpr(rParen, args), identifier(identifier) {}
 
 VariableEntry *IdentifierCallExpr::getVariableEntry(Compiler *compiler) {

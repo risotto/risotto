@@ -11,7 +11,7 @@
 
 class NewCallExpr: public IdentifierCallExpr {
 public:
-    NewCallExpr(const Token *identifier, const Token *rParen, const std::vector<Expr *> &args);
+    NewCallExpr(PToken identifier, PToken rParen, const std::vector<Expr *> &args);
 
     std::vector<TypeDescriptor *> getArgumentsTypes(Compiler *compiler) override;
 

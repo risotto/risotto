@@ -7,7 +7,7 @@
 #include <utility>
 #include "ReturnStmt.h"
 
-ReturnStmt::ReturnStmt(const Token *keyword, std::vector<Expr *> values) : keyword(keyword), values(std::move(values)) {
+ReturnStmt::ReturnStmt(PToken keyword, std::vector<Expr *> values) : keyword(keyword), values(std::move(values)) {
 
 }
 

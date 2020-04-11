@@ -12,10 +12,10 @@
 
 class ReturnStmt : public Stmt {
 public:
-    const Token *keyword;
+    PToken keyword;
     std::vector<Expr *> values;
 
-    ReturnStmt(const Token *keyword, std::vector<Expr *> values);
+    ReturnStmt(PToken keyword, std::vector<Expr *> values);
 
     std::vector<ByteResolver *> compile(Compiler *compiler) override;
 

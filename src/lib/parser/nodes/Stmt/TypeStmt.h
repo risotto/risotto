@@ -11,10 +11,10 @@
 
 class TypeStmt: public Stmt {
 public:
-    const Token *name;
+    PToken name;
     TypeDescriptor *typeDescriptor;
 
-    TypeStmt(const Token *name, TypeDescriptor *typeDescriptor);
+    TypeStmt(PToken name, TypeDescriptor *typeDescriptor);
 
     std::vector<ByteResolver *> compile(Compiler *compiler) override;
 

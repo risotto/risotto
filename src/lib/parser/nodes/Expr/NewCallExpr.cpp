@@ -6,7 +6,7 @@
 #include <lib/compiler/utils/Utils.h>
 #include "NewCallExpr.h"
 
-NewCallExpr::NewCallExpr(const Token *identifier, const Token *rParen, const std::vector<Expr *> &args) : IdentifierCallExpr(identifier, rParen, args) {}
+NewCallExpr::NewCallExpr(PToken identifier, PToken rParen, const std::vector<Expr *> &args) : IdentifierCallExpr(identifier, rParen, args) {}
 
 VariableEntry *NewCallExpr::getVariableEntry(Compiler *compiler) {
     return nullptr;

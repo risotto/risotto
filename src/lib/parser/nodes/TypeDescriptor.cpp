@@ -19,7 +19,7 @@ NilTypeDescriptor NilTypeDescriptor::Def = NilTypeDescriptor();
 
 NilTypeDescriptor::NilTypeDescriptor(): NilTypeDescriptor(Token::IdentifierFactory("nil"))  {}
 
-NilTypeDescriptor::NilTypeDescriptor(const Token *token): token(token) {
+NilTypeDescriptor::NilTypeDescriptor(PToken token): token(token) {
     typeDef = &NilTypeDefinition::Def;
 }
 
@@ -43,7 +43,7 @@ std::string IdentifierTypeDescriptor::toString() {
     return name->lexeme;
 }
 
-IdentifierTypeDescriptor::IdentifierTypeDescriptor(const Token *name) : name(name) {
+IdentifierTypeDescriptor::IdentifierTypeDescriptor(PToken name) : name(name) {
 }
 
 IdentifierTypeDescriptor::IdentifierTypeDescriptor(const std::string &name, TypeDefinition *typeDef) :
@@ -51,7 +51,7 @@ IdentifierTypeDescriptor::IdentifierTypeDescriptor(const std::string &name, Type
     this->typeDef = typeDef;
 }
 
-IdentifierTypeDescriptor::IdentifierTypeDescriptor(const Token *name, TypeDescriptor *typeDesc) : IdentifierTypeDescriptor(
+IdentifierTypeDescriptor::IdentifierTypeDescriptor(PToken name, TypeDescriptor *typeDesc) : IdentifierTypeDescriptor(
         name) {
     this->typeDesc = typeDesc;
 }
@@ -214,7 +214,7 @@ bool StructTypeDescriptor::isSame(TypeDescriptor *type) {
     return false;
 }
 
-StructTypeDescriptor::Field::Field(const Token *name, TypeDescriptor *type) : name(name), type(type) {}
+StructTypeDescriptor::Field::Field(PToken name, TypeDescriptor *type) : name(name), type(type) {}
 
 FunctionTypeDescriptor::FunctionTypeDescriptor(
         bool isMethod,

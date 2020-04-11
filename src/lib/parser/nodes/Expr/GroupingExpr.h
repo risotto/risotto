@@ -13,10 +13,10 @@
 class GroupingExpr: public Expr {
 public:
     Expr *expr;
-    const Token *lParen;
-    const Token *rParen;
+    PToken lParen;
+    PToken rParen;
 
-    GroupingExpr(Expr *expr, const Token *lParen, const Token *rParen);
+    GroupingExpr(Expr *expr, PToken lParen, PToken rParen);
 
     std::vector<ByteResolver *> compile(Compiler *compiler) override;
 

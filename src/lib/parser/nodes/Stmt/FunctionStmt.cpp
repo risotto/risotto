@@ -13,13 +13,13 @@
 #include "lib/compiler/ReturnTypes.h"
 
 FunctionStmt::FunctionStmt(
-        const Token *type,
+        PToken type,
         ParameterDefinition *receiver,
-        const Token *name,
+        PToken name,
         const std::vector<TypeDescriptor *> &returnTypes,
         const std::vector<ParameterDefinition *> &parameters,
         std::vector<Stmt *> body,
-        const Token *closeBlock
+        PToken closeBlock
 ) : type(type),
     receiver(receiver),
     name(name),

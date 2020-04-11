@@ -13,13 +13,13 @@
 
 class BinaryExpr : public GetCallExpr {
 public:
-    BinaryExpr(Expr *left, const Token *op, Expr *right);
+    BinaryExpr(Expr *left, PToken op, Expr *right);
 
     Expr *left();
 
     Expr *right();
 
-    const Token *op();
+    PToken op();
 
     FunctionEntry *getFunctionEntry(Compiler *compiler) override;
 
