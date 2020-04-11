@@ -19,8 +19,7 @@ NilTypeDescriptor NilTypeDescriptor::Def = NilTypeDescriptor();
 
 NilTypeDescriptor::NilTypeDescriptor(): NilTypeDescriptor(Token::IdentifierFactory("nil"))  {}
 
-NilTypeDescriptor::NilTypeDescriptor(Token *token) {
-    this->token = token;
+NilTypeDescriptor::NilTypeDescriptor(const Token *token): token(token) {
     typeDef = &NilTypeDefinition::Def;
 }
 
@@ -44,7 +43,7 @@ std::string IdentifierTypeDescriptor::toString() {
     return name->lexeme;
 }
 
-IdentifierTypeDescriptor::IdentifierTypeDescriptor(Token *name) : name(name) {
+IdentifierTypeDescriptor::IdentifierTypeDescriptor(const Token *name) : name(name) {
 }
 
 IdentifierTypeDescriptor::IdentifierTypeDescriptor(const std::string &name, TypeDefinition *typeDef) :
@@ -52,7 +51,7 @@ IdentifierTypeDescriptor::IdentifierTypeDescriptor(const std::string &name, Type
     this->typeDef = typeDef;
 }
 
-IdentifierTypeDescriptor::IdentifierTypeDescriptor(Token *name, TypeDescriptor *typeDesc) : IdentifierTypeDescriptor(
+IdentifierTypeDescriptor::IdentifierTypeDescriptor(const Token *name, TypeDescriptor *typeDesc) : IdentifierTypeDescriptor(
         name) {
     this->typeDesc = typeDesc;
 }
@@ -201,7 +200,7 @@ bool StructTypeDescriptor::isSame(TypeDescriptor *type) {
 
     if (auto structDef = dynamic_cast<StructTypeDescriptor *>(type)) {
         if (structDef->fields.size() == fields.size()) {
-            for (auto i = 0; i < fields.size(); ++i) {
+            for (auto i = 0u; i < fields.size(); ++i) {
                 auto field = fields[i];
                 auto otherField = structDef->fields[i];
 
@@ -215,7 +214,7 @@ bool StructTypeDescriptor::isSame(TypeDescriptor *type) {
     return false;
 }
 
-StructTypeDescriptor::Field::Field(Token *name, TypeDescriptor *type) : name(name), type(type) {}
+StructTypeDescriptor::Field::Field(const Token *name, TypeDescriptor *type) : name(name), type(type) {}
 
 FunctionTypeDescriptor::FunctionTypeDescriptor(
         bool isMethod,
@@ -228,7 +227,7 @@ std::string FunctionTypeDescriptor::toString() {
 
     ss << "func (";
 
-    for (int i = 0; i < params.size(); ++i) {
+    for (auto i = 0u; i < params.size(); ++i) {
         auto param = params[i];
 
         if (i != 0) {
@@ -242,7 +241,7 @@ std::string FunctionTypeDescriptor::toString() {
 
     if (!returnTypes.empty()) {
         ss << " (";
-        for (auto i = 0; i < returnTypes.size(); ++i) {
+        for (auto i = 0u; i < returnTypes.size(); ++i) {
             auto type = returnTypes[i];
 
             if (i != 0) {

@@ -5,7 +5,7 @@
 #include <lib/compiler/Compiler.h>
 #include "UnaryExpr.h"
 
-UnaryExpr::UnaryExpr(Token *op, Expr *right) : GetCallExpr(right, op, op, op, {}) {
+UnaryExpr::UnaryExpr(const Token *op, Expr *right) : GetCallExpr(right, op, op, op, {}) {
 
 }
 
@@ -13,7 +13,7 @@ Expr *UnaryExpr::right() {
     return callee;
 }
 
-Token *UnaryExpr::op() {
+const Token *UnaryExpr::op() {
     return rParen;
 }
 

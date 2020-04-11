@@ -15,10 +15,10 @@
 
 class BaseCallExpr : public Expr {
 public:
-    Token *rParen;
+    const Token *rParen;
     std::vector<Expr *> args;
 
-    BaseCallExpr(Token *rParen, std::vector<Expr *> args);
+    BaseCallExpr(const Token *rParen, std::vector<Expr *> args);
 
     std::vector<ByteResolver *> compile(Compiler *compiler) override;
 

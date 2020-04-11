@@ -16,7 +16,7 @@ extern "C" {
 #include <lib/compiler/CompilerError.h>
 #include <lib/compiler/utils/Utils.h>
 
-BaseCallExpr::BaseCallExpr(Token *rParen, std::vector<Expr *> args) : rParen(rParen), args(std::move(args)) {}
+BaseCallExpr::BaseCallExpr(const Token *rParen, std::vector<Expr *> args) : rParen(rParen), args(std::move(args)) {}
 
 std::vector<ByteResolver *> BaseCallExpr::compile(Compiler *compiler) {
     auto bytes = std::vector<ByteResolver *>();

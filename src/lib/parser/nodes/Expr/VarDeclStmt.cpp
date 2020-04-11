@@ -9,7 +9,7 @@
 #include <lib/compiler/Compiler.h>
 #include "lib/parser/nodes/TypeDescriptor.h"
 
-VarDeclStmt::VarDeclStmt(std::vector<std::pair<Token *, TypeDescriptor *>> identifiers, Token *op, Expr *value) :
+VarDeclStmt::VarDeclStmt(std::vector<std::pair<const Token *, TypeDescriptor *>>  identifiers, const Token *op, Expr *value) :
         identifiers(std::move(identifiers)), op(op), value(value) {}
 
 std::vector<ByteResolver *> VarDeclStmt::compile(Compiler *compiler) {

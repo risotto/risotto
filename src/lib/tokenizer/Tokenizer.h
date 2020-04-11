@@ -19,7 +19,7 @@ private:
     int line = 0;
     int column = 0;
 
-    std::vector<Token *> tokens;
+    std::vector<Token> tokens;
 
     static std::map<std::string, TokenType> keywords;
 
@@ -60,7 +60,7 @@ private:
 public:
     explicit Tokenizer(std::string src);
 
-    std::vector<Token *> tokenize();
+    std::vector<Token> tokenize();
 };
 
 

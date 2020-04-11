@@ -45,9 +45,9 @@ InterpretResult Risotto::run(const std::string &str, const std::vector<std::stri
 }
 
 InterpretResult Risotto::doRun(const std::string &str, const std::vector<std::string> &args) {
-    auto tokens = timing<std::vector<Token *>>("Tokenizer", [str]() {
-        auto tokenizer = new Tokenizer(str);
-        return tokenizer->tokenize();
+    auto tokens = timing<std::vector<Token>>("Tokenizer", [str]() {
+        auto tokenizer = Tokenizer(str);
+        return tokenizer.tokenize();
     });
 
     if (hasFlag(RisottoFlags::PrintTokens)) {
@@ -55,8 +55,13 @@ InterpretResult Risotto::doRun(const std::string &str, const std::vector<std::st
     }
 
     auto stmts = timing<std::vector<Stmt *>>("Parser", [tokens]() {
-        auto parser = new Parser(tokens);
-        return parser->program();
+        auto tokensp = std::vector<const Token *>();
+        for (const auto &token : tokens) {
+            tokensp.push_back(&token);
+        }
+
+        auto parser = Parser(tokensp);
+        return parser.program();
     });
 
     if (hasFlag(RisottoFlags::PrintAST)) {
@@ -105,12 +110,12 @@ InterpretResult Risotto::doRun(const std::string &str, const std::vector<std::st
     return result;
 }
 
-bool Risotto::hasFlag(RisottoFlags flag) {
+bool Risotto::hasFlag(RisottoFlags flag) const {
     return (flags & flag) == flag;
 }
 
-template<class _Rep, class _Period>
-std::string nsToStr(std::chrono::duration<_Rep, _Period> duration) {
+template<class Rep, class Period>
+std::string nsToStr(std::chrono::duration<Rep, Period> duration) {
     auto hours = std::chrono::duration_cast<std::chrono::hours>(duration);
     duration -= hours;
     auto minutes = std::chrono::duration_cast<std::chrono::minutes>(duration);

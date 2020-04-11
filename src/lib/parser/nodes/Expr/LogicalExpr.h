@@ -13,10 +13,10 @@
 class LogicalExpr: public Expr {
 public:
     Expr *left;
-    Token *op;
+    const Token *op;
     Expr *right;
 
-    LogicalExpr(Expr *left, Token *op, Expr *right);
+    LogicalExpr(Expr *left, const Token *op, Expr *right);
 
     std::vector<ByteResolver *>
     generateOr(std::vector<ByteResolver *> leftBytes, std::vector<ByteResolver *> rightBytes, Compiler *compiler);

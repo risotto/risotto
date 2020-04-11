@@ -13,10 +13,10 @@
 class SetExpr: public Expr {
 public:
     Expr *left;
-    Token *op;
+    const Token *op;
     Expr *right;
 
-    SetExpr(Expr *left, Token *op, Expr *right);
+    SetExpr(Expr *left, const Token *op, Expr *right);
 
     std::vector<ByteResolver *> compile(Compiler *compiler) override;
 

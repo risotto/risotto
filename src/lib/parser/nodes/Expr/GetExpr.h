@@ -13,9 +13,9 @@
 class GetExpr: public Expr {
 public:
     Expr *callee;
-    Token *identifier;
+    const Token *identifier;
 
-    GetExpr(Expr *callee, Token *identifier);
+    GetExpr(Expr *callee, const Token *identifier);
 
     std::vector<ByteResolver *> compile(Compiler *compiler) override;
 

@@ -16,7 +16,7 @@
 
 class MixedCallExpr : public BaseCallExpr {
 public:
-    MixedCallExpr(Token *rParen, const std::vector<Expr *> &args);
+    MixedCallExpr(const Token *rParen, const std::vector<Expr *> &args);
 
     template<typename T>
     T act(

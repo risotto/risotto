@@ -5,7 +5,7 @@
 #include "GroupingExpr.h"
 #include "lib/compiler/ReturnTypes.h"
 
-GroupingExpr::GroupingExpr(Expr *expr, Token *lParen, Token *rParen): expr(expr), lParen(lParen), rParen(rParen) {
+GroupingExpr::GroupingExpr(Expr *expr, const Token *lParen, const Token *rParen): expr(expr), lParen(lParen), rParen(rParen) {
 
 }
 

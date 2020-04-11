@@ -12,9 +12,9 @@
 class ParseError: public std::exception {
 public:
     std::string message;
-    Token *token;
+    const Token *token;
 
-    ParseError(const std::string& message, Token *token);
+    ParseError(const std::string& message, const Token *token);
 
     [[nodiscard]] const char *what() const noexcept override;
 };

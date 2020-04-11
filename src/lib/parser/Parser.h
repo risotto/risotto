@@ -16,7 +16,7 @@
 #define FUNCTION_SIGNATURE_FACTORY_ARGS \
     TokenType type, \
     ParameterDefinition *receiver, \
-    Token *name, \
+    const Token *name, \
     std::vector<TypeDescriptor *> returnTypes, \
     std::vector<ParameterDefinition *> parameters
 
@@ -24,10 +24,10 @@ template<typename T>
 using FunctionSignatureFactory = std::function<T(FUNCTION_SIGNATURE_FACTORY_ARGS)>;
 
 #define FUNCTION_FACTORY_ARGS \
-    Token *typeDecl, \
+    const Token *typeDecl, \
     FUNCTION_SIGNATURE_FACTORY_ARGS, \
     std::vector<Stmt *> body, \
-    Token *closeBlock
+    const Token *closeBlock
 
 template<typename T>
 using FunctionFactory = std::function<T(FUNCTION_FACTORY_ARGS)>;
@@ -37,25 +37,25 @@ public:
     TokenType op;
     std::string str;
 
-    Shorthand(TokenType op, const std::string &str);
+    Shorthand(TokenType op, std::string str);
 };
 
 class Parser {
 private:
-    std::vector<Token *> tokens;
+    std::vector<const Token *> tokens;
     unsigned int current = 0;
 
 public:
-    explicit Parser(std::vector<Token *> tokens);
+    explicit Parser(std::vector<const Token *> tokens);
 
     std::vector<Stmt *> program();
 
 private:
-    Token *peek();
+    const Token *peek();
 
-    Token *peek(unsigned int n);
+    const Token *peek(unsigned int n);
 
-    Token *previous();
+    const Token *previous();
 
     template<class... Types>
     bool match(Types... types);
@@ -106,7 +106,7 @@ private:
 
     Expr *unary();
 
-    Token *advance();
+    const Token *advance();
 
     Expr *call();
 
@@ -122,9 +122,9 @@ private:
     template<typename T>
     std::vector<T> enumeration(std::function<T()> of, TokenType end);
 
-    Token *consume(TokenType type, const std::string &message);
+    const Token *consume(TokenType type, const std::string &message);
 
-    ParseError error(Token *token, const std::string &message);
+    ParseError error(const Token *token, const std::string &message);
 
     std::vector<Stmt *> block();
 

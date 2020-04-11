@@ -6,13 +6,14 @@
 #include <utility>
 #include <map>
 #include <sstream>
+#include <lib/compiler/ByteResolver.h>
 #include "Tokenizer.h"
 #include "SyntaxError.h"
 
 namespace literal_to_value_data {
     template<typename T>
     ValueData convert(T literal) {
-        throw SyntaxError("Unhandled literal", {.line = 0, .column = 0});
+        throw SyntaxError("Unhandled literal", TODO_POSITION);
     }
 
     template<>
@@ -41,7 +42,7 @@ namespace literal_to_value_data {
 
 Tokenizer::Tokenizer(std::string src) : src(std::move(src)) {}
 
-std::vector<Token *> Tokenizer::tokenize() {
+std::vector<Token> Tokenizer::tokenize() {
     while (!isAtEnd()) {
         scan();
     }
@@ -234,7 +235,7 @@ template<typename T>
 void Tokenizer::addToken(TokenType type, T literal) {
     std::string lexeme = src.substr(start, current - start);
     tokens.push_back(
-            new Token(
+            Token(
                     type,
                     literal_to_value_data::convert(literal),
                     lexeme,

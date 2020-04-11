@@ -11,10 +11,10 @@
 class GetCallExpr: public MixedCallExpr {
 public:
     Expr *callee;
-    Token *op;
-    Token *identifier;
+    const Token *op;
+    const Token *identifier;
 
-    GetCallExpr(Expr *callee, Token *op, Token *identifier, Token *rParen, const std::vector<Expr *> &args);
+    GetCallExpr(Expr *callee, const Token *op, const Token *identifier, const Token *rParen, const std::vector<Expr *> &args);
 
     std::vector<Expr *> getArguments(Compiler *compiler) override;
 

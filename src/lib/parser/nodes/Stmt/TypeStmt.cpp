@@ -5,7 +5,7 @@
 #include <lib/compiler/Compiler.h>
 #include "TypeStmt.h"
 
-TypeStmt::TypeStmt(Token *name, TypeDescriptor *typeDescriptor) : name(name), typeDescriptor(typeDescriptor) {}
+TypeStmt::TypeStmt(const Token *name, TypeDescriptor *typeDescriptor) : name(name), typeDescriptor(typeDescriptor) {}
 
 std::vector<ByteResolver *> TypeStmt::compile(Compiler *compiler) {
     return {};

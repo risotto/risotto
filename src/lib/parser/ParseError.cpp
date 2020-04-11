@@ -5,7 +5,7 @@
 #include <sstream>
 #include "ParseError.h"
 
-ParseError::ParseError(const std::string& message, Token *token): token(token) {
+ParseError::ParseError(const std::string& message, const Token *token): token(token) {
     std::stringstream ss;
     ss << message << " at " << position_string(token->position);
 
