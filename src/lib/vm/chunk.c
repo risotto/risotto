@@ -12,7 +12,7 @@ void initChunk(Chunk* chunk) {
     chunk->capacity = 0;
     chunk->code = NULL;
     chunk->positions = NULL;
-    initValueArray(&chunk->constants);
+    vec_init(&chunk->constants);
 }
 
 void writeChunk(Chunk* chunk, OP_T byte, Position position) {
@@ -31,13 +31,14 @@ void writeChunk(Chunk* chunk, OP_T byte, Position position) {
 }
 
 int addConstant(Chunk* chunk, Value value) {
-    writeValueArray(&chunk->constants, value);
-    return chunk->constants.object.size - 1;
+    vec_push(&chunk->constants, value);
+    return chunk->constants.length - 1;
 }
 
 void freeChunk(Chunk* chunk) {
     FREE_ARRAY(OP_T, chunk->code, chunk->capacity);
     FREE_ARRAY(Position, chunk->positions, chunk->capacity);
-    freeValueArray(&chunk->constants);
+    vec_deinit(&chunk->constants);
+
     initChunk(chunk);
 }

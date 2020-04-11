@@ -5,33 +5,8 @@
 #include <stdio.h>
 #include <memory.h>
 #include <assert.h>
-
-#include "memory.h"
 #include "value.h"
 #include "types.h"
-
-void initValueArray(ValueArray *array) {
-    array->object.values = NULL;
-    array->capacity = 0;
-    array->object.size = 0;
-    array->object.marked = 0;
-}
-
-void writeValueArray(ValueArray *array, Value value) {
-    if (array->capacity < array->object.size + 1) {
-        unsigned int oldCapacity = array->capacity;
-        array->capacity = GROW_CAPACITY(oldCapacity);
-        array->object.values = GROW_ARRAY(array->object.values, Value, oldCapacity, array->capacity);
-    }
-
-    array->object.values[array->object.size] = value;
-    array->object.size++;
-}
-
-void freeValueArray(ValueArray *array) {
-    FREE_ARRAY(Value, array->object.values, array->capacity);
-    initValueArray(array);
-}
 
 Value n2v() {
     return NEW_VALUE(&primitives._nil, p, NULL);
@@ -114,8 +89,11 @@ const char *v2s(Value v) {
     ACCESS_REF(v);
 
     switch (TGET(v)) {
-        case T_NIL:
-            return "nil";
+        case T_NIL: {
+            char *o = malloc(4 * sizeof(char));
+            sprintf(o, "%s", "nil");
+            return o;
+        }
         case T_UINT: {
             char *o = malloc(12 * sizeof(char));
             sprintf(o, "%d", v2ui(v));
@@ -142,21 +120,34 @@ const char *v2s(Value v) {
             sprintf(o, "%p", v2p(v));
             return o;
         }
-        case T_STR:
-            return DGET(v, str);
-        case T_BOOL:
-            return v2b(v) ? "true" : "false";
+        case T_STR: {
+            char *s = DGET(v, str);
+            char *o = malloc(strlen(s) * sizeof(char));
+            sprintf(o, "%s", s);
+            return o;
+        }
+        case T_BOOL: {
+            char *o = malloc(5 * sizeof(char));
+            sprintf(o, v2b(v) ? "true" : "false");
+            return o;
+        }
         case T_ARRAY: {
             char *o = calloc(1000, sizeof(char));
-            ValueArray *array = v2a(v);
+            value_vec_t array = v2a(v)->vec;
             sprintf(o, "[");
-            for (int i = 0; i < array->object.size; ++i) {
-                sprintf(o + strlen(o), "%s", v2s(*(array->object.values + i)));
 
-                if (i != array->object.size - 1) {
-                    sprintf(o + strlen(o), ", ");
+            if (array.length > 10) {
+                sprintf(o, " <...> ");
+            } else {
+                for (int i = 0; i < array.length; ++i) {
+                    sprintf(o + strlen(o), "%s", v2s(*(array.data + i)));
+
+                    if (i != array.length - 1) {
+                        sprintf(o + strlen(o), ", ");
+                    }
                 }
             }
+
             sprintf(o + strlen(o), "]");
             return o;
         }
@@ -197,9 +188,17 @@ Value copy(Value v) {
     Value nv = NEW_VALUE(&primitives._nil, p, 0);
     set(v, &nv);
 
-    if (typecheck(nv, T_ARRAY) || typecheck(nv, T_OBJECT)) {
+    if (typecheck(nv, T_ARRAY)) {
+        ValueArray *array = v2a(nv);
+
+        int i;
+        Value *value;
+        vec_foreach_ptr(&array->vec, value, i) {
+                *value = copy(*value);
+            }
+    } else if (typecheck(nv, T_OBJECT)) {
         Object *object = v2o(nv);
-        for (int i = 0; i < object->size; ++i) {
+        for (size_t i = 0; i < object->size; ++i) {
             object->values[i] = copy(object->values[i]);
         }
     }

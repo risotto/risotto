@@ -18,16 +18,22 @@ void printValue(Value value) {
         case T_INT:
         case T_DOUBLE:
         case T_ARRAY:
-        case T_BOOL:
-            vm.printf("%s", v2s(value));
+        case T_BOOL: {
+            const char * s = v2s(value);
+            vm.printf("%s", s);
+            free(s);
             return;
-        case T_STR:
-            vm.printf("`%s`", v2s(value));
+        }
+        case T_STR: {
+            const char * s = v2s(value);
+            vm.printf("`%s`", s);
+            free(s);
             return;
+        }
         case T_OBJECT: {
             Object *object = v2o(value);
             vm.printf("O: %p {", object->values);
-            for (int i = 0; i < object->size; ++i) {
+            for (size_t i = 0; i < object->size; ++i) {
                 Value v = object->values[i];
                 if (typecheck(v, T_OBJECT) && v2o(v) == object) {
                     vm.printf("<self>");
@@ -71,8 +77,8 @@ static int simpleInstruction(const char *name, int offset) {
 static int constantInstruction(const char *name, Chunk *chunk, int offset) {
     OP_T constant = chunk->code[offset + 1];
     vm.printf("%-16s %4d '", name, constant);
-    if (constant <= chunk->constants.object.size) {
-        printValue(chunk->constants.object.values[constant]);
+    if (constant <= chunk->constants.length) {
+        printValue(chunk->constants.data[constant]);
     } else {
         vm.printf("# Constant '%d' not found #", constant);
     }
@@ -108,7 +114,7 @@ static int newInstruction(const char *name, Chunk *chunk, int offset) {
     int tcAddr = chunk->code[offset + 1];
     int c = chunk->code[offset + 2];
     vm.printf("%-11s VTC: ", name);
-    printValue(chunk->constants.object.values[tcAddr]);
+    printValue(chunk->constants.data[tcAddr]);
     vm.printf(" C:%-3d\n", c);
 
     return offset + 3 + c;
@@ -118,7 +124,7 @@ static int arrayInstruction(const char *name, Chunk *chunk, int offset) {
     int vtableAddr = chunk->code[offset + 1];
     int c = chunk->code[offset + 2];
     vm.printf("%-11s C: %-3d VA: ", name, c);
-    printValue(chunk->constants.object.values[vtableAddr]);
+    printValue(chunk->constants.data[vtableAddr]);
     vm.printf("\n");
 
     return offset + 3 + c;

@@ -42,7 +42,7 @@ public:
 
 class Parser {
 public:
-    static std::vector<Stmt *> Parse(const std::vector<Token> &tokens);
+    static std::vector<Stmt *> Parse(std::vector<Token> *tokens);
 
 private:
     std::vector<PToken> tokens;

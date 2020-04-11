@@ -53,8 +53,8 @@ InterpretResult Risotto::doRun(const std::string &str, const std::vector<std::st
         this->printfp("%s", TokensPrinter::print(tokens).c_str());
     }
 
-    auto stmts = timing<std::vector<Stmt *>>("Parser", [tokens]() {
-        return Parser::Parse(tokens);
+    auto stmts = timing<std::vector<Stmt *>>("Parser", [&tokens]() {
+        return Parser::Parse(&tokens);
     });
 
     if (hasFlag(RisottoFlags::PrintAST)) {
@@ -64,10 +64,6 @@ InterpretResult Risotto::doRun(const std::string &str, const std::vector<std::st
     auto chunk = timing<Chunk>("Compiler", [stmts]() {
         return Compiler(stmts, &primitives).compile();
     });
-
-    if (hasFlag(RisottoFlags::PrintDisassembled)) {
-        disassembleChunk(&chunk, "chunk");
-    }
 
     unsigned int vmFlags = VMFlags::VMNone;
 
@@ -83,15 +79,18 @@ InterpretResult Risotto::doRun(const std::string &str, const std::vector<std::st
     }
 #endif
 
-    auto argsa = (ValueArray *) malloc(sizeof(ValueArray));
-    initValueArray(argsa);
-    registerObject((Object *) argsa);
+    auto argsa = ValueArray{};
+    vec_init(&argsa.vec);
 
     for (const auto &arg: args) {
-        writeValueArray(argsa, s2v(arg.c_str()));
+        vec_push(&argsa.vec, s2v(arg.c_str()));
     }
 
-    initVM(vmFlags, this->printfp, argsa);
+    initVM(vmFlags, this->printfp, &argsa);
+
+    if (hasFlag(RisottoFlags::PrintDisassembled)) {
+        disassembleChunk(&chunk, "chunk");
+    }
 
     auto result = timing<InterpretResult>("VM", [&chunk]() {
         return interpret(&chunk, 0);

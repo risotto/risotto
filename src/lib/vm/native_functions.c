@@ -176,7 +176,7 @@ NATIVE_FUNCTION(println_bool) {
 NATIVE_FUNCTION(array_size) {
     ValueArray *array = v2a(args[0]);
 
-    ret[0] = i2v(array->object.size);
+    ret[0] = i2v(array->vec.length);
 }
 
 NATIVE_FUNCTION(array_add) {
@@ -184,7 +184,7 @@ NATIVE_FUNCTION(array_add) {
 
     Value value = args[1];
 
-    writeValueArray(array, value);
+    vec_push(&array->vec, value);
 }
 
 NATIVE_FUNCTION(array_at) {
@@ -192,17 +192,17 @@ NATIVE_FUNCTION(array_at) {
 
     unsigned index = v2i(args[1]);
 
-    struct Object obj = array->object;
+    value_vec_t vec = array->vec;
+
+    unsigned int length = vec.length;
 
     if (index < 0) {
-        unsigned int size = obj.size;
-
-        index = size + index;
+        index = length + index;
     }
 
-    if (index >= obj.size) {
+    if (index >= length) {
         ERROR("index %i out of bounds", index);
     }
 
-    ret[0] = vp2v(&obj.values[index]);
+    ret[0] = vp2v(&vec.data[index]);
 }

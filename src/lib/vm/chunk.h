@@ -76,7 +76,7 @@ typedef struct {
     int capacity;
     OP_T* code;
     Position* positions;
-    ValueArray constants;
+    value_vec_t constants;
 } Chunk;
 
 void initChunk(Chunk* chunk);

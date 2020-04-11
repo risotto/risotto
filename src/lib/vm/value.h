@@ -36,25 +36,27 @@ typedef struct {
 // Creates a type `NativeFunction` which is a function `void (Value[], int, Value[])`
 typedef void (*NativeFunction)(Value args[], int argsc, Value ret[]);
 
+typedef struct GCObject GCObject;
+
+struct GCObject {
+    GCObject *next;
+    unsigned char marked;
+};
+
 typedef struct Object Object;
 
 struct Object {
-    Object *next;
-    unsigned char marked;
-    Value *values;
-    unsigned int size;
+    GCObject gcObj;
+    size_t size;
+    Value values[];
 };
 
+typedef vec_t(Value) value_vec_t;
+
 typedef struct {
-    Object object;
-    unsigned int capacity;
+    GCObject gcObj;
+    value_vec_t vec;
 } ValueArray;
-
-void initValueArray(ValueArray *array);
-
-void writeValueArray(ValueArray *array, Value value);
-
-void freeValueArray(ValueArray *array);
 
 Value n2v();
 
@@ -68,7 +70,7 @@ Value d2v(double v);
 
 Value s2v(const char *v);
 
-Value o2v(Object *v, struct ValueTypeContainer *tc);
+Value o2v(Object *v, ValueTypeContainer *tc);
 
 Value b2v(bool b);
 

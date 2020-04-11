@@ -29,7 +29,7 @@ typedef struct {
     Value *sp;
     Value *fp;
     function_call_vec_t fcs;
-    Object *firstObject;
+    GCObject *firstObject;
     /* The total number of currently allocated values. */
     int numObjects;
     /* The number of values required to trigger a GC. */
@@ -56,9 +56,11 @@ void push(Value value);
 void pushm(Value *values, unsigned int length);
 Value pop();
 
-void registerObject(Object *object);
+void registerObject(GCObject *object);
 void markAll();
-void mark(Object* value);
+bool markGCObject(GCObject* obj);
+void markObject(Object* object);
+void markArray(ValueArray* array);
 void markValue(Value *value);
 void sweep();
 void gc();

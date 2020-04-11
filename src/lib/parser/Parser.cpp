@@ -35,10 +35,11 @@
 
 Shorthand::Shorthand(TokenType op, std::string str) : op(op), str(std::move(str)) {}
 
-std::vector<Stmt *> Parser::Parse(const std::vector<Token> &tokens) {
+std::vector<Stmt *> Parser::Parse(std::vector<Token> *tokens) {
     auto tokensp = std::vector<const Token *>();
-    for (const auto &token : tokens) {
-        tokensp.push_back(&token);
+
+    for (auto it = tokens->begin(); it != tokens->end(); ++it) {
+        tokensp.push_back(&(*it));
     }
 
     return Parser(tokensp).program();
