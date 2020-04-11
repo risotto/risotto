@@ -35,9 +35,16 @@
 
 Shorthand::Shorthand(TokenType op, std::string str) : op(op), str(std::move(str)) {}
 
-Parser::Parser(std::vector<PToken > tokens) : tokens(std::move(tokens)) {
+std::vector<Stmt *> Parser::Parse(const std::vector<Token> &tokens) {
+    auto tokensp = std::vector<const Token *>();
+    for (const auto &token : tokens) {
+        tokensp.push_back(&token);
+    }
 
+    return Parser(tokensp).program();
 }
+
+Parser::Parser(std::vector<PToken> tokens) : tokens(std::move(tokens)) {}
 
 PToken Parser::advance() {
     if (!isAtEnd()) current++;
@@ -224,13 +231,13 @@ Stmt *Parser::type() {
 Stmt *Parser::varDecl() {
     auto c = current;
     if (check(TokenType::IDENTIFIER)) {
-        auto identifiers = enumeration<std::pair<PToken , TypeDescriptor *>>([this]() {
+        auto identifiers = enumeration<std::pair<PToken, TypeDescriptor *>>([this]() {
             auto identifier = consume(TokenType::IDENTIFIER, "Expect identifier.");
 
             auto type = typeDesc();
 
-            return std::make_pair<PToken , TypeDescriptor *>(
-                    reinterpret_cast<PToken &&>(identifier),
+            return std::make_pair<PToken, TypeDescriptor *>(
+                    reinterpret_cast<PToken&&>(identifier),
                     reinterpret_cast<TypeDescriptor *&&>(type)
             );
         }, TokenType::COMMA, TokenType::COLON_EQUAL);
@@ -524,16 +531,16 @@ Expr *Parser::expression() {
 const auto shorthands = std::map<TokenType, Shorthand>(
         {
                 // Maths
-                {TokenType::PLUS_EQUAL, Shorthand(TokenType::PLUS, "+")},
-                {TokenType::MINUS_EQUAL, Shorthand(TokenType::MINUS, "-")},
-                {TokenType::STAR_EQUAL, Shorthand(TokenType::STAR, "*")},
-                {TokenType::SLASH_EQUAL, Shorthand(TokenType::SLASH, "/")},
+                {TokenType::PLUS_EQUAL,        Shorthand(TokenType::PLUS, "+")},
+                {TokenType::MINUS_EQUAL,       Shorthand(TokenType::MINUS, "-")},
+                {TokenType::STAR_EQUAL,        Shorthand(TokenType::STAR, "*")},
+                {TokenType::SLASH_EQUAL,       Shorthand(TokenType::SLASH, "/")},
 
                 // Bitwise
-                {TokenType::AMPERSAND_EQUAL, Shorthand(TokenType::AMPERSAND, "&")},
-                {TokenType::PIPE_EQUAL, Shorthand(TokenType::PIPE, "|")},
-                {TokenType::CARET_EQUAL, Shorthand(TokenType::CARET, "^")},
-                {TokenType::LEFT_LEFT_EQUAL, Shorthand(TokenType::LEFT_LEFT, "<<")},
+                {TokenType::AMPERSAND_EQUAL,   Shorthand(TokenType::AMPERSAND, "&")},
+                {TokenType::PIPE_EQUAL,        Shorthand(TokenType::PIPE, "|")},
+                {TokenType::CARET_EQUAL,       Shorthand(TokenType::CARET, "^")},
+                {TokenType::LEFT_LEFT_EQUAL,   Shorthand(TokenType::LEFT_LEFT, "<<")},
                 {TokenType::RIGHT_RIGHT_EQUAL, Shorthand(TokenType::RIGHT_RIGHT, ">>")},
         }
 );

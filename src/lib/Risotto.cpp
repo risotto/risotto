@@ -46,8 +46,7 @@ InterpretResult Risotto::run(const std::string &str, const std::vector<std::stri
 
 InterpretResult Risotto::doRun(const std::string &str, const std::vector<std::string> &args) {
     auto tokens = timing<std::vector<Token>>("Tokenizer", [str]() {
-        auto tokenizer = Tokenizer(str);
-        return tokenizer.tokenize();
+        return Tokenizer::Tokenize(str);
     });
 
     if (hasFlag(RisottoFlags::PrintTokens)) {
@@ -55,13 +54,7 @@ InterpretResult Risotto::doRun(const std::string &str, const std::vector<std::st
     }
 
     auto stmts = timing<std::vector<Stmt *>>("Parser", [tokens]() {
-        auto tokensp = std::vector<const Token *>();
-        for (const auto &token : tokens) {
-            tokensp.push_back(&token);
-        }
-
-        auto parser = Parser(tokensp);
-        return parser.program();
+        return Parser::Parse(tokens);
     });
 
     if (hasFlag(RisottoFlags::PrintAST)) {

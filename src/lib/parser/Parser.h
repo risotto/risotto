@@ -41,16 +41,15 @@ public:
 };
 
 class Parser {
+public:
+    static std::vector<Stmt *> Parse(const std::vector<Token> &tokens);
+
 private:
-    std::vector<PToken > tokens;
+    std::vector<PToken> tokens;
     unsigned int current = 0;
 
-public:
-    explicit Parser(std::vector<PToken > tokens);
+    explicit Parser(std::vector<PToken> tokens);
 
-    std::vector<Stmt *> program();
-
-private:
     PToken peek();
 
     PToken peek(unsigned int n);
@@ -65,6 +64,8 @@ private:
     bool check(TokenType tokenType);
 
     bool check(TokenType tokenType, int n);
+
+    std::vector<Stmt *> program();
 
     Stmt *declaration();
 

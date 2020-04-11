@@ -373,3 +373,7 @@ void Tokenizer::nextLine() {
     line++;
     column = 0;
 }
+
+std::vector<Token> Tokenizer::Tokenize(std::string str) {
+    return Tokenizer(std::move(str)).tokenize();
+}
