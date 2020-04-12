@@ -451,7 +451,7 @@ static InterpretResult run() {
                 int elemsc = READ_BYTE();
 
                 ValueArray *array = malloc(sizeof(*array));
-                vec_init(array);
+                vec_init(&array->vec);
                 registerObject((GCObject *) array);
 
                 for (int i = 0; i < elemsc; ++i) {
