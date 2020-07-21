@@ -1,0 +1,2 @@
+language = "c"
+run = "git submodule init && git submodule update --init && cmake -DCMAKE_BUILD_TYPE=Release -H. -Bbuild && cmake --build build --target rst && ./build/rst tests/function/fib.rst"
